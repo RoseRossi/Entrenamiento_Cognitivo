@@ -1,7 +1,6 @@
 import React from "react";
-import "./App.css";
 
-function App() {
+const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <h1 className="title">Entrenamiento Cognitivo</h1>
@@ -14,6 +13,6 @@ function App() {
       </div>
     </div>
   );
-}
+};
 
-export default App;
+export default Dashboard;
