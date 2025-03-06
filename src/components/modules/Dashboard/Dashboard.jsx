@@ -1,4 +1,6 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import './styles.css';
 
 const Dashboard = () => {
   return (
@@ -6,9 +8,9 @@ const Dashboard = () => {
       <h1 className="title">Entrenamiento Cognitivo</h1>
       <div className="games-grid">
         {Array.from({ length: 8 }, (_, i) => (
-          <button key={i} className="game-button">
+          <Link key={i} to={`/juego/${i + 1}`} className="game-button">
             Juego {i + 1}
-          </button>
+          </Link>
         ))}
       </div>
     </div>
