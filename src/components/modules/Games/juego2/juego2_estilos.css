@@ -6,11 +6,11 @@
   
   .grid {
     display: grid;
-    grid-template-columns: repeat(3, 80px);
     gap: 10px;
     margin: 20px auto;
     justify-content: center;
-  }
+    align-items: center;
+  } 
   
   .grid-cell {
     width: 80px;
