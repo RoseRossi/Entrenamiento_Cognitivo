@@ -1,0 +1,332 @@
+<svg width="540" height="540" viewBox="0 0 540 540" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_12_323)">
+<rect width="540" height="540" fill="white"/>
+<rect x="180.1" y="0.1" width="179.8" height="179.8" fill="white" stroke="#8B8B8B" stroke-width="0.2"/>
+<rect x="0.1" y="0.1" width="179.8" height="179.8" fill="white" stroke="#8B8B8B" stroke-width="0.2"/>
+<rect x="206.5" y="24.5" width="127" height="127" stroke="black" stroke-width="3"/>
+<rect x="26.5" y="26.5" width="127" height="127" stroke="black" stroke-width="3"/>
+<rect x="360.1" y="0.1" width="179.8" height="179.8" fill="white" stroke="#8B8B8B" stroke-width="0.2"/>
+<rect x="0.1" y="180.1" width="179.8" height="179.8" fill="white" stroke="#8B8B8B" stroke-width="0.2"/>
+<rect x="180.1" y="180.1" width="179.8" height="179.8" fill="white" stroke="#8B8B8B" stroke-width="0.2"/>
+<rect x="360.1" y="180.1" width="179.8" height="179.8" fill="white" stroke="#8B8B8B" stroke-width="0.2"/>
+<rect x="0.1" y="360.1" width="179.8" height="179.8" fill="white" stroke="#8B8B8B" stroke-width="0.2"/>
+<path d="M29.7631 409.238L34 413.5L25.4312 422.018L21.1943 417.755L29.7631 409.238Z" fill="black"/>
+<rect x="180.1" y="360.1" width="179.8" height="179.8" fill="white"/>
+<rect x="180.1" y="360.1" width="179.8" height="179.8" fill="white"/>
+<rect x="180.1" y="360.1" width="179.8" height="179.8" stroke="#8B8B8B" stroke-width="0.2"/>
+<rect x="360.1" y="360.1" width="179.8" height="179.8" fill="white" stroke="#8B8B8B" stroke-width="0.2"/>
+<path d="M444.909 459.909V459.636C444.939 456.742 445.242 454.439 445.818 452.727C446.394 451.015 447.212 449.629 448.273 448.568C449.333 447.508 450.606 446.53 452.091 445.636C452.985 445.091 453.788 444.447 454.5 443.705C455.212 442.947 455.773 442.076 456.182 441.091C456.606 440.106 456.818 439.015 456.818 437.818C456.818 436.333 456.47 435.045 455.773 433.955C455.076 432.864 454.144 432.023 452.977 431.432C451.811 430.841 450.515 430.545 449.091 430.545C447.848 430.545 446.652 430.803 445.5 431.318C444.348 431.833 443.386 432.644 442.614 433.75C441.841 434.856 441.394 436.303 441.273 438.091H435.545C435.667 435.515 436.333 433.311 437.545 431.477C438.773 429.644 440.386 428.242 442.386 427.273C444.402 426.303 446.636 425.818 449.091 425.818C451.758 425.818 454.076 426.348 456.045 427.409C458.03 428.47 459.561 429.924 460.636 431.773C461.727 433.621 462.273 435.727 462.273 438.091C462.273 439.758 462.015 441.265 461.5 442.614C461 443.962 460.273 445.167 459.318 446.227C458.379 447.288 457.242 448.227 455.909 449.045C454.576 449.879 453.508 450.758 452.705 451.682C451.902 452.591 451.318 453.674 450.955 454.932C450.591 456.189 450.394 457.758 450.364 459.636V459.909H444.909ZM447.818 473.364C446.697 473.364 445.735 472.962 444.932 472.159C444.129 471.356 443.727 470.394 443.727 469.273C443.727 468.152 444.129 467.189 444.932 466.386C445.735 465.583 446.697 465.182 447.818 465.182C448.939 465.182 449.902 465.583 450.705 466.386C451.508 467.189 451.909 468.152 451.909 469.273C451.909 470.015 451.72 470.697 451.341 471.318C450.977 471.939 450.485 472.439 449.864 472.818C449.258 473.182 448.576 473.364 447.818 473.364Z" fill="black"/>
+<mask id="mask0_12_323" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="267" y="26" width="65" height="65">
+<rect x="267" y="26" width="65" height="65" fill="white"/>
+</mask>
+<g mask="url(#mask0_12_323)">
+<line x1="312.707" y1="10.2929" x2="349.707" y2="47.2929" stroke="black" stroke-width="2"/>
+<line x1="307.707" y1="12.2929" x2="346.707" y2="51.2929" stroke="black" stroke-width="2"/>
+<line x1="303.707" y1="15.2929" x2="343.707" y2="55.2929" stroke="black" stroke-width="2"/>
+<line x1="299.707" y1="18.2929" x2="339.707" y2="58.2929" stroke="black" stroke-width="2"/>
+<line x1="296.707" y1="22.2929" x2="333.707" y2="59.2929" stroke="black" stroke-width="2"/>
+<line x1="291.707" y1="24.2929" x2="340.707" y2="73.2929" stroke="black" stroke-width="2"/>
+<line x1="283.707" y1="23.2929" x2="339.707" y2="79.2929" stroke="black" stroke-width="2"/>
+<line x1="277.707" y1="24.2929" x2="341.707" y2="88.2929" stroke="black" stroke-width="2"/>
+<line x1="270.707" y1="24.2929" x2="338.707" y2="92.2929" stroke="black" stroke-width="2"/>
+<line x1="262.707" y1="23.2929" x2="335.707" y2="96.2929" stroke="black" stroke-width="2"/>
+<line x1="264.707" y1="32.2929" x2="329.707" y2="97.2929" stroke="black" stroke-width="2"/>
+<line x1="260.707" y1="35.2929" x2="324.707" y2="99.2929" stroke="black" stroke-width="2"/>
+<line x1="262.707" y1="44.2929" x2="318.707" y2="100.293" stroke="black" stroke-width="2"/>
+<line x1="263.707" y1="52.2929" x2="309.707" y2="98.2929" stroke="black" stroke-width="2"/>
+<line x1="259.707" y1="55.2929" x2="299.707" y2="95.2929" stroke="black" stroke-width="2"/>
+<line x1="255.707" y1="58.2929" x2="295.707" y2="98.2929" stroke="black" stroke-width="2"/>
+<line x1="253.707" y1="63.2929" x2="290.707" y2="100.293" stroke="black" stroke-width="2"/>
+<line x1="248.707" y1="65.2929" x2="287.707" y2="104.293" stroke="black" stroke-width="2"/>
+<line x1="244.707" y1="68.2929" x2="284.707" y2="108.293" stroke="black" stroke-width="2"/>
+</g>
+<rect x="206.5" y="206.5" width="127" height="127" stroke="black" stroke-width="3"/>
+<mask id="mask1_12_323" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="267" y="208" width="65" height="65">
+<rect x="267" y="208" width="65" height="65" fill="white"/>
+</mask>
+<g mask="url(#mask1_12_323)">
+<line x1="312.707" y1="192.293" x2="349.707" y2="229.293" stroke="black" stroke-width="2"/>
+<line x1="307.707" y1="194.293" x2="346.707" y2="233.293" stroke="black" stroke-width="2"/>
+<line x1="303.707" y1="197.293" x2="343.707" y2="237.293" stroke="black" stroke-width="2"/>
+<line x1="299.707" y1="200.293" x2="339.707" y2="240.293" stroke="black" stroke-width="2"/>
+<line x1="296.707" y1="204.293" x2="333.707" y2="241.293" stroke="black" stroke-width="2"/>
+<line x1="291.707" y1="206.293" x2="340.707" y2="255.293" stroke="black" stroke-width="2"/>
+<line x1="283.707" y1="205.293" x2="339.707" y2="261.293" stroke="black" stroke-width="2"/>
+<line x1="277.707" y1="206.293" x2="341.707" y2="270.293" stroke="black" stroke-width="2"/>
+<line x1="270.707" y1="206.293" x2="338.707" y2="274.293" stroke="black" stroke-width="2"/>
+<line x1="262.707" y1="205.293" x2="335.707" y2="278.293" stroke="black" stroke-width="2"/>
+<line x1="264.707" y1="214.293" x2="329.707" y2="279.293" stroke="black" stroke-width="2"/>
+<line x1="260.707" y1="217.293" x2="324.707" y2="281.293" stroke="black" stroke-width="2"/>
+<line x1="262.707" y1="226.293" x2="318.707" y2="282.293" stroke="black" stroke-width="2"/>
+<line x1="263.707" y1="234.293" x2="309.707" y2="280.293" stroke="black" stroke-width="2"/>
+<line x1="259.707" y1="237.293" x2="299.707" y2="277.293" stroke="black" stroke-width="2"/>
+<line x1="255.707" y1="240.293" x2="295.707" y2="280.293" stroke="black" stroke-width="2"/>
+<line x1="253.707" y1="245.293" x2="290.707" y2="282.293" stroke="black" stroke-width="2"/>
+<line x1="248.707" y1="247.293" x2="287.707" y2="286.293" stroke="black" stroke-width="2"/>
+<line x1="244.707" y1="250.293" x2="284.707" y2="290.293" stroke="black" stroke-width="2"/>
+</g>
+<rect x="386.5" y="27.5" width="127" height="127" stroke="black" stroke-width="3"/>
+<mask id="mask2_12_323" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="450" y="29" width="65" height="65">
+<rect x="450" y="29" width="65" height="65" fill="white"/>
+</mask>
+<g mask="url(#mask2_12_323)">
+<line x1="495.707" y1="13.2929" x2="532.707" y2="50.2929" stroke="black" stroke-width="2"/>
+<line x1="490.707" y1="15.2929" x2="529.707" y2="54.2929" stroke="black" stroke-width="2"/>
+<line x1="486.707" y1="18.2929" x2="526.707" y2="58.2929" stroke="black" stroke-width="2"/>
+<line x1="482.707" y1="21.2929" x2="522.707" y2="61.2929" stroke="black" stroke-width="2"/>
+<line x1="479.707" y1="25.2929" x2="516.707" y2="62.2929" stroke="black" stroke-width="2"/>
+<line x1="474.707" y1="27.2929" x2="523.707" y2="76.2929" stroke="black" stroke-width="2"/>
+<line x1="466.707" y1="26.2929" x2="522.707" y2="82.2929" stroke="black" stroke-width="2"/>
+<line x1="460.707" y1="27.2929" x2="524.707" y2="91.2929" stroke="black" stroke-width="2"/>
+<line x1="453.707" y1="27.2929" x2="521.707" y2="95.2929" stroke="black" stroke-width="2"/>
+<line x1="445.707" y1="26.2929" x2="518.707" y2="99.2929" stroke="black" stroke-width="2"/>
+<line x1="447.707" y1="35.2929" x2="512.707" y2="100.293" stroke="black" stroke-width="2"/>
+<line x1="443.707" y1="38.2929" x2="507.707" y2="102.293" stroke="black" stroke-width="2"/>
+<line x1="445.707" y1="47.2929" x2="501.707" y2="103.293" stroke="black" stroke-width="2"/>
+<line x1="446.707" y1="55.2929" x2="492.707" y2="101.293" stroke="black" stroke-width="2"/>
+<line x1="442.707" y1="58.2929" x2="482.707" y2="98.2929" stroke="black" stroke-width="2"/>
+<line x1="438.707" y1="61.2929" x2="478.707" y2="101.293" stroke="black" stroke-width="2"/>
+<line x1="436.707" y1="66.2929" x2="473.707" y2="103.293" stroke="black" stroke-width="2"/>
+<line x1="431.707" y1="68.2929" x2="470.707" y2="107.293" stroke="black" stroke-width="2"/>
+<line x1="427.707" y1="71.2929" x2="467.707" y2="111.293" stroke="black" stroke-width="2"/>
+</g>
+<mask id="mask3_12_323" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="386" y="28" width="65" height="65">
+<rect x="386" y="28" width="65" height="65" fill="white"/>
+</mask>
+<g mask="url(#mask3_12_323)">
+<line x1="431.707" y1="12.2929" x2="468.707" y2="49.2929" stroke="black" stroke-width="2"/>
+<line x1="426.707" y1="14.2929" x2="465.707" y2="53.2929" stroke="black" stroke-width="2"/>
+<line x1="422.707" y1="17.2929" x2="462.707" y2="57.2929" stroke="black" stroke-width="2"/>
+<line x1="418.707" y1="20.2929" x2="458.707" y2="60.2929" stroke="black" stroke-width="2"/>
+<line x1="415.707" y1="24.2929" x2="452.707" y2="61.2929" stroke="black" stroke-width="2"/>
+<line x1="410.707" y1="26.2929" x2="459.707" y2="75.2929" stroke="black" stroke-width="2"/>
+<line x1="402.707" y1="25.2929" x2="458.707" y2="81.2929" stroke="black" stroke-width="2"/>
+<line x1="396.707" y1="26.2929" x2="460.707" y2="90.2929" stroke="black" stroke-width="2"/>
+<line x1="389.707" y1="26.2929" x2="457.707" y2="94.2929" stroke="black" stroke-width="2"/>
+<line x1="381.707" y1="25.2929" x2="454.707" y2="98.2929" stroke="black" stroke-width="2"/>
+<line x1="383.707" y1="34.2929" x2="448.707" y2="99.2929" stroke="black" stroke-width="2"/>
+<line x1="379.707" y1="37.2929" x2="443.707" y2="101.293" stroke="black" stroke-width="2"/>
+<line x1="381.707" y1="46.2929" x2="437.707" y2="102.293" stroke="black" stroke-width="2"/>
+<line x1="382.707" y1="54.2929" x2="428.707" y2="100.293" stroke="black" stroke-width="2"/>
+<line x1="378.707" y1="57.2929" x2="418.707" y2="97.2929" stroke="black" stroke-width="2"/>
+<line x1="374.707" y1="60.2929" x2="414.707" y2="100.293" stroke="black" stroke-width="2"/>
+<line x1="372.707" y1="65.2929" x2="409.707" y2="102.293" stroke="black" stroke-width="2"/>
+<line x1="367.707" y1="67.2929" x2="406.707" y2="106.293" stroke="black" stroke-width="2"/>
+<line x1="363.707" y1="70.2929" x2="403.707" y2="110.293" stroke="black" stroke-width="2"/>
+</g>
+<rect x="386.5" y="206.5" width="127" height="127" stroke="black" stroke-width="3"/>
+<mask id="mask4_12_323" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="450" y="207" width="65" height="65">
+<rect x="450" y="207" width="65" height="65" fill="white"/>
+</mask>
+<g mask="url(#mask4_12_323)">
+<line x1="495.707" y1="191.293" x2="532.707" y2="228.293" stroke="black" stroke-width="2"/>
+<line x1="490.707" y1="193.293" x2="529.707" y2="232.293" stroke="black" stroke-width="2"/>
+<line x1="486.707" y1="196.293" x2="526.707" y2="236.293" stroke="black" stroke-width="2"/>
+<line x1="482.707" y1="199.293" x2="522.707" y2="239.293" stroke="black" stroke-width="2"/>
+<line x1="479.707" y1="203.293" x2="516.707" y2="240.293" stroke="black" stroke-width="2"/>
+<line x1="474.707" y1="205.293" x2="523.707" y2="254.293" stroke="black" stroke-width="2"/>
+<line x1="466.707" y1="204.293" x2="522.707" y2="260.293" stroke="black" stroke-width="2"/>
+<line x1="460.707" y1="205.293" x2="524.707" y2="269.293" stroke="black" stroke-width="2"/>
+<line x1="453.707" y1="205.293" x2="521.707" y2="273.293" stroke="black" stroke-width="2"/>
+<line x1="445.707" y1="204.293" x2="518.707" y2="277.293" stroke="black" stroke-width="2"/>
+<line x1="447.707" y1="213.293" x2="512.707" y2="278.293" stroke="black" stroke-width="2"/>
+<line x1="443.707" y1="216.293" x2="507.707" y2="280.293" stroke="black" stroke-width="2"/>
+<line x1="445.707" y1="225.293" x2="501.707" y2="281.293" stroke="black" stroke-width="2"/>
+<line x1="446.707" y1="233.293" x2="492.707" y2="279.293" stroke="black" stroke-width="2"/>
+<line x1="442.707" y1="236.293" x2="482.707" y2="276.293" stroke="black" stroke-width="2"/>
+<line x1="438.707" y1="239.293" x2="478.707" y2="279.293" stroke="black" stroke-width="2"/>
+<line x1="436.707" y1="244.293" x2="473.707" y2="281.293" stroke="black" stroke-width="2"/>
+<line x1="431.707" y1="246.293" x2="470.707" y2="285.293" stroke="black" stroke-width="2"/>
+<line x1="427.707" y1="249.293" x2="467.707" y2="289.293" stroke="black" stroke-width="2"/>
+</g>
+<mask id="mask5_12_323" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="385" y="205" width="65" height="65">
+<rect x="385" y="205" width="65" height="65" fill="white"/>
+</mask>
+<g mask="url(#mask5_12_323)">
+<line x1="430.707" y1="189.293" x2="467.707" y2="226.293" stroke="black" stroke-width="2"/>
+<line x1="425.707" y1="191.293" x2="464.707" y2="230.293" stroke="black" stroke-width="2"/>
+<line x1="421.707" y1="194.293" x2="461.707" y2="234.293" stroke="black" stroke-width="2"/>
+<line x1="417.707" y1="197.293" x2="457.707" y2="237.293" stroke="black" stroke-width="2"/>
+<line x1="414.707" y1="201.293" x2="451.707" y2="238.293" stroke="black" stroke-width="2"/>
+<line x1="409.707" y1="203.293" x2="458.707" y2="252.293" stroke="black" stroke-width="2"/>
+<line x1="401.707" y1="202.293" x2="457.707" y2="258.293" stroke="black" stroke-width="2"/>
+<line x1="395.707" y1="203.293" x2="459.707" y2="267.293" stroke="black" stroke-width="2"/>
+<line x1="388.707" y1="203.293" x2="456.707" y2="271.293" stroke="black" stroke-width="2"/>
+<line x1="380.707" y1="202.293" x2="453.707" y2="275.293" stroke="black" stroke-width="2"/>
+<line x1="382.707" y1="211.293" x2="447.707" y2="276.293" stroke="black" stroke-width="2"/>
+<line x1="378.707" y1="214.293" x2="442.707" y2="278.293" stroke="black" stroke-width="2"/>
+<line x1="380.707" y1="223.293" x2="436.707" y2="279.293" stroke="black" stroke-width="2"/>
+<line x1="381.707" y1="231.293" x2="427.707" y2="277.293" stroke="black" stroke-width="2"/>
+<line x1="377.707" y1="234.293" x2="417.707" y2="274.293" stroke="black" stroke-width="2"/>
+<line x1="373.707" y1="237.293" x2="413.707" y2="277.293" stroke="black" stroke-width="2"/>
+<line x1="371.707" y1="242.293" x2="408.707" y2="279.293" stroke="black" stroke-width="2"/>
+<line x1="366.707" y1="244.293" x2="405.707" y2="283.293" stroke="black" stroke-width="2"/>
+<line x1="362.707" y1="247.293" x2="402.707" y2="287.293" stroke="black" stroke-width="2"/>
+</g>
+<mask id="mask6_12_323" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="205" y="270" width="65" height="65">
+<rect x="270" y="270" width="65" height="65" transform="rotate(90 270 270)" fill="white"/>
+</mask>
+<g mask="url(#mask6_12_323)">
+<line x1="285.121" y1="312.121" x2="246.121" y2="351.121" stroke="black" stroke-width="6"/>
+<line x1="279.121" y1="304.121" x2="239.121" y2="344.121" stroke="black" stroke-width="6"/>
+<line x1="273.121" y1="296.121" x2="224.121" y2="345.121" stroke="black" stroke-width="6"/>
+<line x1="273.121" y1="282.121" x2="209.121" y2="346.121" stroke="black" stroke-width="6"/>
+<line x1="274.121" y1="267.121" x2="201.121" y2="340.121" stroke="black" stroke-width="6"/>
+<line x1="262.121" y1="265.121" x2="198.121" y2="329.121" stroke="black" stroke-width="6"/>
+<line x1="245.121" y1="268.121" x2="199.121" y2="314.121" stroke="black" stroke-width="6"/>
+<line x1="239.121" y1="260.121" x2="199.121" y2="300.121" stroke="black" stroke-width="6"/>
+<line x1="232.121" y1="253.121" x2="193.121" y2="292.121" stroke="black" stroke-width="6"/>
+</g>
+<rect x="26.5" y="206.5" width="127" height="127" stroke="black" stroke-width="3"/>
+<mask id="mask7_12_323" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="25" y="270" width="65" height="65">
+<rect x="90" y="270" width="65" height="65" transform="rotate(90 90 270)" fill="white"/>
+</mask>
+<g mask="url(#mask7_12_323)">
+<line x1="105.121" y1="312.121" x2="66.1213" y2="351.121" stroke="black" stroke-width="6"/>
+<line x1="99.1213" y1="304.121" x2="59.1213" y2="344.121" stroke="black" stroke-width="6"/>
+<line x1="93.1213" y1="296.121" x2="44.1213" y2="345.121" stroke="black" stroke-width="6"/>
+<line x1="93.1213" y1="282.121" x2="29.1213" y2="346.121" stroke="black" stroke-width="6"/>
+<line x1="94.1213" y1="267.121" x2="21.1213" y2="340.121" stroke="black" stroke-width="6"/>
+<line x1="82.1213" y1="265.121" x2="18.1213" y2="329.121" stroke="black" stroke-width="6"/>
+<line x1="65.1213" y1="268.121" x2="19.1213" y2="314.121" stroke="black" stroke-width="6"/>
+<line x1="59.1213" y1="260.121" x2="19.1213" y2="300.121" stroke="black" stroke-width="6"/>
+<line x1="52.1213" y1="253.121" x2="13.1213" y2="292.121" stroke="black" stroke-width="6"/>
+</g>
+<rect x="26.5" y="387.5" width="127" height="127" stroke="black" stroke-width="3"/>
+<path d="M40.3319 384.67L44.5688 388.932L36 397.45L31.7631 393.188L40.3319 384.67Z" fill="black"/>
+<path d="M56.0688 383L60.3057 387.262L51.7369 395.78L47.5 391.518L56.0688 383Z" fill="black"/>
+<path d="M69.0688 384L73.3057 388.263L64.7369 396.78L60.5 392.518L69.0688 384Z" fill="black"/>
+<path d="M83.7631 383.238L88 387.5L79.4312 396.018L75.1943 391.755L83.7631 383.238Z" fill="black"/>
+<path d="M97.3319 383.72L101.569 387.982L93 396.5L88.7631 392.238L97.3319 383.72Z" fill="black"/>
+<mask id="mask8_12_323" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="25" y="450" width="65" height="65">
+<rect x="90" y="450" width="65" height="65" transform="rotate(90 90 450)" fill="white"/>
+</mask>
+<g mask="url(#mask8_12_323)">
+<line x1="105.121" y1="492.121" x2="66.1213" y2="531.121" stroke="black" stroke-width="6"/>
+<line x1="99.1213" y1="484.121" x2="59.1213" y2="524.121" stroke="black" stroke-width="6"/>
+<line x1="93.1213" y1="476.121" x2="44.1213" y2="525.121" stroke="black" stroke-width="6"/>
+<line x1="93.1213" y1="462.121" x2="29.1213" y2="526.121" stroke="black" stroke-width="6"/>
+<line x1="94.1213" y1="447.121" x2="21.1213" y2="520.121" stroke="black" stroke-width="6"/>
+<line x1="82.1213" y1="445.121" x2="18.1213" y2="509.121" stroke="black" stroke-width="6"/>
+<line x1="65.1213" y1="448.121" x2="19.1213" y2="494.121" stroke="black" stroke-width="6"/>
+<line x1="59.1213" y1="440.121" x2="19.1213" y2="480.121" stroke="black" stroke-width="6"/>
+<line x1="52.1213" y1="433.121" x2="13.1213" y2="472.121" stroke="black" stroke-width="6"/>
+</g>
+<mask id="mask9_12_323" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="29" y="390" width="65" height="65">
+<rect x="94" y="390" width="65" height="65" transform="rotate(90 94 390)" fill="white"/>
+</mask>
+<g mask="url(#mask9_12_323)">
+<line x1="109.121" y1="432.121" x2="70.1213" y2="471.121" stroke="black" stroke-width="6"/>
+<line x1="103.121" y1="424.121" x2="63.1213" y2="464.121" stroke="black" stroke-width="6"/>
+<line x1="97.1213" y1="416.121" x2="48.1213" y2="465.121" stroke="black" stroke-width="6"/>
+<line x1="97.1213" y1="402.121" x2="33.1213" y2="466.121" stroke="black" stroke-width="6"/>
+<line x1="98.1213" y1="387.121" x2="25.1213" y2="460.121" stroke="black" stroke-width="6"/>
+<line x1="86.1213" y1="385.121" x2="22.1213" y2="449.121" stroke="black" stroke-width="6"/>
+<line x1="69.1213" y1="388.121" x2="23.1213" y2="434.121" stroke="black" stroke-width="6"/>
+<line x1="63.1213" y1="380.121" x2="23.1213" y2="420.121" stroke="black" stroke-width="6"/>
+<line x1="56.1213" y1="373.121" x2="17.1213" y2="412.121" stroke="black" stroke-width="6"/>
+</g>
+<mask id="mask10_12_323" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="386" y="270" width="65" height="65">
+<rect x="451" y="270" width="65" height="65" transform="rotate(90 451 270)" fill="white"/>
+</mask>
+<g mask="url(#mask10_12_323)">
+<line x1="466.121" y1="312.121" x2="427.121" y2="351.121" stroke="black" stroke-width="6"/>
+<line x1="460.121" y1="304.121" x2="420.121" y2="344.121" stroke="black" stroke-width="6"/>
+<line x1="454.121" y1="296.121" x2="405.121" y2="345.121" stroke="black" stroke-width="6"/>
+<line x1="454.121" y1="282.121" x2="390.121" y2="346.121" stroke="black" stroke-width="6"/>
+<line x1="455.121" y1="267.121" x2="382.121" y2="340.121" stroke="black" stroke-width="6"/>
+<line x1="443.121" y1="265.121" x2="379.121" y2="329.121" stroke="black" stroke-width="6"/>
+<line x1="426.121" y1="268.121" x2="380.121" y2="314.121" stroke="black" stroke-width="6"/>
+<line x1="420.121" y1="260.121" x2="380.121" y2="300.121" stroke="black" stroke-width="6"/>
+<line x1="413.121" y1="253.121" x2="374.121" y2="292.121" stroke="black" stroke-width="6"/>
+</g>
+<rect x="31.5407" y="435.473" width="6.00992" height="12.082" transform="rotate(45.1714 31.5407 435.473)" fill="black"/>
+<path d="M29.7645 423.238L34.0014 427.5L25.4326 436.018L21.1957 431.755L29.7645 423.238Z" fill="black"/>
+<path d="M29.7631 409.238L34 413.5L25.4312 422.018L21.1943 417.755L29.7631 409.238Z" fill="black"/>
+<path d="M30.7631 394.238L35 398.5L26.4312 407.018L22.1943 402.755L30.7631 394.238Z" fill="black"/>
+<path d="M29.7631 409.238L34 413.5L25.4312 422.018L21.1943 417.755L29.7631 409.238Z" fill="black"/>
+<path d="M215.572 409.238L219.809 413.5L211.24 422.018L207.003 417.756L215.572 409.238Z" fill="black"/>
+<rect x="212.309" y="387.5" width="127" height="127" stroke="black" stroke-width="3"/>
+<path d="M226.14 384.67L230.377 388.933L221.809 397.45L217.572 393.188L226.14 384.67Z" fill="black"/>
+<path d="M241.877 383L246.114 387.263L237.546 395.78L233.309 391.518L241.877 383Z" fill="black"/>
+<path d="M254.877 384L259.114 388.263L250.546 396.78L246.309 392.518L254.877 384Z" fill="black"/>
+<path d="M269.572 383.238L273.809 387.5L265.24 396.018L261.003 391.756L269.572 383.238Z" fill="black"/>
+<path d="M283.14 383.72L287.377 387.983L278.809 396.5L274.572 392.238L283.14 383.72Z" fill="black"/>
+<mask id="mask11_12_323" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="210" y="450" width="66" height="66">
+<rect x="275.809" y="450" width="65" height="65" transform="rotate(90 275.809 450)" fill="white"/>
+</mask>
+<g mask="url(#mask11_12_323)">
+<line x1="290.93" y1="492.122" x2="251.93" y2="531.122" stroke="black" stroke-width="6"/>
+<line x1="284.93" y1="484.122" x2="244.93" y2="524.122" stroke="black" stroke-width="6"/>
+<line x1="278.93" y1="476.122" x2="229.93" y2="525.122" stroke="black" stroke-width="6"/>
+<line x1="278.93" y1="462.122" x2="214.93" y2="526.122" stroke="black" stroke-width="6"/>
+<line x1="279.93" y1="447.122" x2="206.93" y2="520.122" stroke="black" stroke-width="6"/>
+<line x1="267.93" y1="445.122" x2="203.93" y2="509.122" stroke="black" stroke-width="6"/>
+<line x1="250.93" y1="448.122" x2="204.93" y2="494.122" stroke="black" stroke-width="6"/>
+<line x1="244.93" y1="440.122" x2="204.93" y2="480.122" stroke="black" stroke-width="6"/>
+<line x1="237.93" y1="433.122" x2="198.93" y2="472.122" stroke="black" stroke-width="6"/>
+</g>
+<mask id="mask12_12_323" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="214" y="390" width="66" height="66">
+<rect x="279.809" y="390" width="65" height="65" transform="rotate(90 279.809 390)" fill="white"/>
+</mask>
+<g mask="url(#mask12_12_323)">
+<line x1="294.93" y1="432.122" x2="255.93" y2="471.122" stroke="black" stroke-width="6"/>
+<line x1="288.93" y1="424.122" x2="248.93" y2="464.122" stroke="black" stroke-width="6"/>
+<line x1="282.93" y1="416.122" x2="233.93" y2="465.122" stroke="black" stroke-width="6"/>
+<line x1="282.93" y1="402.122" x2="218.93" y2="466.122" stroke="black" stroke-width="6"/>
+<line x1="283.93" y1="387.122" x2="210.93" y2="460.122" stroke="black" stroke-width="6"/>
+<line x1="271.93" y1="385.122" x2="207.93" y2="449.122" stroke="black" stroke-width="6"/>
+<line x1="254.93" y1="388.122" x2="208.93" y2="434.122" stroke="black" stroke-width="6"/>
+<line x1="248.93" y1="380.122" x2="208.93" y2="420.122" stroke="black" stroke-width="6"/>
+<line x1="241.93" y1="373.122" x2="202.93" y2="412.122" stroke="black" stroke-width="6"/>
+</g>
+<rect x="275" y="389" width="35" height="69" fill="white"/>
+<rect x="217.349" y="435.473" width="6.00992" height="12.082" transform="rotate(45.1714 217.349 435.473)" fill="black"/>
+<path d="M215.573 423.238L219.81 427.5L211.241 436.018L207.004 431.756L215.573 423.238Z" fill="black"/>
+<path d="M215.572 409.238L219.809 413.5L211.24 422.018L207.003 417.756L215.572 409.238Z" fill="black"/>
+<path d="M216.572 394.238L220.809 398.5L212.24 407.018L208.003 402.755L216.572 394.238Z" fill="black"/>
+<path d="M215.572 409.238L219.809 413.5L211.24 422.018L207.003 417.756L215.572 409.238Z" fill="black"/>
+<rect x="212" y="373" width="75" height="13" fill="white"/>
+<rect x="212" y="373" width="75" height="13" fill="white"/>
+<rect x="25" y="373" width="75" height="13" fill="white"/>
+<rect x="25" y="373" width="75" height="13" fill="white"/>
+<mask id="mask13_12_323" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="275" y="389" width="65" height="65">
+<rect x="275" y="389" width="65" height="65" fill="white"/>
+</mask>
+<g mask="url(#mask13_12_323)">
+<line x1="320.707" y1="373.293" x2="357.707" y2="410.293" stroke="black" stroke-width="2"/>
+<line x1="315.707" y1="375.293" x2="354.707" y2="414.293" stroke="black" stroke-width="2"/>
+<line x1="311.707" y1="378.293" x2="351.707" y2="418.293" stroke="black" stroke-width="2"/>
+<line x1="307.707" y1="381.293" x2="347.707" y2="421.293" stroke="black" stroke-width="2"/>
+<line x1="304.707" y1="385.293" x2="341.707" y2="422.293" stroke="black" stroke-width="2"/>
+<line x1="299.707" y1="387.293" x2="348.707" y2="436.293" stroke="black" stroke-width="2"/>
+<line x1="291.707" y1="386.293" x2="347.707" y2="442.293" stroke="black" stroke-width="2"/>
+<line x1="285.707" y1="387.293" x2="349.707" y2="451.293" stroke="black" stroke-width="2"/>
+<line x1="278.707" y1="387.293" x2="346.707" y2="455.293" stroke="black" stroke-width="2"/>
+<line x1="270.707" y1="386.293" x2="343.707" y2="459.293" stroke="black" stroke-width="2"/>
+<line x1="272.707" y1="395.293" x2="337.707" y2="460.293" stroke="black" stroke-width="2"/>
+<line x1="268.707" y1="398.293" x2="332.707" y2="462.293" stroke="black" stroke-width="2"/>
+<line x1="270.707" y1="407.293" x2="326.707" y2="463.293" stroke="black" stroke-width="2"/>
+<line x1="271.707" y1="415.293" x2="317.707" y2="461.293" stroke="black" stroke-width="2"/>
+<line x1="267.707" y1="418.293" x2="307.707" y2="458.293" stroke="black" stroke-width="2"/>
+<line x1="263.707" y1="421.293" x2="303.707" y2="461.293" stroke="black" stroke-width="2"/>
+<line x1="261.707" y1="426.293" x2="298.707" y2="463.293" stroke="black" stroke-width="2"/>
+<line x1="256.707" y1="428.293" x2="295.707" y2="467.293" stroke="black" stroke-width="2"/>
+<line x1="252.707" y1="431.293" x2="292.707" y2="471.293" stroke="black" stroke-width="2"/>
+</g>
+<rect x="13" y="393" width="12" height="55" fill="white"/>
+<rect x="13" y="393" width="12" height="55" fill="white"/>
+<rect x="13" y="393" width="12" height="55" fill="white"/>
+<rect x="90" y="389" width="12" height="74" fill="white"/>
+<rect x="90" y="389" width="12" height="74" fill="white"/>
+<rect x="90" y="389" width="12" height="74" fill="white"/>
+<rect x="199" y="397" width="12" height="55" fill="white"/>
+<rect x="199" y="397" width="12" height="55" fill="white"/>
+<rect x="199" y="397" width="12" height="55" fill="white"/>
+</g>
+<defs>
+<clipPath id="clip0_12_323">
+<rect width="540" height="540" fill="white"/>
+</clipPath>
+</defs>
+</svg>

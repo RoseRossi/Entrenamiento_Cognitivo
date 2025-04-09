@@ -1,0 +1,25 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_26_6)">
+<rect x="0.1" y="0.1" width="179.8" height="179.8" fill="white" stroke="#CBCBCB" stroke-width="0.2"/>
+<mask id="mask0_26_6" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="6" y="17" width="159" height="158">
+<path d="M161.391 20.5379L161.38 19.5546L160.396 19.5496L11.2449 18.7845L8.80175 18.772L10.535 20.494L161.429 170.402L163.163 172.124L163.134 169.681L161.391 20.5379Z" fill="white" stroke="black" stroke-width="2"/>
+</mask>
+<g mask="url(#mask0_26_6)">
+<line x1="15.0278" y1="25.0001" x2="159.028" y2="26.0001" stroke="black" stroke-width="8"/>
+<line x1="15.0278" y1="40.0001" x2="159.028" y2="41.0001" stroke="black" stroke-width="8"/>
+<line x1="15.0278" y1="55.0001" x2="159.028" y2="56.0001" stroke="black" stroke-width="8"/>
+<line x1="15.0278" y1="70.0001" x2="159.028" y2="71.0001" stroke="black" stroke-width="8"/>
+<line x1="16.0278" y1="85.0001" x2="160.028" y2="86.0001" stroke="black" stroke-width="8"/>
+<line x1="16.0278" y1="100" x2="160.028" y2="101" stroke="black" stroke-width="8"/>
+<line x1="17.0278" y1="115" x2="161.028" y2="116" stroke="black" stroke-width="8"/>
+<line x1="17.0278" y1="130" x2="161.028" y2="131" stroke="black" stroke-width="8"/>
+<line x1="17.0278" y1="145" x2="161.028" y2="146" stroke="black" stroke-width="8"/>
+<line x1="18.0278" y1="160" x2="162.028" y2="161" stroke="black" stroke-width="8"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_26_6">
+<rect width="180" height="180" fill="white"/>
+</clipPath>
+</defs>
+</svg>
