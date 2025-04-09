@@ -21,7 +21,7 @@ const Juego2 = () => {
     } else {
       const inicio3x3 = patrones.findIndex(p => p.nivel === 1);
       const posicionAbsoluta = indiceActual - inicio3x3;
-      const nuevoNivel = Math.floor(posicionAbsoluta / 5) + 1;
+      const nuevoNivel = Math.floor(posicionAbsoluta / 3) + 1;
       setNivel(nuevoNivel);
     }
   }, [indiceActual, patronActual]);

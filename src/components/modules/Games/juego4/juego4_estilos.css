@@ -1,0 +1,251 @@
+.juego-container {
+  font-family: 'Arial', sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Pantallas final */
+.pantalla-final {
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.pantalla-final button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 20px;
+}
+
+.pantalla-final button:hover {
+  background-color: #45a049;
+}
+
+/* Pantalla de finalización completa */
+.pantalla-final-completo {
+  background-color: #f8f9fa;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.pantalla-final-completo h1 {
+  color: #28a745;
+  margin-bottom: 20px;
+}
+
+
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-15px); }
+}
+
+.estadisticas {
+  background-color: #e9ecef;
+  padding: 15px;
+  border-radius: 10px;
+  margin: 20px 0;
+}
+
+.estadisticas p {
+  margin: 8px 0;
+  font-size: 1.1rem;
+}
+
+.boton-reiniciar {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  font-size: 1.1rem;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 20px;
+}
+
+.boton-reiniciar:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+}
+
+/* Información del juego */
+.info-juego {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+/* Contenedor de balanzas */
+.balanzas-container {
+  margin-bottom: 30px;
+}
+
+.balanza {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.balanza.problema {
+  background-color: #e3f2fd;
+  border: 2px dashed #2196F3;
+}
+
+/* Lados de la balanza */
+.lado-izquierdo, .lado-derecho {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  min-height: 60px;
+  padding: 10px;
+}
+
+.separador {
+  margin: 0 20px;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Grupos de figuras */
+.grupo-figuras {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 10px;
+}
+
+.contador-figuras {
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+.contenedor-figuras {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+  max-width: 120px;
+}
+
+/* Figuras individuales */
+.figura-individual {
+  flex-shrink: 0;
+}
+
+.figura-individual.triangulo {
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 20px solid #FF5722;
+}
+
+.figura-individual.cuadrado {
+  width: 20px;
+  height: 20px;
+  background-color: #4CAF50;
+}
+
+.figura-individual.circulo {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #2196F3;
+}
+
+.interrogante {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Opciones de respuesta */
+.opciones-container {
+  margin-top: 30px;
+}
+
+.opciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.opcion {
+  background-color: white;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 80px;
+}
+
+.opcion:hover {
+  border-color: #2196F3;
+  transform: scale(1.05);
+}
+
+.opcion .contenedor-figuras {
+  margin-top: 5px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .lado-izquierdo, .lado-derecho {
+    gap: 5px;
+  }
+
+  .opcion {
+    min-width: 60px;
+    padding: 10px;
+  }
+
+  .figura-individual.triangulo {
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 20px solid #FF5722;
+  }
+
+  .figura-individual.cuadrado, 
+  .figura-individual.circulo {
+    width: 15px;
+    height: 15px;
+  }
+
+  .separador {
+    margin: 0 10px;
+    font-size: 18px;
+  }
+
+  .info-juego {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

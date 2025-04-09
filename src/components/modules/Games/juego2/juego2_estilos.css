@@ -114,6 +114,7 @@
 }
 
 .titulo-final {
+  color: #28a745;
   font-size: 2rem;
   margin-bottom: 10px;
 }
@@ -131,7 +132,7 @@
 
 /* Estilos del botón */
 .boton-reiniciar {
-  background: grey;
+  background-color: #007bff;  
   color: white;
   padding: 12px 24px;
   font-size: 1.1rem;

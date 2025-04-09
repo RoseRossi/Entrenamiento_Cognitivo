@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Dashboard from "./components/modules/Dashboard/Dashboard";
 import Juego2 from "./components/modules/Games/juego2/Juego2";
 import Juego1 from "./components/modules/Games/juego1/Juego1";
+import Juego4 from "./components/modules/Games/juego4/Juego4";
 function App() {
   return (
     <Router>
@@ -16,6 +17,9 @@ function App() {
 
           {/* Página del juego 2 */}
           <Route path="/juego/2" element={<Juego2 />} />
+
+          {/* Página del juego 4 */}
+          <Route path="/juego/4" element={<Juego4 />} />
 
           {/* Página para juegos no disponibles */}
           <Route
