@@ -1,0 +1,7 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="0.1" y="0.1" width="179.8" height="179.8" fill="white" stroke="#CBCBCB" stroke-width="0.2"/>
+<line x1="147" y1="62" x2="32" y2="62" stroke="black" stroke-width="4"/>
+<line x1="147" y1="122" x2="32" y2="122" stroke="black" stroke-width="4"/>
+<line x1="147" y1="92" x2="32" y2="92" stroke="black" stroke-width="4"/>
+<path d="M107.5 148L107.5 33.0001M68 148L68 33" stroke="black" stroke-width="4"/>
+</svg>

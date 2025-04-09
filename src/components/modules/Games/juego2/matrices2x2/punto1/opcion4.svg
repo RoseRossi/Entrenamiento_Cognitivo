@@ -1,0 +1,18 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="0.1" y="0.1" width="179.8" height="179.8" fill="white" stroke="#CBCBCB" stroke-width="0.2"/>
+<mask id="mask0_21_824" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="14" y="16" width="159" height="158">
+<path d="M17.1189 19.5379L17.1304 18.5546L18.1137 18.5496L167.265 17.7845L169.708 17.772L167.975 19.494L17.0808 169.402L15.3475 171.124L15.3761 168.681L17.1189 19.5379Z" fill="white" stroke="black" stroke-width="2"/>
+</mask>
+<g mask="url(#mask0_21_824)">
+<line y1="-4" x2="144.003" y2="-4" transform="matrix(-0.999976 0.00694428 0.00694428 0.999976 163.51 28)" stroke="black" stroke-width="8"/>
+<line y1="-4" x2="144.003" y2="-4" transform="matrix(-0.999976 0.00694428 0.00694428 0.999976 163.51 43)" stroke="black" stroke-width="8"/>
+<line y1="-4" x2="144.003" y2="-4" transform="matrix(-0.999976 0.00694428 0.00694428 0.999976 163.51 58)" stroke="black" stroke-width="8"/>
+<line y1="-4" x2="144.003" y2="-4" transform="matrix(-0.999976 0.00694428 0.00694428 0.999976 163.51 73)" stroke="black" stroke-width="8"/>
+<line y1="-4" x2="144.003" y2="-4" transform="matrix(-0.999976 0.00694428 0.00694428 0.999976 162.51 88)" stroke="black" stroke-width="8"/>
+<line y1="-4" x2="144.003" y2="-4" transform="matrix(-0.999976 0.00694428 0.00694428 0.999976 162.51 103)" stroke="black" stroke-width="8"/>
+<line y1="-4" x2="144.003" y2="-4" transform="matrix(-0.999976 0.00694428 0.00694428 0.999976 161.51 118)" stroke="black" stroke-width="8"/>
+<line y1="-4" x2="144.003" y2="-4" transform="matrix(-0.999976 0.00694428 0.00694428 0.999976 161.51 133)" stroke="black" stroke-width="8"/>
+<line y1="-4" x2="144.003" y2="-4" transform="matrix(-0.999976 0.00694428 0.00694428 0.999976 161.51 148)" stroke="black" stroke-width="8"/>
+<line y1="-4" x2="144.003" y2="-4" transform="matrix(-0.999976 0.00694428 0.00694428 0.999976 160.51 163)" stroke="black" stroke-width="8"/>
+</g>
+</svg>

@@ -1,0 +1,98 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="0.1" y="0.1" width="179.8" height="179.8" fill="white" stroke="#CBCBCB" stroke-width="0.2"/>
+<path d="M131.762 29.5718L127.5 33.8087L118.982 25.2399L123.244 21.003L131.762 29.5718Z" fill="black"/>
+<rect x="153.5" y="26.3086" width="127" height="127" transform="rotate(90 153.5 26.3086)" stroke="black" stroke-width="3"/>
+<path d="M156.33 40.1404L152.067 44.3773L143.55 35.8085L147.812 31.5716L156.33 40.1404Z" fill="black"/>
+<path d="M158 55.8774L153.737 60.1144L145.22 51.5456L149.482 47.3087L158 55.8774Z" fill="black"/>
+<path d="M157 68.8774L152.737 73.1144L144.22 64.5456L148.482 60.3087L157 68.8774Z" fill="black"/>
+<path d="M157.762 83.5718L153.5 87.8087L144.982 79.2399L149.244 75.003L157.762 83.5718Z" fill="black"/>
+<path d="M157.28 97.1404L153.017 101.377L144.5 92.8085L148.762 88.5716L157.28 97.1404Z" fill="black"/>
+<mask id="mask0_0_1" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="25" y="24" width="66" height="66">
+<rect x="90.9998" y="89.8086" width="65" height="65" transform="rotate(180 90.9998 89.8086)" fill="white"/>
+</mask>
+<g mask="url(#mask0_0_1)">
+<line x1="48.8784" y1="104.93" x2="9.87843" y2="65.9299" stroke="black" stroke-width="6"/>
+<line x1="56.8784" y1="98.9299" x2="16.8784" y2="58.9299" stroke="black" stroke-width="6"/>
+<line x1="64.8784" y1="92.9299" x2="15.8784" y2="43.9299" stroke="black" stroke-width="6"/>
+<line x1="78.8784" y1="92.9299" x2="14.8784" y2="28.9299" stroke="black" stroke-width="6"/>
+<line x1="93.8784" y1="93.9299" x2="20.8784" y2="20.9299" stroke="black" stroke-width="6"/>
+<line x1="95.8784" y1="81.9299" x2="31.8784" y2="17.9299" stroke="black" stroke-width="6"/>
+<line x1="92.8784" y1="64.9299" x2="46.8784" y2="18.9299" stroke="black" stroke-width="6"/>
+<line x1="100.878" y1="58.9299" x2="60.8784" y2="18.9299" stroke="black" stroke-width="6"/>
+<line x1="107.878" y1="51.9299" x2="68.8784" y2="12.9299" stroke="black" stroke-width="6"/>
+</g>
+<mask id="mask1_0_1" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="85" y="28" width="66" height="66">
+<rect x="151" y="93.8086" width="65" height="65" transform="rotate(180 151 93.8086)" fill="white"/>
+</mask>
+<g mask="url(#mask1_0_1)">
+<line x1="108.878" y1="108.93" x2="69.8784" y2="69.9299" stroke="black" stroke-width="6"/>
+<line x1="116.878" y1="102.93" x2="76.8784" y2="62.9299" stroke="black" stroke-width="6"/>
+<line x1="124.878" y1="96.9299" x2="75.8784" y2="47.9299" stroke="black" stroke-width="6"/>
+<line x1="138.878" y1="96.9299" x2="74.8784" y2="32.9299" stroke="black" stroke-width="6"/>
+<line x1="153.878" y1="97.9299" x2="80.8784" y2="24.9299" stroke="black" stroke-width="6"/>
+<line x1="155.878" y1="85.9299" x2="91.8784" y2="21.9299" stroke="black" stroke-width="6"/>
+<line x1="152.878" y1="68.9299" x2="106.878" y2="22.9299" stroke="black" stroke-width="6"/>
+<line x1="160.878" y1="62.9299" x2="120.878" y2="22.9299" stroke="black" stroke-width="6"/>
+<line x1="167.878" y1="55.9299" x2="128.878" y2="16.9299" stroke="black" stroke-width="6"/>
+</g>
+<rect x="152" y="89" width="35" height="69" transform="rotate(90 152 89)" fill="white"/>
+<rect x="105.527" y="31.3494" width="6.00992" height="12.082" transform="rotate(135.171 105.527 31.3494)" fill="black"/>
+<path d="M117.762 29.573L113.5 33.8099L104.982 25.2411L109.244 21.0042L117.762 29.573Z" fill="black"/>
+<path d="M131.762 29.5718L127.5 33.8087L118.982 25.2399L123.244 21.003L131.762 29.5718Z" fill="black"/>
+<path d="M146.762 30.5718L142.5 34.8087L133.982 26.2399L138.245 22.003L146.762 30.5718Z" fill="black"/>
+<path d="M131.762 29.5718L127.5 33.8087L118.982 25.2399L123.244 21.003L131.762 29.5718Z" fill="black"/>
+<rect x="168" y="26" width="75" height="13" transform="rotate(90 168 26)" fill="white"/>
+<rect x="168" y="26" width="75" height="13" transform="rotate(90 168 26)" fill="white"/>
+<mask id="mask2_0_1" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="87" y="89" width="65" height="65">
+<rect x="152" y="89" width="65" height="65" transform="rotate(90 152 89)" fill="white"/>
+</mask>
+<g mask="url(#mask2_0_1)">
+<line x1="167.707" y1="134.707" x2="130.707" y2="171.707" stroke="black" stroke-width="2"/>
+<line x1="165.707" y1="129.707" x2="126.707" y2="168.707" stroke="black" stroke-width="2"/>
+<line x1="162.707" y1="125.707" x2="122.707" y2="165.707" stroke="black" stroke-width="2"/>
+<line x1="159.707" y1="121.707" x2="119.707" y2="161.707" stroke="black" stroke-width="2"/>
+<line x1="155.707" y1="118.707" x2="118.707" y2="155.707" stroke="black" stroke-width="2"/>
+<line x1="153.707" y1="113.707" x2="104.707" y2="162.707" stroke="black" stroke-width="2"/>
+<line x1="154.707" y1="105.707" x2="98.7071" y2="161.707" stroke="black" stroke-width="2"/>
+<line x1="153.707" y1="99.7071" x2="89.7071" y2="163.707" stroke="black" stroke-width="2"/>
+<line x1="153.707" y1="92.7071" x2="85.7071" y2="160.707" stroke="black" stroke-width="2"/>
+<line x1="154.707" y1="84.7071" x2="81.7071" y2="157.707" stroke="black" stroke-width="2"/>
+<line x1="145.707" y1="86.7071" x2="80.7071" y2="151.707" stroke="black" stroke-width="2"/>
+<line x1="142.707" y1="82.7071" x2="78.7071" y2="146.707" stroke="black" stroke-width="2"/>
+<line x1="133.707" y1="84.7071" x2="77.7071" y2="140.707" stroke="black" stroke-width="2"/>
+<line x1="125.707" y1="85.7071" x2="79.7071" y2="131.707" stroke="black" stroke-width="2"/>
+<line x1="122.707" y1="81.7071" x2="82.7071" y2="121.707" stroke="black" stroke-width="2"/>
+<line x1="119.707" y1="77.7071" x2="79.7071" y2="117.707" stroke="black" stroke-width="2"/>
+<line x1="114.707" y1="75.7071" x2="77.7071" y2="112.707" stroke="black" stroke-width="2"/>
+<line x1="112.707" y1="70.7071" x2="73.7071" y2="109.707" stroke="black" stroke-width="2"/>
+<line x1="109.707" y1="66.7071" x2="69.7071" y2="106.707" stroke="black" stroke-width="2"/>
+</g>
+<mask id="mask3_0_1" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="24" y="89" width="65" height="65">
+<rect x="89" y="89" width="65" height="65" transform="rotate(90 89 89)" fill="white"/>
+</mask>
+<g mask="url(#mask3_0_1)">
+<line x1="104.707" y1="134.707" x2="67.7071" y2="171.707" stroke="black" stroke-width="2"/>
+<line x1="102.707" y1="129.707" x2="63.7071" y2="168.707" stroke="black" stroke-width="2"/>
+<line x1="99.7071" y1="125.707" x2="59.7071" y2="165.707" stroke="black" stroke-width="2"/>
+<line x1="96.7071" y1="121.707" x2="56.7071" y2="161.707" stroke="black" stroke-width="2"/>
+<line x1="92.7071" y1="118.707" x2="55.7071" y2="155.707" stroke="black" stroke-width="2"/>
+<line x1="90.7071" y1="113.707" x2="41.7071" y2="162.707" stroke="black" stroke-width="2"/>
+<line x1="91.7071" y1="105.707" x2="35.7071" y2="161.707" stroke="black" stroke-width="2"/>
+<line x1="90.7071" y1="99.7071" x2="26.7071" y2="163.707" stroke="black" stroke-width="2"/>
+<line x1="90.7071" y1="92.7071" x2="22.7071" y2="160.707" stroke="black" stroke-width="2"/>
+<line x1="91.7071" y1="84.7071" x2="18.7071" y2="157.707" stroke="black" stroke-width="2"/>
+<line x1="82.7071" y1="86.7071" x2="17.7071" y2="151.707" stroke="black" stroke-width="2"/>
+<line x1="79.7071" y1="82.7071" x2="15.7071" y2="146.707" stroke="black" stroke-width="2"/>
+<line x1="70.7071" y1="84.7071" x2="14.7071" y2="140.707" stroke="black" stroke-width="2"/>
+<line x1="62.7071" y1="85.7071" x2="16.7071" y2="131.707" stroke="black" stroke-width="2"/>
+<line x1="59.7071" y1="81.7071" x2="19.7071" y2="121.707" stroke="black" stroke-width="2"/>
+<line x1="56.7071" y1="77.7071" x2="16.7071" y2="117.707" stroke="black" stroke-width="2"/>
+<line x1="51.7071" y1="75.7071" x2="14.7071" y2="112.707" stroke="black" stroke-width="2"/>
+<line x1="49.7071" y1="70.7071" x2="10.7071" y2="109.707" stroke="black" stroke-width="2"/>
+<line x1="46.7071" y1="66.7071" x2="6.70711" y2="106.707" stroke="black" stroke-width="2"/>
+</g>
+<rect x="144" y="13" width="12" height="55" transform="rotate(90 144 13)" fill="white"/>
+<rect x="144" y="13" width="12" height="55" transform="rotate(90 144 13)" fill="white"/>
+<rect x="144" y="13" width="12" height="55" transform="rotate(90 144 13)" fill="white"/>
+<rect x="25" y="84" width="72" height="12" transform="rotate(90 25 84)" fill="white"/>
+</svg>

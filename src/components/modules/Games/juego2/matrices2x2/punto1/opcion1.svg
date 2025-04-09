@@ -1,0 +1,25 @@
+<svg width="176" height="179" viewBox="0 0 176 179" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_24_2)">
+<rect x="-3.4101" y="-0.917944" width="179.8" height="179.8" fill="white" stroke="#CBCBCB" stroke-width="0.2"/>
+<mask id="mask0_24_2" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="1" y="8" width="159" height="158">
+<path d="M156.881 162.462L156.87 163.445L155.886 163.45L6.73484 164.215L4.29166 164.228L6.02492 162.506L156.919 12.5978L158.652 10.8758L158.624 13.3189L156.881 162.462Z" fill="white" stroke="black" stroke-width="2"/>
+</mask>
+<g mask="url(#mask0_24_2)">
+<line y1="-4" x2="144.003" y2="-4" transform="matrix(0.999976 -0.00694428 -0.00694428 -0.999976 10.4899 154)" stroke="black" stroke-width="8"/>
+<line y1="-4" x2="144.003" y2="-4" transform="matrix(0.999976 -0.00694428 -0.00694428 -0.999976 10.4899 139)" stroke="black" stroke-width="8"/>
+<line y1="-4" x2="144.003" y2="-4" transform="matrix(0.999976 -0.00694428 -0.00694428 -0.999976 10.4899 124)" stroke="black" stroke-width="8"/>
+<line y1="-4" x2="144.003" y2="-4" transform="matrix(0.999976 -0.00694428 -0.00694428 -0.999976 10.4899 109)" stroke="black" stroke-width="8"/>
+<line y1="-4" x2="144.003" y2="-4" transform="matrix(0.999976 -0.00694428 -0.00694428 -0.999976 11.4899 94)" stroke="black" stroke-width="8"/>
+<line y1="-4" x2="144.003" y2="-4" transform="matrix(0.999976 -0.00694428 -0.00694428 -0.999976 11.4899 79)" stroke="black" stroke-width="8"/>
+<line y1="-4" x2="144.003" y2="-4" transform="matrix(0.999976 -0.00694428 -0.00694428 -0.999976 12.4899 64)" stroke="black" stroke-width="8"/>
+<line y1="-4" x2="144.003" y2="-4" transform="matrix(0.999976 -0.00694428 -0.00694428 -0.999976 12.4899 49)" stroke="black" stroke-width="8"/>
+<line y1="-4" x2="144.003" y2="-4" transform="matrix(0.999976 -0.00694428 -0.00694428 -0.999976 12.4899 34)" stroke="black" stroke-width="8"/>
+<line y1="-4" x2="144.003" y2="-4" transform="matrix(0.999976 -0.00694428 -0.00694428 -0.999976 13.4899 19)" stroke="black" stroke-width="8"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_24_2">
+<rect width="176" height="179" fill="white"/>
+</clipPath>
+</defs>
+</svg>

@@ -1,0 +1,36 @@
+<svg width="540" height="540" viewBox="0 0 540 540" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_12_201)">
+<rect width="540" height="540" fill="white"/>
+<rect x="0.1" y="0.1" width="179.8" height="179.8" fill="white" stroke="#8B8B8B" stroke-width="0.2"/>
+<rect x="180.1" y="0.1" width="179.8" height="179.8" fill="white" stroke="#8B8B8B" stroke-width="0.2"/>
+<rect x="360.1" y="0.1" width="179.8" height="179.8" fill="white" stroke="#8B8B8B" stroke-width="0.2"/>
+<rect x="0.1" y="180.1" width="179.8" height="179.8" fill="white" stroke="#8B8B8B" stroke-width="0.2"/>
+<rect x="180.1" y="180.1" width="179.8" height="179.8" fill="white" stroke="#8B8B8B" stroke-width="0.2"/>
+<rect x="360.1" y="180.1" width="179.8" height="179.8" fill="white" stroke="#8B8B8B" stroke-width="0.2"/>
+<rect x="0.1" y="360.1" width="179.8" height="179.8" fill="white" stroke="#8B8B8B" stroke-width="0.2"/>
+<rect x="25.5" y="386.5" width="128" height="128" fill="white" stroke="black" stroke-width="3"/>
+<rect x="24" y="450" width="65" height="65" fill="black"/>
+<rect x="180.1" y="360.1" width="179.8" height="179.8" fill="white" stroke="#8B8B8B" stroke-width="0.2"/>
+<rect x="360.1" y="360.1" width="179.8" height="179.8" fill="white" stroke="#8B8B8B" stroke-width="0.2"/>
+<rect x="25.5" y="25.5" width="128" height="128" fill="white" stroke="black" stroke-width="3"/>
+<rect x="25" y="25" width="65" height="65" fill="black"/>
+<rect x="205.5" y="26.5" width="128" height="128" fill="white" stroke="black" stroke-width="3"/>
+<rect x="237" y="27" width="65" height="65" fill="black"/>
+<rect x="1.5" y="-1.5" width="128" height="128" transform="matrix(1 0 0 -1 204 513)" fill="white" stroke="black" stroke-width="3"/>
+<rect width="65" height="65" transform="matrix(1 0 0 -1 237 514)" fill="black"/>
+<rect x="1.5" y="-1.5" width="128" height="128" transform="matrix(1 0 0 -1 204 333)" fill="white" stroke="black" stroke-width="3"/>
+<rect width="65" height="65" transform="matrix(1 0 0 -1 237 303)" fill="black"/>
+<rect x="28.5" y="333.5" width="128" height="128" transform="rotate(-90 28.5 333.5)" fill="white" stroke="black" stroke-width="3"/>
+<rect x="29" y="302" width="65" height="65" transform="rotate(-90 29 302)" fill="black"/>
+<rect x="515.5" y="205.5" width="128" height="128" transform="rotate(90 515.5 205.5)" fill="white" stroke="black" stroke-width="3"/>
+<rect x="515" y="237" width="65" height="65" transform="rotate(90 515 237)" fill="black"/>
+<rect x="385.5" y="27.5" width="128" height="128" fill="white" stroke="black" stroke-width="3"/>
+<rect x="450" y="27" width="65" height="65" fill="black"/>
+<path d="M444.909 459.909V459.636C444.939 456.742 445.242 454.439 445.818 452.727C446.394 451.015 447.212 449.629 448.273 448.568C449.333 447.508 450.606 446.53 452.091 445.636C452.985 445.091 453.788 444.447 454.5 443.705C455.212 442.947 455.773 442.076 456.182 441.091C456.606 440.106 456.818 439.015 456.818 437.818C456.818 436.333 456.47 435.045 455.773 433.955C455.076 432.864 454.144 432.023 452.977 431.432C451.811 430.841 450.515 430.545 449.091 430.545C447.848 430.545 446.652 430.803 445.5 431.318C444.348 431.833 443.386 432.644 442.614 433.75C441.841 434.856 441.394 436.303 441.273 438.091H435.545C435.667 435.515 436.333 433.311 437.545 431.477C438.773 429.644 440.386 428.242 442.386 427.273C444.402 426.303 446.636 425.818 449.091 425.818C451.758 425.818 454.076 426.348 456.045 427.409C458.03 428.47 459.561 429.924 460.636 431.773C461.727 433.621 462.273 435.727 462.273 438.091C462.273 439.758 462.015 441.265 461.5 442.614C461 443.962 460.273 445.167 459.318 446.227C458.379 447.288 457.242 448.227 455.909 449.045C454.576 449.879 453.508 450.758 452.705 451.682C451.902 452.591 451.318 453.674 450.955 454.932C450.591 456.189 450.394 457.758 450.364 459.636V459.909H444.909ZM447.818 473.364C446.697 473.364 445.735 472.962 444.932 472.159C444.129 471.356 443.727 470.394 443.727 469.273C443.727 468.152 444.129 467.189 444.932 466.386C445.735 465.583 446.697 465.182 447.818 465.182C448.939 465.182 449.902 465.583 450.705 466.386C451.508 467.189 451.909 468.152 451.909 469.273C451.909 470.015 451.72 470.697 451.341 471.318C450.977 471.939 450.485 472.439 449.864 472.818C449.258 473.182 448.576 473.364 447.818 473.364Z" fill="black"/>
+</g>
+<defs>
+<clipPath id="clip0_12_201">
+<rect width="540" height="540" fill="white"/>
+</clipPath>
+</defs>
+</svg>
