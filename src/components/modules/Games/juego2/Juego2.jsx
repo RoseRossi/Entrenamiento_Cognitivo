@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { patrones, verificarRespuesta } from "./juego2_funciones";
 import "./juego2_estilos.css";
+import GameLayout from "../GameLayout";
 
 const Juego2 = () => {
   const [indiceActual, setIndiceActual] = useState(0);
@@ -8,11 +9,13 @@ const Juego2 = () => {
   const [nivel, setNivel] = useState(0);
   const [tiempo, setTiempo] = useState(30);
   const [estadoOpciones, setEstadoOpciones] = useState([]);
-  const [fallosSeguidos, setFallosSeguidos] = useState(0); // NUEVO
+  const [fallosSeguidos, setFallosSeguidos] = useState(0);
 
   const patronActual = indiceActual < patrones.length ? patrones[indiceActual] : null;
+  const esEnsayo = patronActual?.nivel === 0;
+  const juegoTerminado = !patronActual;
 
-  // useEffect para calcular el nivel dinámico
+  // Nivel dinámico
   useEffect(() => {
     if (!patronActual) return;
 
@@ -26,49 +29,30 @@ const Juego2 = () => {
     }
   }, [indiceActual, patronActual]);
 
-  // useEffect para el tiempo regresivo
+  // Temporizador
   useEffect(() => {
-    if (!patronActual || patronActual.nivel === 0) return;
+    if (!patronActual || patronActual.nivel === 0 || juegoTerminado) return;
+
     if (tiempo > 0) {
       const timer = setTimeout(() => setTiempo(prev => prev - 1), 1000);
       return () => clearTimeout(timer);
     } else {
-      alert("¡Se acabó el tiempo!");
-      setIndiceActual(0);
-      setPuntuacion(0);
-      setNivel(0);
-      setTiempo(30);
-      setFallosSeguidos(0);
+      setIndiceActual(patrones.length); // Terminar juego
     }
-  }, [tiempo, patronActual]);
+  }, [tiempo, patronActual, juegoTerminado]);
 
-  if (!patronActual) {
-    return (
-      <div className="pantalla-final">
-        <div className="tarjeta-final">
-          <h2 className="titulo-final">¡Felicidades!</h2>
-          <p className="mensaje-final">Has completado todas las pruebas.</p>
-          <p className="puntuacion-final">Puntuación final: <strong>{puntuacion}</strong></p>
-          <button
-            className="boton-reiniciar"
-            onClick={() => {
-              setIndiceActual(0);
-              setTiempo(30);
-              setPuntuacion(0);
-              setNivel(0);
-              setFallosSeguidos(0);
-            }}
-          >
-            Reiniciar juego
-          </button>
-        </div>
-      </div>
-    );
-  }  
-
-  const esEnsayo = patronActual.nivel === 0;
+  const reiniciarJuego = () => {
+    setIndiceActual(0);
+    setTiempo(30);
+    setPuntuacion(0);
+    setNivel(0);
+    setFallosSeguidos(0);
+    setEstadoOpciones([]);
+  };
 
   const manejarSeleccion = (indiceSeleccionado) => {
+    if (juegoTerminado) return;
+
     const esCorrecta = verificarRespuesta(indiceSeleccionado, patronActual.correct);
 
     const nuevosEstados = patronActual.options.map((_, idx) =>
@@ -80,7 +64,7 @@ const Juego2 = () => {
       setEstadoOpciones([]);
 
       if (esCorrecta) {
-        setFallosSeguidos(0); // Reiniciar fallos al acertar
+        setFallosSeguidos(0);
 
         let puntosGanados = 1;
         if (!esEnsayo) {
@@ -101,12 +85,10 @@ const Juego2 = () => {
           setTiempo(nuevoTiempo);
         }
       } else {
-        // Aumentar el contador de fallos
         setFallosSeguidos(prev => {
           const nuevosFallos = prev + 1;
           if (nuevosFallos >= 3) {
-            alert("Has fallado 3 veces seguidas. La subprueba ha finalizado.");
-            setIndiceActual(patrones.length); // Termina el juego
+            setIndiceActual(patrones.length);
           }
           return nuevosFallos;
         });
@@ -114,38 +96,81 @@ const Juego2 = () => {
     }, 1000);
   };
 
+  const generarAnalisis = () => {
+    if (indiceActual === patrones.length) {
+      const porcentajeCompletado = (indiceActual / patrones.length) * 100;
+      
+      if (porcentajeCompletado === 100) {
+        return "¡Excelente! Has completado todas las matrices demostrando una gran capacidad de razonamiento lógico.";
+      } else if (porcentajeCompletado >= 75) {
+        return "Buen trabajo. Has completado la mayoría de las matrices. Sigue practicando para mejorar tu precisión.";
+      } else if (fallosSeguidos >= 3) {
+        return "Has cometido varios errores seguidos. Intenta analizar con más cuidado los patrones antes de responder.";
+      } else {
+        return "Has completado una parte de las pruebas. Sigue practicando para mejorar tu desempeño.";
+      }
+    } else if (tiempo <= 0) {
+      return "Se te acabó el tiempo. Intenta ser más rápido identificando los patrones en las matrices.";
+    }
+    return "";
+  };
+
   return (
-    <div className="juego-container">
-      <h1  >Juego de Matrices Progresivas</h1>
-       <div className="stats-container">
-          <span>Puntuación: <strong>{puntuacion}</strong></span>
-          <span>Nivel: <strong>{nivel}</strong></span>
-          <span>Fallos: <strong>{fallosSeguidos}</strong></span>
-          {!esEnsayo && <span>Tiempo: <strong>{tiempo}s</strong></span>}
+    <GameLayout
+      title="Juego de Matrices Progresivas"
+      description={
+        <div>
+          <p>Selecciona la opción que completa la matriz lógica.</p>
+          <p>Analiza patrones y relaciones para elegir correctamente.</p>
         </div>
-
-      <div className="grid">
-        {patronActual.grid.map((img, index) => (
-          <div key={index} className="grid-cell">
-            <img src={img} alt={`matriz-${index}`} className="imagen-matriz" />
+      }
+      stats={{
+        nivel,
+        puntuacion,
+        fallos: fallosSeguidos,
+        tiempo: esEnsayo ? "--" : tiempo
+      }}
+      gameOver={juegoTerminado}
+      finalStats={{
+        completed: indiceActual === patrones.length,
+        level: nivel,
+        score: puntuacion,
+        mistakes: fallosSeguidos,
+        timeRemaining: tiempo
+      }}
+      onRestart={reiniciarJuego}
+      analysis={generarAnalisis()}
+    >
+      {!juegoTerminado && (
+        <div className="juego-container">
+          {/* Matriz centrada */}
+          <div className="matriz-container">
+            <div className={`grid-matriz grid-cols-${Math.sqrt(patronActual.grid.length)}`}>
+              {patronActual.grid.map((img, index) => (
+                <div key={index} className="grid-cell">
+                  <img src={img} alt={`matriz-${index}`} className="imagen-matriz" />
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
-      </div>
 
-      <div className="options-container">
-        <div className="options-scroll">
-          {patronActual.options.map((img, index) => (
-            <button
-              key={index}
-              className={`option-btn ${estadoOpciones[index] || ""}`}
-              onClick={() => manejarSeleccion(index)}
-            >
-              <img src={img} alt={`opción ${index + 1}`} className="imagen-opcion" />
-            </button>
-          ))}
+          {/* Opciones con scroll horizontal */}
+          <div className="options-container">
+            <div className="options-scroll">
+              {patronActual.options.map((img, index) => (
+                <button
+                  key={index}
+                  className={`option-btn ${estadoOpciones[index] || ""}`}
+                  onClick={() => manejarSeleccion(index)}
+                >
+                  <img src={img} alt={`opción ${index + 1}`} className="imagen-opcion" />
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </GameLayout>
   );
 };
 

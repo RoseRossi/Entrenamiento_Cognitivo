@@ -118,36 +118,6 @@ export const patrones = [
       require("./matrices3x3/punto6/opcion6.svg").default
     ],
     correct: 4
-  },
-  // Matriz 4x4 - punto1
-  {
-    id: "4x4-1",
-    nivel: 2,
-    grid: [require("./matrices4x4/punto1/matriz1.svg").default],
-    options: [
-      require("./matrices4x4/punto1/opcion1.svg").default,
-      require("./matrices4x4/punto1/opcion2.svg").default,
-      require("./matrices4x4/punto1/opcion3.svg").default,
-      require("./matrices4x4/punto1/opcion4.svg").default,
-      require("./matrices4x4/punto1/opcion5.svg").default,
-      require("./matrices4x4/punto1/opcion6.svg").default
-    ],
-    correct: 4
-  },
-  // Matriz 4x4 - punto2
-  {
-    id: "4x4-2",
-    nivel: 2,
-    grid: [require("./matrices4x4/punto2/matriz2.svg").default],
-    options: [
-      require("./matrices4x4/punto2/opcion1.svg").default,
-      require("./matrices4x4/punto2/opcion2.svg").default,
-      require("./matrices4x4/punto2/opcion3.svg").default,
-      require("./matrices4x4/punto2/opcion4.svg").default,
-      require("./matrices4x4/punto2/opcion5.svg").default,
-      require("./matrices4x4/punto2/opcion6.svg").default
-    ],
-    correct: 2
   }
 ];
 
