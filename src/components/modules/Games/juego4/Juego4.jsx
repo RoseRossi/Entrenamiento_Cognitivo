@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import './juego4_estilos.css';
+import GameLayout from '../GameLayout';
 import { niveles, obtenerEnsayo, verificarRespuesta } from './juego4_funciones';
+import './juego4_estilos.css';
 
 const Juego4 = () => {
   const [nivelActual, setNivelActual] = useState(1);
@@ -11,7 +12,6 @@ const Juego4 = () => {
   const [juegoTerminado, setJuegoTerminado] = useState(false);
   const [todosNivelesCompletados, setTodosNivelesCompletados] = useState(false);
 
-  // Iniciar el juego automáticamente al montar el componente
   useEffect(() => {
     const nuevoEnsayo = obtenerEnsayo(nivelActual);
     setEnsayoActual(nuevoEnsayo);
@@ -71,44 +71,55 @@ const Juego4 = () => {
     return () => clearInterval(timer);
   }, [juegoTerminado]);
 
-  const formatearTiempo = (segundos) => {
-    const mins = Math.floor(segundos / 60);
-    const secs = segundos % 60;
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  const reiniciarJuego = () => {
+    setNivelActual(1);
+    setPuntuacion(0);
+    setTiempoRestante(niveles[0].tiempo);
+    setRespuestasIncorrectas(0);
+    setJuegoTerminado(false);
+    setTodosNivelesCompletados(false);
+    setEnsayoActual(obtenerEnsayo(1));
+  };
+
+  const generarAnalisis = () => {
+    if (todosNivelesCompletados) {
+      return "¡Excelente trabajo! Has completado todos los niveles demostrando un gran entendimiento de los patrones lógicos en las balanzas.";
+    }
+    
+    const porcentajeAciertos = (puntuacion / (puntuacion + respuestasIncorrectas)) * 100;
+    
+    if (porcentajeAciertos >= 80) {
+      return "Buen desempeño. Reconoces bien los patrones pero podrías mejorar tu velocidad de respuesta.";
+    } else if (porcentajeAciertos >= 50) {
+      return "Desempeño regular. Intenta analizar con más cuidado las relaciones entre las figuras antes de responder.";
+    } else {
+      return "Necesitas practicar más. Presta atención a las cantidades y tipos de figuras en cada lado de la balanza.";
+    }
   };
 
   return (
-    <div className="juego-container">
-      {juegoTerminado ? (
-        todosNivelesCompletados ? (
-          <div className="pantalla-final-completo">
-            <h1>¡Felicidades!</h1>
-            <p>¡Has completado todas las pruebas</p>
-            <p>Puntuación final: {puntuacion}</p>
-            <div className="estadisticas">
-              <p>Niveles completados: {niveles.length}</p>
-              <p>Respuestas correctas: {puntuacion}</p>
-            </div>
-            <button onClick={() => window.location.reload()} className="boton-reiniciar">
-              Jugar nuevamente
-            </button>
-          </div>
-        ) : (
-          <div className="pantalla-final">
-            <h1>Juego Terminado</h1>
-            <p>Puntuación: {puntuacion}</p>
-            <p>Nivel alcanzado: {niveles[nivelActual - 1]?.nombre || 'Nivel 1'}</p>
-            <button onClick={() => window.location.reload()}>Jugar de nuevo</button>
-          </div>
-        )
-      ) : (
-        <>
-          <div className="info-juego">
-            <p>Nivel: {niveles[nivelActual - 1]?.nombre}</p>
-            <p>Puntuación: {puntuacion}</p>
-            <p>Tiempo: {formatearTiempo(tiempoRestante)}</p>
-          </div>
-
+    <GameLayout
+      title="Juego de Balanzas"
+      description="Selecciona la opción que equilibre la balanza según los patrones mostrados"
+      stats={{
+        nivel: juegoTerminado ? (todosNivelesCompletados ? niveles.length : nivelActual) : nivelActual,
+        puntuacion,
+        fallos: respuestasIncorrectas,
+        tiempo: juegoTerminado ? 0 : tiempoRestante
+      }}
+      gameOver={juegoTerminado}
+      finalStats={{
+        completed: todosNivelesCompletados,
+        level: nivelActual,
+        score: puntuacion,
+        mistakes: respuestasIncorrectas,
+        timeRemaining: tiempoRestante
+      }}
+      onRestart={reiniciarJuego}
+      analysis={generarAnalisis()}
+    >
+      {!juegoTerminado && (
+        <div className="juego4-container">
           <div className="balanzas-container">
             <div className="balanza">
               <div className="lado-izquierdo">
@@ -187,7 +198,7 @@ const Juego4 = () => {
           </div>
 
           <div className="opciones-container">
-            <p>¿Qué equilibrará la balanza?</p>
+            <p className="pregunta">¿Qué equilibrará la balanza?</p>
             <div className="opciones">
               {ensayoActual?.opciones.map((opcion, index) => (
                 <button 
@@ -203,9 +214,9 @@ const Juego4 = () => {
               ))}
             </div>
           </div>
-        </>
+        </div>
       )}
-    </div>
+    </GameLayout>
   );
 };
 
