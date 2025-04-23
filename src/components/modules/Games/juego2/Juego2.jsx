@@ -97,20 +97,20 @@ const Juego2 = () => {
   };
 
   const generarAnalisis = () => {
-    if (indiceActual === patrones.length) {
+    if (indiceActual === patrones.length || fallosSeguidos >= 3) {
       const porcentajeCompletado = (indiceActual / patrones.length) * 100;
-      
+  
       if (porcentajeCompletado === 100) {
-        return "¡Excelente! Has completado todas las matrices demostrando una gran capacidad de razonamiento lógico.";
+        return "¡Excelente! Has completado todas las matrices demostrando una gran capacidad de razonamiento lógico y abstracción.";
       } else if (porcentajeCompletado >= 75) {
-        return "Buen trabajo. Has completado la mayoría de las matrices. Sigue practicando para mejorar tu precisión.";
+        return "Buen trabajo. Has completado la mayoría de las matrices. Sigue practicando para mejorar tu precisión y rapidez en la identificación de patrones.";
       } else if (fallosSeguidos >= 3) {
-        return "Has cometido varios errores seguidos. Intenta analizar con más cuidado los patrones antes de responder.";
+        return "Has cometido tres errores consecutivos, lo que ha finalizado la prueba. Intenta analizar con más cuidado los patrones antes de responder en futuras partidas.";
       } else {
-        return "Has completado una parte de las pruebas. Sigue practicando para mejorar tu desempeño.";
+        return "Has completado una parte de las pruebas. Sigue practicando para mejorar tu razonamiento lógico y tu capacidad de resolver problemas abstractos.";
       }
     } else if (tiempo <= 0) {
-      return "Se te acabó el tiempo. Intenta ser más rápido identificando los patrones en las matrices.";
+      return "Se te acabó el tiempo. Intenta ser más rápido identificando los patrones en las matrices para completar más ensayos.";
     }
     return "";
   };
