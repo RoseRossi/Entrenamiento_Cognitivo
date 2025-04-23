@@ -1,0 +1,39 @@
+.juego7-container {
+    padding: 20px;
+    text-align: center;
+    font-family: sans-serif;
+  }
+  
+  .area-circulos {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    margin: 0 auto;
+    background-color: #f0f0f0;
+  }
+  
+  .circulo {
+    width: 40px;
+    height: 40px;
+    background-color: blue;
+    border-radius: 50%;
+    position: absolute;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .circulo.resaltado {
+    background-color: orange !important;
+  }
+  
+  .circulo.seleccionable:hover {
+    background-color: rgba(0, 255, 0, 0.5); /* Cambio de color al pasar el mouse */
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .info {
+    margin-top: 20px;
+    font-size: 18px;
+  }
+  
