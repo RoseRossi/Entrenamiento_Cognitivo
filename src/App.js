@@ -4,6 +4,7 @@ import Dashboard from "./components/modules/Dashboard/Dashboard";
 import Juego2 from "./components/modules/Games/juego2/Juego2";
 import Juego1 from "./components/modules/Games/juego1/Juego1";
 import Juego4 from "./components/modules/Games/juego4/Juego4";
+import Juego6 from "./components/modules/Games/juego6/Juego6";
 function App() {
   return (
     <Router>
@@ -20,6 +21,9 @@ function App() {
 
           {/* Página del juego 4 */}
           <Route path="/juego/4" element={<Juego4 />} />
+
+          {/* Página del juego 6 */}
+          <Route path="/juego/6" element={<Juego6 />} />
 
           {/* Página para juegos no disponibles */}
           <Route
