@@ -6,6 +6,7 @@ import Juego3 from "./components/modules/Games/juego3/juego3";
 import Juego1 from "./components/modules/Games/juego1/Juego1";
 import Juego4 from "./components/modules/Games/juego4/Juego4";
 import Juego5 from "./components/modules/Games/juego5/Juego5";
+import Juego6 from "./components/modules/Games/juego6/Juego6";
 import Juego7 from "./components/modules/Games/juego7/Juego7";
 
 function App() {
@@ -27,9 +28,12 @@ function App() {
 
           {/* Página del juego 4 */}
           <Route path="/juego/4" element={<Juego4 />} />
-
+           
           {/* Página del juego 5 */}
           <Route path="/juego/5" element={<Juego5 />} />
+
+          {/* Página del juego 6 */}
+          <Route path="/juego/6" element={<Juego6 />} />
 
           {/* Página del juego 7 */}
           <Route path="/juego/7" element={<Juego7 />} />
