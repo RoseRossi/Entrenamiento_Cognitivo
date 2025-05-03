@@ -234,6 +234,13 @@ const Juego6 = ({ nivel = "basico" }) => {
         motivoFin: estadoJuego.respuestasIncorrectas >= MAX_FALLOS_PERMITIDOS ? "Límite de fallos alcanzado" : "Juego completado"
       }}
       onRestart={reiniciarJuego}
+      analysis={
+        estadoJuego.respuestasIncorrectas >= MAX_FALLOS_PERMITIDOS
+          ? "Has alcanzado el límite de fallos permitidos. Intenta mejorar tu concentración."
+          : "¡Buen trabajo! Has completado el juego."
+      }
+      onFallo={estadoJuego.respuestasIncorrectas}
+      onCorrectAnswer={estadoJuego.puntuacion}
     >
       {!estadoJuego.juegoTerminado && (
         <div className="juego6-container">

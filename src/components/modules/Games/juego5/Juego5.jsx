@@ -129,6 +129,8 @@ const Juego5 = () => {
       }}
       onRestart={reiniciarJuego}
       analysis={generarAnalisis()}
+      onFallo={fallos}
+      onCorrectAnswer={puntuacion}
     >
       {!mostrarPregunta ? (
         <div className="secuencia">

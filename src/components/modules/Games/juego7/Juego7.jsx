@@ -89,6 +89,8 @@ const Juego7 = () => {
       }}
       onRestart={reiniciarJuego}
       analysis={generarAnalisis()}
+      onFallo={fallos}
+      onCorrectAnswer={ensayos}
     >
       <div className="area-circulos">
         {circulos.map((pos, index) => (
