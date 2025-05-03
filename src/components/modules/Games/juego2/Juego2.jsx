@@ -140,6 +140,8 @@ const Juego2 = () => {
       }}
       onRestart={reiniciarJuego}
       analysis={generarAnalisis()}
+      onFallo={fallosSeguidos}
+      onCorrectAnswer={puntuacion}
     >
       {!juegoTerminado && (
         <div className="juego-container">

@@ -369,6 +369,8 @@ const Juego4 = () => {
       }}
       onRestart={() => window.location.reload()}
       analysis={generarAnalisis()}
+      onFallo={estadoJuego.respuestasIncorrectas}
+      onCorrectAnswer={estadoJuego.puntuacion}
     >
       {!estadoJuego.juegoTerminado && ensayoActual && (
         <div className="juego4-container">

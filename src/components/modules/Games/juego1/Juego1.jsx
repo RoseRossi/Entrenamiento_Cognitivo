@@ -118,6 +118,8 @@ const Juego1 = () => {
       }}
       onRestart={reiniciarJuego}
       analysis={generarAnalisis()}
+      onFallo={fallos}
+      onCorrectAnswer={puntuacion}
     >
       {!juegoTerminado ? (
         <div className="game-container">

@@ -1,7 +1,11 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Maximize2, Minimize2, BarChart2, Award, XCircle, Clock, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './GameLayout.css';
+
+// Importación directa de los sonidos
+import falloSound from '../../../assets/sounds/fallo.mp3';
+import correctoSound from '../../../assets/sounds/correcto.mp3';
 
 const GameLayout = ({ 
   title, 
@@ -11,11 +15,58 @@ const GameLayout = ({
   gameOver = false,
   finalStats = {},
   onRestart,
-  analysis = ""
+  analysis = "",
+  onFallo, 
+  onCorrectAnswer 
 }) => {
   const gameRef = useRef();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const navigate = useNavigate();
+
+  console.log("Prop onFallo recibida:", onFallo); // Imprime lo que trae onFallo desde Juego2
+  console.log("Prop onCorrectAnswer recibida:", onCorrectAnswer); // Imprime lo que trae onCorrectAnswer desde Juego2
+
+  // Referencias a los sonidos
+  const audioFalloRef = useRef(new Audio(falloSound));
+  const audioCorrectoRef = useRef(new Audio(correctoSound));
+
+  // Función optimizada para reproducir sonidos
+  const playSound = useCallback((soundRef) => {
+    soundRef.current.currentTime = 0;
+    soundRef.current.play().catch(e => console.error("Error al reproducir sonido:", e));
+  }, []);
+
+  // Estado para rastrear los valores previos de fallos y respuestas correctas
+  const prevFalloRef = useRef(onFallo);
+  const prevCorrectAnswerRef = useRef(onCorrectAnswer);
+
+
+  useEffect(() => {
+    if (onFallo > prevFalloRef.current) {
+      console.log("Reproduciendo sonido de fallo");
+      playSound(audioFalloRef);
+    }
+
+    if (onCorrectAnswer > prevCorrectAnswerRef.current) {
+      console.log("Reproduciendo sonido de respuesta correcta");
+      playSound(audioCorrectoRef);
+    }
+
+    // Actualizar los valores previos
+    prevFalloRef.current = onFallo;
+    prevCorrectAnswerRef.current = onCorrectAnswer;
+  }, [onFallo, onCorrectAnswer, playSound]);
+
+    // Precargar sonidos
+    useEffect(() => {
+      audioFalloRef.current.load();
+      audioCorrectoRef.current.load();
+  
+      return () => {
+        audioFalloRef.current.pause();
+        audioCorrectoRef.current.pause();
+      };
+    }, []);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -36,12 +87,16 @@ const GameLayout = ({
   };
 
   React.useEffect(() => {
+    // Configuración de fullscreen
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
-
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+
+    // Limpieza
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
   }, []);
 
   if (gameOver) {
