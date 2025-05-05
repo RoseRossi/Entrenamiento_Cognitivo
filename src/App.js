@@ -8,6 +8,7 @@ import Juego4 from "./components/modules/Games/juego4/Juego4";
 import Juego5 from "./components/modules/Games/juego5/Juego5";
 import Juego6 from "./components/modules/Games/juego6/Juego6";
 import Juego7 from "./components/modules/Games/juego7/Juego7";
+import Juego8 from "./components/modules/Games/juego8/Juego8";
 
 function App() {
   return (
@@ -37,6 +38,9 @@ function App() {
 
           {/* Página del juego 7 */}
           <Route path="/juego/7" element={<Juego7 />} />
+
+          {/* Página del juego 8 */}
+          <Route path="/juego/8" element={<Juego8 />} />
 
           {/* Página para juegos no disponibles */}
           <Route
