@@ -1,21 +1,45 @@
-// Generador de secuencias aleatorias (ej. [2, 4, 1] para nivel 3)
-const generarSecuencia = (longitud) => {
-    const posiciones = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-    const secuenciaMezclada = posiciones.sort(() => Math.random() - 0.5);
-    return secuenciaMezclada.slice(0, longitud);
-  };
+// Genera dinámicamente ejercicios con amplitudes de 2 a 7
+export const generarEjercicios = () => {
+  const ejercicios = [];
+
+  // 3 ejercicios de entrenamiento con amplitud 2
+  for (let i = 0; i < 3; i++) {
+    ejercicios.push({
+      amplitud: 2,
+      secuencia: generarSecuenciaAleatoria(2)
+    });
+  }
+
+  // Ejercicios de amplitud creciente desde 3 hasta 7
+  for (let amplitud = 3; amplitud <= 7; amplitud++) {
+    ejercicios.push({
+      amplitud,
+      secuencia: generarSecuenciaAleatoria(amplitud)
+    });
+  }
+
+  return ejercicios;
+};
+
+// Genera una secuencia aleatoria sin repeticiones de posiciones del 0 al 8
+export const generarSecuenciaAleatoria = (longitud) => {
+  const posiciones = [...Array(9).keys()]; // [0,1,2,3,4,5,6,7,8]
+  const secuencia = [];
+
+  while (secuencia.length < longitud) {
+    const indice = Math.floor(Math.random() * posiciones.length);
+    const valor = posiciones[indice];
+    if (!secuencia.includes(valor)) {
+      secuencia.push(valor);
+    }
+  }
+
+  return secuencia;
+};
+
   
-  // Datos del juego: Secuencias por nivel (longitud creciente)
-  export const patrones = Array.from({ length: 10 }, (_, i) => ({
-    nivel: i + 1,
-    secuencia: generarSecuencia(i + 2), // empieza con longitud 2
-    instruccion: "Memoriza los círculos y repítelos en orden inverso",
-  }));
-  
-  // Verifica si la respuesta del usuario es la secuencia invertida
-  export const verificarRespuesta = (respuestaUsuario, secuenciaCorrecta) => {
-    const secuenciaInvertida = [...secuenciaCorrecta].reverse();
-    if (respuestaUsuario.length !== secuenciaInvertida.length) return false;
-    return respuestaUsuario.every((val, i) => val === secuenciaInvertida[i]);
-  };
-  
+// Verifica si la respuesta ingresada es igual a la secuencia inversa
+export const verificarRespuesta = (respuesta, secuenciaOriginal) => {
+  const invertida = [...secuenciaOriginal].reverse();
+  return JSON.stringify(respuesta) === JSON.stringify(invertida);
+};
