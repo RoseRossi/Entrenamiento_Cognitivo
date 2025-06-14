@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Maximize2, Minimize2, BarChart2, Award, XCircle, Clock, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './GameLayout.css';
@@ -59,12 +59,15 @@ const GameLayout = ({
 
     // Precargar sonidos
     useEffect(() => {
-      audioFalloRef.current.load();
-      audioCorrectoRef.current.load();
-  
+      const falloAudio = audioFalloRef.current;
+      const correctoAudio = audioCorrectoRef.current;
+
+      falloAudio.load();
+      correctoAudio.load();
+
       return () => {
-        audioFalloRef.current.pause();
-        audioCorrectoRef.current.pause();
+        falloAudio.pause();
+        correctoAudio.pause();
       };
     }, []);
 
