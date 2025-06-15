@@ -24,6 +24,9 @@ const Juego6 = ({ nivel = "basico" }) => {
   const [aciertosCongruentes, setAciertosCongruentes] = useState(0);
   const [aciertosIncongruentes, setAciertosIncongruentes] = useState(0);
   const ensayoActualRef = useRef(null); // para guardar el ensayo actual con su tipo
+  const [tiemposReaccion, setTiemposReaccion] = useState([]); // Guarda tiempos de reacción
+  const tiempoInicioRef = useRef(null); // Marca el tiempo en que se muestra el estímulo
+
 
 
   const formatearTiempo = useCallback((ms) => {
@@ -69,6 +72,12 @@ const Juego6 = ({ nivel = "basico" }) => {
     return mezcla;
   }, []);
 
+  const calcularTiempoVisible = (indiceEnsayo) => {
+    const bloque = Math.floor(indiceEnsayo / 20); // Cada bloque tiene 20 ensayos
+    return 6000 - (bloque * 500); // Baja 500ms por bloque, mínimo 4000ms
+  };
+
+
   const iniciarEnsayo = useCallback(() => {
     setEnsayoActual((prevEnsayoActual) => {
       if (estadoJuego.juegoTerminado || prevEnsayoActual >= ensayos.length) return prevEnsayoActual;
@@ -85,7 +94,7 @@ const Juego6 = ({ nivel = "basico" }) => {
       setMostrarFlecha(false);
       setRespuestaCorrecta(null);
 
-      const tiempoVisible = nivel === "basico" ? 6000 : nivel === "intermedio" ? 4000 : 2000;
+      const tiempoVisible = calcularTiempoVisible(prevEnsayoActual);
       setTiempoRestante(Number(tiempoVisible) || 0);
 
       timeoutRef.current = setTimeout(() => {
@@ -97,6 +106,7 @@ const Juego6 = ({ nivel = "basico" }) => {
 
           // 100ms después, se muestra el estímulo y se activa la respuesta
           timeoutRef.current = setTimeout(() => {
+            tiempoInicioRef.current = Date.now(); // Guarda el momento exacto en que aparece el estímulo
             setMostrarEstimulo(true);
             setPuedeResponder(true);
 
@@ -150,6 +160,11 @@ const Juego6 = ({ nivel = "basico" }) => {
 
 
   const manejarRespuesta = useCallback((respuesta) => {
+    
+    if (tiempoInicioRef.current !== null) {
+      const tiempoReaccion = Date.now() - tiempoInicioRef.current;
+      setTiemposReaccion(prev => [...prev, tiempoReaccion]);
+    }
     if (!puedeResponderRef.current || !mostrarEstimuloRef.current) return;
 
     const esCorrecta = verificarRespuesta(respuesta, estimulo);
@@ -243,6 +258,13 @@ const Juego6 = ({ nivel = "basico" }) => {
       {mostrar && "★"}
     </div>
   ));
+
+  useEffect(() => {
+    if (estadoJuego.juegoTerminado) {
+      console.log("Tiempos de reacción (ms):", tiemposReaccion);
+    }
+  }, [estadoJuego.juegoTerminado, tiemposReaccion]); 
+
 
   return (
     <GameLayout
