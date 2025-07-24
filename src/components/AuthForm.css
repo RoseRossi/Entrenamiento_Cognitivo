@@ -1,0 +1,63 @@
+/* Animación para el spinner */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Mejoras adicionales para accesibilidad */
+.auth-form-container {
+  position: relative;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  z-index: 10;
+}
+
+/* Efectos hover para mejor UX */
+.google-button:hover:not(:disabled) {
+  background-color: #ffcdd9 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.primary-button:hover:not(:disabled) {
+  background-color: #b085f5 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.logout-button:hover:not(:disabled) {
+  background-color: #f8bbb0 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Transiciones suaves */
+.auth-button {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Focus para accesibilidad */
+.auth-input:focus {
+  border-color: #9575cd !important;
+  box-shadow: 0 0 0 3px rgba(197, 160, 246, 0.2) !important;
+}
+
+.auth-button:focus {
+  outline: 2px solid #9575cd;
+  outline-offset: 2px;
+}
