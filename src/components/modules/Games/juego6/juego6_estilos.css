@@ -13,7 +13,7 @@
   align-items: center;
   justify-content: center;
   gap: 4rem;
-  margin: 2rem 0; /* opcional */
+  margin: 2rem 0; 
 }
 
 .caja {
@@ -48,7 +48,7 @@
 
 .indicador-flecha {
 height: 2rem;
-margin-top: 1rem; /* Ajusta el margen para separarlo de las cajas */
+margin-top: 1rem; 
 font-size: 1.5rem;
 display: flex;
 justify-content: center;
