@@ -32,6 +32,8 @@
 
 .game-panel {
   flex: 3; 
+  display: flex;
+  flex-direction: column;
   background-color: white;
   border-radius: 16px;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -149,11 +151,12 @@
 }
 
 .game-main-content {
-  padding: 30px;
+  flex: 1;
+  padding: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 200px;   
+  min-height: 0; /* evita problemas en flexbox */
 }
 
 .description-panel {

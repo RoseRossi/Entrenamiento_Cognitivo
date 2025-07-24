@@ -1,4 +1,4 @@
-// Genera dinámicamente ejercicios con amplitudes de 2 a 7
+// Genera dinámicamente ejercicios con amplitudes de 2 a 8
 export const generarEjercicios = () => {
   const ejercicios = [];
 
@@ -10,12 +10,14 @@ export const generarEjercicios = () => {
     });
   }
 
-  // Ejercicios de amplitud creciente desde 3 hasta 7
-  for (let amplitud = 3; amplitud <= 7; amplitud++) {
-    ejercicios.push({
-      amplitud,
-      secuencia: generarSecuenciaAleatoria(amplitud)
-    });
+  // 5 ejercicios por amplitud desde 3 hasta 8
+  for (let amplitud = 3; amplitud <= 8; amplitud++) {
+    for (let i = 0; i < 5; i++) {
+      ejercicios.push({
+        amplitud,
+        secuencia: generarSecuenciaAleatoria(amplitud)
+      });
+    }
   }
 
   return ejercicios;

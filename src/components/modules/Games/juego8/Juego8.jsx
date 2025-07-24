@@ -145,7 +145,7 @@ const Juego8 = () => {
         {mensaje && <p style={{ color: 'orange', fontWeight: 'bold' }}>{mensaje}</p>}
       </>}
       stats={{
-        nivel: ejercicio?.amplitud,
+        nivel: ejercicio?.amplitud - 1,
         puntuacion: puntosTotales,
         fallos: (indiceActual * 3) - puntosTotales,
         tiempo: mostrarSecuencia ? tiempoBase : tiempo
@@ -153,7 +153,7 @@ const Juego8 = () => {
       gameOver={juegoTerminado}
       finalStats={{
         completed: !juegoTerminado ? false : true,
-        level: ejercicio?.amplitud,
+        level: ejercicio?.amplitud - 1,
         score: puntosTotales,
         mistakes: puntosMaximos - puntosTotales,
         timeRemaining: tiempo
