@@ -5,6 +5,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebaseConfig";
 import AuthForm from "./components/AuthForm";
 import Dashboard from "./components/modules/Dashboard/Dashboard";
+import Loading from "./components/Loading";
 import Juego1 from "./components/modules/Games/juego1/Juego1";
 import Juego2 from "./components/modules/Games/juego2/Juego2";
 import Juego3 from "./components/modules/Games/juego3/juego3";
@@ -26,7 +27,7 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  if (loading) return <div>Cargando...</div>;
+  if (loading) return <Loading message="Iniciando aplicación..." />;
 
   return (
     <Router>
