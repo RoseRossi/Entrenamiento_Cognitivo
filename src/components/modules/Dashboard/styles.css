@@ -5,11 +5,42 @@
     padding: 50px;
     font-family: Arial, sans-serif;
   }
+
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
   
   .title {
     font-size: 2rem;
-    margin-bottom: 20px;
+    margin: 0;
     color: #2d2d2d;
+  }
+
+  .logout-button {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    background-color: #ff4757;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-weight: bold;
+  }
+
+  .logout-button:hover {
+    background-color: #ff3742;
+    transform: scale(1.05);
+  }
+
+  .logout-button:active {
+    transform: scale(0.95);
   }
   
   .games-grid {

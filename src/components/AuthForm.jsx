@@ -10,6 +10,7 @@ import {
   getRedirectResult,
   onAuthStateChanged
 } from 'firebase/auth';
+import Loading from './Loading';
 import './AuthForm.css';
 
 export default function AuthForm() {
@@ -298,6 +299,17 @@ export default function AuthForm() {
     setEmail('');
     setPassword('');
   };
+
+  // Mostrar loading durante autenticación
+  if (loading) {
+    const message = isLogin ? "Iniciando sesión..." : "Creando cuenta...";
+    return <Loading message={message} />;
+  }
+
+  if (googleLoading) {
+    const message = useRedirect ? "Redirigiendo a Google..." : "Abriendo ventana de Google...";
+    return <Loading message={message} />;
+  }
 
   return (
     <div style={styles.container}>
