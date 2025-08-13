@@ -1,6 +1,5 @@
-// src/components/AuthForm.jsx
 import React, { useState, useEffect } from 'react';
-import { auth, googleProvider } from '../firebaseConfig';
+import { auth, googleProvider } from '../services/firebase/firebaseConfig';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,

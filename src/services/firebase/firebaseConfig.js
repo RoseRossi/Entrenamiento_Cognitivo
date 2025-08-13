@@ -58,7 +58,7 @@ const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({
   prompt: 'select_account',
   // Configuraciones adicionales para optimizar la velocidad
-  hd: '', // Permite cualquier dominio
+  hd: '', 
 });
 
 // Configurar opciones adicionales para auth
