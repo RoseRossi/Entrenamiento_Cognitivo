@@ -1,6 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import GameLayout from '../GameLayout';
 import { niveles, obtenerEnsayo, verificarRespuesta } from './juego4_funciones';
+import { auth } from "../../../../services/firebase/firebaseConfig";
+import { gameService } from "../../../../services/firebase/gameService";
+import { userService } from "../../../../services/firebase/userService";
 import './juego4_estilos.css';
 
 const Figura = ({ tipo, cantidad, x, y }) => {
@@ -61,7 +64,6 @@ const Figura = ({ tipo, cantidad, x, y }) => {
         />
       );
     } else if (tipo === 'cruz') {
-      // const halfSize = tamañoFigura / 2;
       const quarterSize = tamañoFigura / 4;
       figuras.push(
         <polygon
@@ -138,7 +140,6 @@ const Figura = ({ tipo, cantidad, x, y }) => {
 const Juego4 = () => {
   const [nivelActual, setNivelActual] = useState(1);
   const [ensayoActual, setEnsayoActual] = useState(null);
-  //const [anchoMaximo, setAnchoMaximo] = useState(0);
   const [estadoJuego, setEstadoJuego] = useState({
     puntuacion: 0,
     tiempoRestante: niveles[0].tiempo,
@@ -149,6 +150,102 @@ const Juego4 = () => {
   });
   const [ultimoResultado, setUltimoResultado] = useState(null); 
   const timerRef = useRef(null);
+
+  // Estados para Firebase
+  const [user, setUser] = useState(null);
+  const [tiempoInicio, setTiempoInicio] = useState(null);
+  const [resultadoGuardado, setResultadoGuardado] = useState(false);
+  const [respuestasDetalladas, setRespuestasDetalladas] = useState([]);
+  const [tiemposPorNivel, setTiemposPorNivel] = useState([]);
+
+  // Guardar resultado usando useCallback
+  const guardarResultado = useCallback(async () => {
+    if (!user) {
+      console.log('No hay usuario autenticado para guardar resultado');
+      return;
+    }
+
+    try {
+      console.log('Guardando resultado del Juego 4...');
+      
+      const tiempoTranscurrido = Math.round((Date.now() - tiempoInicio) / 1000);
+      const totalEnsayosPosibles = niveles.reduce((total, nivel) => total + nivel.ensayos.length, 0);
+      const ensayosCompletados = respuestasDetalladas.length;
+      const respuestasCorrectas = respuestasDetalladas.filter(r => r.correcta).length;
+      
+      // Calcular porcentajes
+      const porcentajeCompletado = Math.round((ensayosCompletados / totalEnsayosPosibles) * 100);
+      const porcentajePrecision = ensayosCompletados > 0 ? Math.round((respuestasCorrectas / ensayosCompletados) * 100) : 0;
+      
+      // Determinar nivel basado en rendimiento
+      let nivelJuego = 'basico';
+      if (estadoJuego.todosNivelesCompletados || (nivelActual >= 3 && porcentajePrecision >= 80)) {
+        nivelJuego = 'avanzado';
+      } else if (nivelActual >= 2 && porcentajePrecision >= 60) {
+        nivelJuego = 'intermedio';
+      }
+
+      // Score final basado en niveles completados y precisión
+      const scoreBaseNiveles = (nivelActual / niveles.length) * 60; // 60% por niveles completados
+      const scorePrecision = porcentajePrecision * 0.4; // 40% por precisión
+      const scoreFinal = Math.round(scoreBaseNiveles + scorePrecision);
+
+      const resultData = {
+        userId: user.uid,
+        gameId: 'balance_balanza',
+        cognitiveDomain: 'funciones_ejecutivas',
+        level: nivelJuego,
+        score: scoreFinal,
+        timeSpent: tiempoTranscurrido,
+        correctAnswers: respuestasCorrectas,
+        totalQuestions: ensayosCompletados,
+        details: {
+          nivelesCompletados: nivelActual,
+          totalNiveles: niveles.length,
+          ensayosCompletados: ensayosCompletados,
+          totalEnsayosPosibles: totalEnsayosPosibles,
+          porcentajeCompletado: porcentajeCompletado,
+          porcentajePrecision: porcentajePrecision,
+          fallosTotales: estadoJuego.fallosTotales,
+          fallosConsecutivos: estadoJuego.respuestasIncorrectas,
+          todosNivelesCompletados: estadoJuego.todosNivelesCompletados,
+          razonTermino: estadoJuego.todosNivelesCompletados ? 'completado' :
+                       (estadoJuego.respuestasIncorrectas >= 3 ? 'tres_fallos_consecutivos' :
+                       (estadoJuego.tiempoRestante <= 0 ? 'tiempo_agotado' : 'usuario_salio')),
+          tiemposPorNivel: tiemposPorNivel,
+          tiempoPromedioRespuesta: ensayosCompletados > 0 ? 
+            Math.round((tiempoTranscurrido / ensayosCompletados) * 100) / 100 : 0,
+          respuestasDetalladas: respuestasDetalladas,
+          puntajeMaximoPosible: totalEnsayosPosibles
+        }
+      };
+
+      // Guardar resultado del juego
+      await gameService.saveGameResult(resultData);
+      
+      // Actualizar progreso del usuario en el dominio cognitivo
+      await userService.updateUserProgress(user.uid, 'funciones_ejecutivas', scoreFinal);
+      
+      console.log(' Resultado del Juego 4 guardado exitosamente');
+      setResultadoGuardado(true);
+      
+    } catch (error) {
+      console.error(' Error guardando resultado del Juego 4:', error);
+    }
+  }, [user, tiempoInicio, estadoJuego, nivelActual, respuestasDetalladas, tiemposPorNivel]);
+
+  // Inicialización
+  useEffect(() => {
+    setUser(auth.currentUser);
+    setTiempoInicio(Date.now());
+  }, []);
+
+  // Guardar resultado cuando el juego termine
+  useEffect(() => {
+    if (estadoJuego.juegoTerminado && !resultadoGuardado && user && tiempoInicio) {
+      guardarResultado();
+    }
+  }, [estadoJuego.juegoTerminado, resultadoGuardado, user, tiempoInicio, guardarResultado]);
 
   // Timer effect
   useEffect(() => {
@@ -190,24 +287,30 @@ const Juego4 = () => {
     setEnsayoActual(ensayo);
     setUltimoResultado(null); 
 
-    // const tamañoFigura = 20;
-    // const espaciado = 8;
-    // const maxCantidad = Math.max(...(ensayo?.opciones?.map((opcion) => opcion.cantidad) || [0]));
-    // const ancho = maxCantidad * tamañoFigura + (maxCantidad - 1) * espaciado + 20;
-    // setAnchoMaximo(ancho);
-
     setEstadoJuego((prev) => ({
       ...prev,
       tiempoRestante: niveles[nivelActual - 1]?.tiempo || 0,
     }));
   }, [nivelActual]);
 
-  //const [estaProcesando, setEstaProcesando] = useState(false);
-
   const manejarSeleccion = (opcion) => {
     if (estadoJuego.juegoTerminado || !ensayoActual) return;
   
     const esCorrecta = verificarRespuesta(ensayoActual, opcion);
+    const tiempoRespuesta = Date.now() - tiempoInicio;
+    
+    // Registrar respuesta detallada
+    const nuevaRespuesta = {
+      nivelId: nivelActual,
+      ensayoId: ensayoActual.id || `nivel${nivelActual}_${Date.now()}`,
+      respuestaUsuario: opcion,
+      respuestaCorrecta: ensayoActual.respuestaCorrecta,
+      correcta: esCorrecta,
+      tiempoRespuesta: tiempoRespuesta,
+      tiempoRestante: estadoJuego.tiempoRestante
+    };
+    setRespuestasDetalladas(prev => [...prev, nuevaRespuesta]);
+
     const nuevoEstado = { ...estadoJuego };
   
     if (esCorrecta) {
@@ -224,6 +327,11 @@ const Juego4 = () => {
           nuevoEstado.juegoTerminado = true;
           nuevoEstado.todosNivelesCompletados = true;
         } else if (nuevoEstado.puntuacion % 3 === 0 && nivelActual < niveles.length) {
+          // Registrar tiempo del nivel completado
+          setTiemposPorNivel(prev => [...prev, {
+            nivel: nivelActual,
+            tiempoTranscurrido: Date.now() - tiempoInicio
+          }]);
           setNivelActual((prev) => prev + 1);
         } else {
           setEnsayoActual(obtenerEnsayo(nivelActual));
@@ -247,7 +355,6 @@ const Juego4 = () => {
       setEstadoJuego(nuevoEstado);
     }
   };
-
 
   const renderBalanza = (balanza, showQuestionMark = false) => (
     <svg className="balanza-svg" viewBox="0 0 309 250" width="300" height="260" xmlns="http://www.w3.org/2000/svg">
@@ -315,36 +422,46 @@ const Juego4 = () => {
     </svg>
   );
 
-  // const handleRestart = () => {
-  //   if (timerRef.current) {
-  //     clearInterval(timerRef.current);
-  //   }
-  //   setNivelActual(1);
-  //   setEnsayoActual(obtenerEnsayo(1));
-  //   setEstadoJuego({
-  //     puntuacion: 0,
-  //     tiempoRestante: niveles[0].tiempo,
-  //     respuestasIncorrectas: 0,
-  //     juegoTerminado: false,
-  //     todosNivelesCompletados: false,
-  //   });
-  // };
+  const reiniciarJuego = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    setNivelActual(1);
+    setEnsayoActual(obtenerEnsayo(1));
+    setEstadoJuego({
+      puntuacion: 0,
+      tiempoRestante: niveles[0].tiempo,
+      respuestasIncorrectas: 0,
+      fallosTotales: 0,
+      juegoTerminado: false,
+      todosNivelesCompletados: false,
+    });
+    setUltimoResultado(null);
+    setResultadoGuardado(false);
+    setRespuestasDetalladas([]);
+    setTiemposPorNivel([]);
+    setTiempoInicio(Date.now());
+  };
 
   const generarAnalisis = () => {
+    const ensayosCompletados = respuestasDetalladas.length;
+    const respuestasCorrectas = respuestasDetalladas.filter(r => r.correcta).length;
+    const porcentajePrecision = ensayosCompletados > 0 ? Math.round((respuestasCorrectas / ensayosCompletados) * 100) : 0;
+
     if (estadoJuego.juegoTerminado || estadoJuego.respuestasIncorrectas >= 3) {
       const porcentajeCompletado = (nivelActual / niveles.length) * 100;
   
       if (estadoJuego.todosNivelesCompletados) {
-        return `¡Excelente! Has completado todos los niveles con un total de ${estadoJuego.fallosTotales} fallos. Demostraste una gran capacidad de razonamiento lógico y matemático, aplicando habilidades de resolución de problemas y comprensión de proporciones.`;
+        return `¡Excelente! Has completado todos los niveles con ${porcentajePrecision}% de precisión y un total de ${estadoJuego.fallosTotales} fallos. Demostraste una gran capacidad de razonamiento lógico y matemático, aplicando habilidades de resolución de problemas y comprensión de proporciones.`;
       } else if (porcentajeCompletado >= 75) {
-        return `Buen trabajo. Has completado la mayoría de los niveles con un total de ${estadoJuego.fallosTotales} fallos. Sigue practicando para mejorar tu razonamiento proporcional y tu rapidez al resolver problemas.`;
+        return `Buen trabajo. Has completado ${Math.round(porcentajeCompletado)}% de los niveles con ${porcentajePrecision}% de precisión y un total de ${estadoJuego.fallosTotales} fallos. Sigue practicando para mejorar tu razonamiento proporcional.`;
       } else if (estadoJuego.respuestasIncorrectas >= 3) {
-        return `Has cometido tres errores consecutivos, lo que ha finalizado la subprueba. Intenta analizar con más cuidado las relaciones entre las formas antes de responder en futuras partidas.`;
+        return `Has cometido tres errores consecutivos. Completaste ${Math.round(porcentajeCompletado)}% con ${porcentajePrecision}% de precisión. Intenta analizar más cuidadosamente las relaciones entre las formas.`;
       } else {
-        return `Has completado una parte de los niveles con un total de ${estadoJuego.fallosTotales} fallos. Sigue practicando para mejorar tu razonamiento lógico y matemático.`;
+        return `Has completado ${Math.round(porcentajeCompletado)}% de los niveles con ${porcentajePrecision}% de precisión y ${estadoJuego.fallosTotales} fallos. Sigue practicando para mejorar tu razonamiento lógico.`;
       }
     } else if (estadoJuego.tiempoRestante <= 0) {
-      return `Se te acabó el tiempo. Lograste completar ${nivelActual - 1} niveles con un total de ${estadoJuego.fallosTotales} fallos. Intenta ser más rápido en la identificación de las relaciones entre las formas para completar más ensayos.`;
+      return `Se te acabó el tiempo. Lograste completar ${nivelActual - 1} niveles con ${porcentajePrecision}% de precisión y ${estadoJuego.fallosTotales} fallos. Intenta ser más rápido en la identificación de las relaciones.`;
     }
     return "";
   };
@@ -364,15 +481,15 @@ const Juego4 = () => {
         completed: estadoJuego.todosNivelesCompletados,
         level: nivelActual,
         score: estadoJuego.puntuacion,
-        mistakes: estadoJuego.fallosTotales, // Mostrar fallos totales
+        mistakes: estadoJuego.fallosTotales,
         timeRemaining: estadoJuego.tiempoRestante,
       }}
-      onRestart={() => window.location.reload()}
+      onRestart={reiniciarJuego}
       analysis={generarAnalisis()}
       onFallo={estadoJuego.respuestasIncorrectas}
       onCorrectAnswer={estadoJuego.puntuacion}
     >
-      {!estadoJuego.juegoTerminado && ensayoActual && (
+      {!estadoJuego.juegoTerminado && ensayoActual ? (
         <div className="juego4-container">
           <div className="balanzas-container">
             {renderBalanza(ensayoActual.balanza1)}
@@ -383,7 +500,7 @@ const Juego4 = () => {
             }, true)}
           </div>
           <div className="opciones-container">
-            {ensayoActual.opciones?.map((opcion, i) => ( // Seguridad al acceder a opciones
+            {ensayoActual.opciones?.map((opcion, i) => (
               <button
                 key={i}
                 className={`opcion-boton ${
@@ -397,18 +514,33 @@ const Juego4 = () => {
                 data-figura={opcion.figura}
                 data-cantidad={opcion.cantidad}
                 onClick={() => manejarSeleccion(opcion)}
-                disabled={!ensayoActual} // Deshabilitar si no hay ensayo
+                disabled={!ensayoActual}
               >
                 <svg width="100%" height="100%" viewBox="0 0 200 80">
                   <Figura
                     tipo={opcion.figura}
                     cantidad={opcion.cantidad}
-                    x={100} // Centrar las figuras horizontalmente
-                    y={40}  // Centrar las figuras verticalmente
+                    x={100}
+                    y={40}
                   />
                 </svg>
               </button>
             ))}
+          </div>
+        </div>
+      ) : (
+        // Mostrar estado de guardado cuando termine el juego
+        <div className="juego4-container">
+          <div style={{ textAlign: 'center', padding: '20px' }}>
+            {resultadoGuardado ? (
+              <p style={{ color: '#22c55e', fontWeight: 'bold' }}>
+                Resultado guardado correctamente
+              </p>
+            ) : (
+              <p style={{ color: '#f59e0b', fontWeight: 'bold' }}>
+                Guardando resultado...
+              </p>
+            )}
           </div>
         </div>
       )}

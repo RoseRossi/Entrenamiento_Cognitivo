@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { generarEnsayo, verificarRespuesta, calcularRetraso } from "./juego6_funciones";
 import GameLayout from "../GameLayout";
+import { auth } from "../../../../services/firebase/firebaseConfig";
+import { gameService } from "../../../../services/firebase/gameService";
+import { userService } from "../../../../services/firebase/userService";
 import "./juego6_estilos.css";
 import { useMemo } from "react";
 
@@ -27,7 +30,121 @@ const Juego6 = ({ nivel = "basico" }) => {
   const [tiemposReaccion, setTiemposReaccion] = useState([]); // Guarda tiempos de reacción
   const tiempoInicioRef = useRef(null); // Marca el tiempo en que se muestra el estímulo
 
+  // Estados para Firebase
+  const [user, setUser] = useState(null);
+  const [tiempoInicio, setTiempoInicio] = useState(null);
+  const [resultadoGuardado, setResultadoGuardado] = useState(false);
+  const [respuestasDetalladas, setRespuestasDetalladas] = useState([]);
 
+  // Guardar resultado usando useCallback
+  const guardarResultado = useCallback(async () => {
+    if (!user) {
+      console.log('No hay usuario autenticado para guardar resultado');
+      return;
+    }
+
+    try {
+      console.log('Guardando resultado del Juego 6...');
+      
+      const tiempoTranscurrido = Math.round((Date.now() - tiempoInicio) / 1000);
+      const totalEnsayosPosibles = 100;
+      const ensayosCompletados = ensayoActual;
+      const respuestasCorrectas = estadoJuego.respuestasCorrectas;
+      
+      // Calcular métricas específicas del paradigma de Posner
+      const porcentajeCompletado = Math.round((ensayosCompletados / totalEnsayosPosibles) * 100);
+      const porcentajePrecision = ensayosCompletados > 0 ? Math.round((respuestasCorrectas / ensayosCompletados) * 100) : 0;
+      
+      // Separar ensayos por tipo
+      const ensayosCongruentes = respuestasDetalladas.filter(r => r.congruente);
+      const ensayosIncongruentes = respuestasDetalladas.filter(r => !r.congruente);
+      
+      // Calcular tiempos de reacción promedio por tipo
+      const tiempoReaccionCongruente = ensayosCongruentes.length > 0 ? 
+        Math.round(ensayosCongruentes.reduce((sum, r) => sum + r.tiempoReaccion, 0) / ensayosCongruentes.length) : 0;
+      const tiempoReaccionIncongruente = ensayosIncongruentes.length > 0 ? 
+        Math.round(ensayosIncongruentes.reduce((sum, r) => sum + r.tiempoReaccion, 0) / ensayosIncongruentes.length) : 0;
+      
+      // Calcular efecto de validez de la señal (diferencia entre incongruente y congruente)
+      const efectoValidez = tiempoReaccionIncongruente - tiempoReaccionCongruente;
+      
+      // Determinar nivel basado en rendimiento
+      let nivelJuego = 'basico';
+      if (porcentajePrecision >= 85 && porcentajeCompletado >= 90 && efectoValidez < 100) {
+        nivelJuego = 'avanzado';
+      } else if (porcentajePrecision >= 70 && porcentajeCompletado >= 75 && efectoValidez < 150) {
+        nivelJuego = 'intermedio';
+      }
+
+      // Score basado en precisión, completitud y eficiencia atencional
+      const scoreBase = Math.round((porcentajePrecision * 0.6) + (porcentajeCompletado * 0.3));
+      const bonusEficiencia = efectoValidez < 50 ? 10 : (efectoValidez < 100 ? 5 : 0);
+      const scoreFinal = Math.min(100, scoreBase + bonusEficiencia);
+
+      const resultData = {
+        userId: user.uid,
+        gameId: 'posner_haciendo_cola',
+        cognitiveDomain: 'atencion',
+        level: nivelJuego,
+        score: scoreFinal,
+        timeSpent: tiempoTranscurrido,
+        correctAnswers: respuestasCorrectas,
+        totalQuestions: ensayosCompletados,
+        details: {
+          totalEnsayosPosibles: totalEnsayosPosibles,
+          porcentajeCompletado: porcentajeCompletado,
+          porcentajePrecision: porcentajePrecision,
+          fallosTotales: estadoJuego.respuestasIncorrectas,
+          razonTermino: estadoJuego.respuestasIncorrectas >= MAX_FALLOS_PERMITIDOS ? 'limite_fallos' :
+                       (ensayosCompletados >= totalEnsayosPosibles ? 'completado' : 'usuario_salio'),
+          // Métricas específicas del paradigma de Posner
+          aciertosCongruentes: aciertosCongruentes,
+          aciertosIncongruentes: aciertosIncongruentes,
+          totalEnsayosCongruentes: ensayosCongruentes.length,
+          totalEnsayosIncongruentes: ensayosIncongruentes.length,
+          tiempoReaccionCongruente: tiempoReaccionCongruente,
+          tiempoReaccionIncongruente: tiempoReaccionIncongruente,
+          efectoValidez: efectoValidez, // Clave métrica para atención encubierta
+          tiempoReaccionPromedio: tiemposReaccion.length > 0 ? 
+            Math.round(tiemposReaccion.reduce((a, b) => a + b, 0) / tiemposReaccion.length) : 0,
+          tiempoReaccionMinimo: Math.min(...tiemposReaccion),
+          tiempoReaccionMaximo: Math.max(...tiemposReaccion),
+          variabilidadTiempoReaccion: tiemposReaccion.length > 1 ? 
+            Math.round(Math.sqrt(tiemposReaccion.reduce((sum, rt) => {
+              const mean = tiemposReaccion.reduce((a, b) => a + b, 0) / tiemposReaccion.length;
+              return sum + Math.pow(rt - mean, 2);
+            }, 0) / (tiemposReaccion.length - 1))) : 0,
+          respuestasDetalladas: respuestasDetalladas,
+          tiemposReaccionCompletos: tiemposReaccion
+        }
+      };
+
+      // Guardar resultado del juego
+      await gameService.saveGameResult(resultData);
+      
+      // Actualizar progreso del usuario en el dominio cognitivo
+      await userService.updateUserProgress(user.uid, 'atencion', scoreFinal);
+      
+      console.log('Resultado del Juego 6 guardado exitosamente');
+      setResultadoGuardado(true);
+      
+    } catch (error) {
+      console.error('Error guardando resultado del Juego 6:', error);
+    }
+  }, [user, tiempoInicio, ensayoActual, estadoJuego, aciertosCongruentes, aciertosIncongruentes, tiemposReaccion, respuestasDetalladas]);
+
+  // Inicialización
+  useEffect(() => {
+    setUser(auth.currentUser);
+    setTiempoInicio(Date.now());
+  }, []);
+
+  // Guardar resultado cuando el juego termine
+  useEffect(() => {
+    if (estadoJuego.juegoTerminado && !resultadoGuardado && user && tiempoInicio) {
+      guardarResultado();
+    }
+  }, [estadoJuego.juegoTerminado, resultadoGuardado, user, tiempoInicio, guardarResultado]);
 
   const formatearTiempo = useCallback((ms) => {
     if (isNaN(ms) || ms <= 0) return "0.0s";
@@ -76,7 +193,6 @@ const Juego6 = ({ nivel = "basico" }) => {
     const bloque = Math.floor(indiceEnsayo / 20); // Cada bloque tiene 20 ensayos
     return 6000 - (bloque * 500); // Baja 500ms por bloque, mínimo 4000ms
   };
-
 
   const iniciarEnsayo = useCallback(() => {
     setEnsayoActual((prevEnsayoActual) => {
@@ -153,22 +269,35 @@ const Juego6 = ({ nivel = "basico" }) => {
   }, [
     estadoJuego.juegoTerminado,
     ensayos,
-    nivel,
+    //nivel,
     limpiarTemporizadores,
     terminarJuego,
   ]);
 
-
   const manejarRespuesta = useCallback((respuesta) => {
-    
+    let tiempoReaccion = 0;
     if (tiempoInicioRef.current !== null) {
-      const tiempoReaccion = Date.now() - tiempoInicioRef.current;
+      tiempoReaccion = Date.now() - tiempoInicioRef.current;
       setTiemposReaccion(prev => [...prev, tiempoReaccion]);
     }
+    
     if (!puedeResponderRef.current || !mostrarEstimuloRef.current) return;
 
     const esCorrecta = verificarRespuesta(respuesta, estimulo);
     setRespuestaCorrecta(esCorrecta ? estimulo : null);
+
+    // Registrar respuesta detallada
+    const respuestaDetallada = {
+      ensayoNumero: ensayoActual + 1,
+      congruente: ensayoActualRef.current?.congruente || false,
+      direccionFlecha: flecha,
+      ubicacionEstimulo: estimulo,
+      respuestaUsuario: respuesta,
+      correcta: esCorrecta,
+      tiempoReaccion: tiempoReaccion,
+      tiempoRespuesta: Date.now() - tiempoInicio
+    };
+    setRespuestasDetalladas(prev => [...prev, respuestaDetallada]);
 
     // Contador separado por tipo de ensayo (congruente/incongruente)
     if (ensayoActualRef.current) {
@@ -214,6 +343,9 @@ const Juego6 = ({ nivel = "basico" }) => {
     });
   }, [
     estimulo,
+    flecha,
+    ensayoActual,
+    tiempoInicio,
     limpiarTemporizadores,
     terminarJuego,
     iniciarEnsayo,
@@ -247,6 +379,10 @@ const Juego6 = ({ nivel = "basico" }) => {
     });
     setAciertosCongruentes(0);
     setAciertosIncongruentes(0);
+    setResultadoGuardado(false);
+    setRespuestasDetalladas([]);
+    setTiemposReaccion([]);
+    setTiempoInicio(Date.now());
     setTimeout(() => iniciarEnsayo(), 100); // Espera breve para asegurar el reset
   }, [iniciarEnsayo, limpiarTemporizadores]);
 
@@ -259,12 +395,29 @@ const Juego6 = ({ nivel = "basico" }) => {
     </div>
   ));
 
-  useEffect(() => {
-    if (estadoJuego.juegoTerminado) {
-      console.log("Tiempos de reacción (ms):", tiemposReaccion);
-    }
-  }, [estadoJuego.juegoTerminado, tiemposReaccion]); 
+  const generarAnalisis = () => {
+    const porcentajePrecision = ensayoActual > 0 ? Math.round((estadoJuego.respuestasCorrectas / ensayoActual) * 100) : 0;
+    const tiempoPromedioReaccion = tiemposReaccion.length > 0 ? 
+      Math.round(tiemposReaccion.reduce((a, b) => a + b, 0) / tiemposReaccion.length) : 0;
+    
+    const ensayosCongruentes = respuestasDetalladas.filter(r => r.congruente);
+    const ensayosIncongruentes = respuestasDetalladas.filter(r => !r.congruente);
+    const tiempoCongruente = ensayosCongruentes.length > 0 ? 
+      Math.round(ensayosCongruentes.reduce((sum, r) => sum + r.tiempoReaccion, 0) / ensayosCongruentes.length) : 0;
+    const tiempoIncongruente = ensayosIncongruentes.length > 0 ? 
+      Math.round(ensayosIncongruentes.reduce((sum, r) => sum + r.tiempoReaccion, 0) / ensayosIncongruentes.length) : 0;
+    const efectoValidez = tiempoIncongruente - tiempoCongruente;
 
+    if (estadoJuego.respuestasIncorrectas >= MAX_FALLOS_PERMITIDOS) {
+      return `Has alcanzado el límite de fallos. Completaste ${ensayoActual} ensayos con ${porcentajePrecision}% de precisión. Tu tiempo de reacción promedio fue ${tiempoPromedioReaccion}ms. Intenta mantener mayor concentración en la tarea.`;
+    }
+    
+    if (ensayoActual >= 100) {
+      return `¡Completaste todos los ensayos! Precisión: ${porcentajePrecision}%, tiempo de reacción promedio: ${tiempoPromedioReaccion}ms. Efecto de validez: ${efectoValidez}ms (diferencia entre ensayos incongruentes y congruentes). ${efectoValidez < 50 ? 'Excelente eficiencia atencional!' : efectoValidez < 100 ? 'Buena eficiencia atencional.' : 'Tu atención se beneficia moderadamente de las señales.'}`;
+    }
+
+    return `Tu atención visual ${aciertosCongruentes > aciertosIncongruentes ? 'responde mejor cuando las señales anticipan correctamente la ubicación del estímulo' : aciertosIncongruentes > aciertosCongruentes ? 'es más flexible y menos dependiente de señales externas' : 'es equilibrada entre ensayos con señales correctas e incorrectas'}.`;
+  };
 
   return (
     <GameLayout
@@ -285,43 +438,18 @@ const Juego6 = ({ nivel = "basico" }) => {
       gameOver={estadoJuego.juegoTerminado}
       finalStats={{ 
         completado: estadoJuego.respuestasIncorrectas < MAX_FALLOS_PERMITIDOS, 
-        ensayos: ensayoActual + 1, 
+        ensayos: ensayoActual, 
         aciertos: estadoJuego.respuestasCorrectas, 
         errores: estadoJuego.respuestasIncorrectas, 
         puntuacionFinal: estadoJuego.puntuacion,
         motivoFin: estadoJuego.respuestasIncorrectas >= MAX_FALLOS_PERMITIDOS ? "Límite de fallos alcanzado" : "Juego completado"
       }}
       onRestart={reiniciarJuego}
-      analysis={
-        <div>
-          <p>Has completado el juego. Aquí tienes un resumen de tu desempeño:</p>
-          <ul>
-            <li>
-              <strong>Aciertos cuando la señal coincidía con la ubicación (congruentes):</strong> {aciertosCongruentes}
-            </li>
-            <li>
-              <strong>Aciertos cuando la señal no coincidía (incongruentes):</strong> {aciertosIncongruentes}
-            </li>
-          </ul>
-          {aciertosCongruentes > aciertosIncongruentes ? (
-            <p>
-              Tu atención visual parece responder mejor cuando las señales anticipan correctamente la ubicación del estímulo, lo cual es típico según estudios de atención encubierta. Esto indica que tu sistema atencional se beneficia de las señales válidas.
-            </p>
-          ) : aciertosIncongruentes > aciertosCongruentes ? (
-            <p>
-              Curiosamente, obtuviste más aciertos en los ensayos con señales incorrectas. Esto podría indicar una atención más flexible o menos dependiente de señales externas, lo cual también puede ser una fortaleza en situaciones impredecibles.
-            </p>
-          ) : (
-            <p>
-              Tu desempeño fue equilibrado entre ensayos con señales correctas e incorrectas. Esto sugiere que tu atención visual no depende fuertemente de las señales, y puede adaptarse con flexibilidad.
-            </p>
-          )}
-        </div>
-      }
+      analysis={generarAnalisis()}
       onFallo={estadoJuego.respuestasIncorrectas}
       onCorrectAnswer={estadoJuego.puntuacion}
     >
-      {!estadoJuego.juegoTerminado && (
+      {!estadoJuego.juegoTerminado ? (
         <div className="juego6-container">
           <div className="cajas-container">
             <Caja
@@ -343,6 +471,21 @@ const Juego6 = ({ nivel = "basico" }) => {
           <div className="controles">
             <button onClick={() => manejarRespuesta("izquierda")} disabled={!puedeResponder}>Izquierda</button>
             <button onClick={() => manejarRespuesta("derecha")} disabled={!puedeResponder}>Derecha</button>
+          </div>
+        </div>
+      ) : (
+        // Mostrar estado de guardado cuando termine el juego
+        <div className="juego6-container">
+          <div style={{ textAlign: 'center', padding: '20px' }}>
+            {resultadoGuardado ? (
+              <p style={{ color: '#22c55e', fontWeight: 'bold' }}>
+                Resultado guardado correctamente
+              </p>
+            ) : (
+              <p style={{ color: '#f59e0b', fontWeight: 'bold' }}>
+                Guardando resultado...
+              </p>
+            )}
           </div>
         </div>
       )}

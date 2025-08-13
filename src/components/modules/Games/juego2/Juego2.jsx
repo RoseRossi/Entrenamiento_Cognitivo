@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { patrones, verificarRespuesta } from "./juego2_funciones";
+import { auth } from "../../../../services/firebase/firebaseConfig";
+import { gameService } from "../../../../services/firebase/gameService";
+import { userService } from "../../../../services/firebase/userService";
 import "./juego2_estilos.css";
 import GameLayout from "../GameLayout";
 
@@ -10,10 +13,97 @@ const Juego2 = () => {
   const [tiempo, setTiempo] = useState(30);
   const [estadoOpciones, setEstadoOpciones] = useState([]);
   const [fallosSeguidos, setFallosSeguidos] = useState(0);
+  const [user, setUser] = useState(null);
+  const [tiempoInicio, setTiempoInicio] = useState(null);
+  const [resultadoGuardado, setResultadoGuardado] = useState(false);
+  const [respuestasDetalladas, setRespuestasDetalladas] = useState([]);
 
   const patronActual = indiceActual < patrones.length ? patrones[indiceActual] : null;
   const esEnsayo = patronActual?.nivel === 0;
   const juegoTerminado = !patronActual;
+
+  // Guardar resultado usando useCallback
+  const guardarResultado = useCallback(async () => {
+    if (!user) {
+      console.log('No hay usuario autenticado para guardar resultado');
+      return;
+    }
+
+    try {
+      console.log('Guardando resultado del Juego 2...');
+      
+      const tiempoTranscurrido = Math.round((Date.now() - tiempoInicio) / 1000);
+      const totalMatrices = patrones.length;
+      const matricesCompletadas = indiceActual;
+      const porcentajeCompletado = Math.round((matricesCompletadas / totalMatrices) * 100);
+      
+      // Calcular score basado en puntuación y completitud
+      const scoreBase = Math.round((puntuacion / totalMatrices) * 100);
+      const bonusCompletitud = matricesCompletadas === totalMatrices ? 10 : 0;
+      const finalScore = Math.min(100, scoreBase + bonusCompletitud);
+
+      // Determinar nivel basado en rendimiento
+      let nivelJuego = 'basico';
+      if (finalScore >= 80 && matricesCompletadas >= totalMatrices * 0.8) {
+        nivelJuego = 'avanzado';
+      } else if (finalScore >= 60 && matricesCompletadas >= totalMatrices * 0.6) {
+        nivelJuego = 'intermedio';
+      }
+
+      // Calcular respuestas correctas
+      const respuestasCorrectas = respuestasDetalladas.filter(r => r.correcta).length;
+
+      const resultData = {
+        userId: user.uid,
+        gameId: 'matrices_progresivas',
+        cognitiveDomain: 'razonamiento_abstracto',
+        level: nivelJuego,
+        score: finalScore,
+        timeSpent: tiempoTranscurrido,
+        correctAnswers: respuestasCorrectas,
+        totalQuestions: matricesCompletadas,
+        details: {
+          puntuacionBruta: puntuacion,
+          matricesCompletadas: matricesCompletadas,
+          totalMatrices: totalMatrices,
+          porcentajeCompletado: porcentajeCompletado,
+          fallosSeguidos: fallosSeguidos,
+          nivelMaximo: nivel,
+          razonTermino: tiempo <= 0 ? 'tiempo_agotado' : 
+                       (fallosSeguidos >= 3 ? 'demasiados_errores' : 
+                       (matricesCompletadas === totalMatrices ? 'completado' : 'usuario_salio')),
+          respuestasDetalladas: respuestasDetalladas,
+          tiempoPromedioPorMatriz: matricesCompletadas > 0 ? 
+            Math.round((tiempoTranscurrido / matricesCompletadas) * 100) / 100 : 0
+        }
+      };
+
+      // Guardar resultado del juego
+      await gameService.saveGameResult(resultData);
+      
+      // Actualizar progreso del usuario en el dominio cognitivo
+      await userService.updateUserProgress(user.uid, 'razonamiento_abstracto', finalScore);
+      
+      console.log('Resultado del Juego 2 guardado exitosamente');
+      setResultadoGuardado(true);
+      
+    } catch (error) {
+      console.error('Error guardando resultado del Juego 2:', error);
+    }
+  }, [user, tiempoInicio, indiceActual, puntuacion, nivel, tiempo, fallosSeguidos, respuestasDetalladas]);
+
+  // Inicialización
+  useEffect(() => {
+    setUser(auth.currentUser);
+    setTiempoInicio(Date.now());
+  }, []);
+
+  // Guardar resultado cuando el juego termine
+  useEffect(() => {
+    if (juegoTerminado && !resultadoGuardado && user && tiempoInicio) {
+      guardarResultado();
+    }
+  }, [juegoTerminado, resultadoGuardado, user, tiempoInicio, guardarResultado]);
 
   // Nivel dinámico
   useEffect(() => {
@@ -48,12 +138,27 @@ const Juego2 = () => {
     setNivel(0);
     setFallosSeguidos(0);
     setEstadoOpciones([]);
+    setResultadoGuardado(false);
+    setRespuestasDetalladas([]);
+    setTiempoInicio(Date.now());
   };
 
   const manejarSeleccion = (indiceSeleccionado) => {
     if (juegoTerminado) return;
 
     const esCorrecta = verificarRespuesta(indiceSeleccionado, patronActual.correct);
+
+    // Registrar respuesta detallada
+    const nuevaRespuesta = {
+      matriceId: patronActual.id,
+      nivel: patronActual.nivel,
+      respuestaUsuario: indiceSeleccionado,
+      respuestaCorrecta: patronActual.correct,
+      correcta: esCorrecta,
+      tiempoRespuesta: Date.now() - tiempoInicio,
+      tiempoRestante: tiempo
+    };
+    setRespuestasDetalladas(prev => [...prev, nuevaRespuesta]);
 
     const nuevosEstados = patronActual.options.map((_, idx) =>
       idx === indiceSeleccionado ? (esCorrecta ? "correct" : "incorrect") : ""
@@ -97,20 +202,23 @@ const Juego2 = () => {
   };
 
   const generarAnalisis = () => {
+    const porcentajeCompletado = (indiceActual / patrones.length) * 100;
+    const respuestasCorrectas = respuestasDetalladas.filter(r => r.correcta).length;
+    const porcentajeAciertos = respuestasDetalladas.length > 0 ? 
+      Math.round((respuestasCorrectas / respuestasDetalladas.length) * 100) : 0;
+
     if (indiceActual === patrones.length || fallosSeguidos >= 3) {
-      const porcentajeCompletado = (indiceActual / patrones.length) * 100;
-  
       if (porcentajeCompletado === 100) {
-        return "¡Excelente! Has completado todas las matrices demostrando una gran capacidad de razonamiento lógico y abstracción.";
+        return `¡Excelente! Has completado todas las matrices con ${porcentajeAciertos}% de precisión, demostrando una gran capacidad de razonamiento lógico y abstracción.`;
       } else if (porcentajeCompletado >= 75) {
-        return "Buen trabajo. Has completado la mayoría de las matrices. Sigue practicando para mejorar tu precisión y rapidez en la identificación de patrones.";
+        return `Buen trabajo. Has completado ${Math.round(porcentajeCompletado)}% de las matrices con ${porcentajeAciertos}% de precisión. Sigue practicando para mejorar.`;
       } else if (fallosSeguidos >= 3) {
-        return "Has cometido tres errores consecutivos, lo que ha finalizado la prueba. Intenta analizar con más cuidado los patrones antes de responder en futuras partidas.";
+        return `Has cometido tres errores consecutivos. Completaste ${Math.round(porcentajeCompletado)}% con ${porcentajeAciertos}% de precisión. Analiza más cuidadosamente los patrones.`;
       } else {
-        return "Has completado una parte de las pruebas. Sigue practicando para mejorar tu razonamiento lógico y tu capacidad de resolver problemas abstractos.";
+        return `Completaste ${Math.round(porcentajeCompletado)}% de las matrices con ${porcentajeAciertos}% de precisión. Sigue practicando para mejorar tu razonamiento lógico.`;
       }
     } else if (tiempo <= 0) {
-      return "Se te acabó el tiempo. Intenta ser más rápido identificando los patrones en las matrices para completar más ensayos.";
+      return `Se te acabó el tiempo. Completaste ${Math.round(porcentajeCompletado)}% con ${porcentajeAciertos}% de precisión. Intenta ser más rápido identificando patrones.`;
     }
     return "";
   };
@@ -143,7 +251,7 @@ const Juego2 = () => {
       onFallo={fallosSeguidos}
       onCorrectAnswer={puntuacion}
     >
-      {!juegoTerminado && (
+      {!juegoTerminado ? (
         <div className="juego-container">
           {/* Matriz centrada */}
           <div className="matriz-container">
@@ -169,6 +277,21 @@ const Juego2 = () => {
                 </button>
               ))}
             </div>
+          </div>
+        </div>
+      ) : (
+        // Mostrar estado de guardado cuando termine el juego
+        <div className="juego-container">
+          <div style={{ textAlign: 'center', padding: '20px' }}>
+            {resultadoGuardado ? (
+              <p style={{ color: '#22c55e', fontWeight: 'bold' }}>
+                Resultado guardado correctamente
+              </p>
+            ) : (
+              <p style={{ color: '#f59e0b', fontWeight: 'bold' }}>
+                Guardando resultado...
+              </p>
+            )}
           </div>
         </div>
       )}
