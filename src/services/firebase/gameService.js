@@ -173,6 +173,90 @@ export class GameService {
     }
   }
 
+  //   Inicializar configuración de juegos
+  async initializeGames() {
+    try {
+      console.log('Inicializando configuración de juegos...');
+      
+      // Verificar que los metadatos estén cargados
+      const availableGames = this.getAvailableGames();
+      
+      if (availableGames.length === 0) {
+        throw new Error('No se encontraron juegos disponibles');
+      }
+      
+      console.log(`✅ ${availableGames.length} juegos disponibles:`, 
+        availableGames.map(game => game.displayName).join(', ')
+      );
+      
+      // CORREGIR: Usar los nombres exactos de dominios del GAME_METADATA.js
+      const domains = [
+        'lenguaje',
+        'razonamiento_abstracto', // ← Era 'razonamiento'
+        'memoria', 
+        'atencion', 
+        'funciones_ejecutivas',
+        'memoria_trabajo'
+      ];
+      const validDomains = [];
+      const invalidDomains = [];
+      
+      for (const domain of domains) {
+        try {
+          if (validateDomainExists(domain)) {
+            validDomains.push(domain);
+          } else {
+            invalidDomains.push(domain);
+          }
+        } catch (error) {
+          console.warn(`⚠️ Error validando dominio ${domain}:`, error.message);
+          invalidDomains.push(domain);
+        }
+      }
+      
+      console.log(`✅ Dominios válidos (${validDomains.length}):`, validDomains);
+      
+      if (invalidDomains.length > 0) {
+        console.warn(`⚠️ Dominios no configurados (${invalidDomains.length}):`, invalidDomains);
+      }
+      
+      // Verificar que al menos hay algunos dominios válidos
+      if (validDomains.length === 0) {
+        throw new Error('No se encontraron dominios cognitivos válidos configurados');
+      }
+      
+      console.log('✅ Configuración de juegos validada correctamente');
+      
+      // Log de inicialización exitosa
+      this.logSecurityEvent('GAMES_INITIALIZED', 'system', {
+        gamesCount: availableGames.length,
+        validDomainsCount: validDomains.length,
+        invalidDomainsCount: invalidDomains.length,
+        invalidDomains: invalidDomains,
+        timestamp: new Date().toISOString()
+      });
+      
+      return {
+        success: true,
+        message: 'Juegos inicializados correctamente',
+        gamesCount: availableGames.length,
+        validDomains: validDomains,
+        warnings: invalidDomains.length > 0 ? `Dominios no configurados: ${invalidDomains.join(', ')}` : null,
+        availableGames: availableGames.map(g => g.displayName)
+      };
+      
+    } catch (error) {
+      console.error('❌ Error inicializando juegos:', error);
+      
+      this.logSecurityEvent('GAMES_INITIALIZATION_ERROR', 'system', {
+        error: error.message,
+        timestamp: new Date().toISOString()
+      });
+      
+      throw error;
+    }
+  }
+
   //   Validar estructura y contenido de datos del juego (ACTUALIZADA con metadatos)
   validateGameData(gameData) {
     // Validar campos requeridos
