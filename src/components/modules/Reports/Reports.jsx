@@ -34,19 +34,24 @@ const Reports = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedGameDetails, setSelectedGameDetails] = useState(null);
   const [showChartModal, setShowChartModal] = useState(false);
+  const [activeAccordion, setActiveAccordion] = useState('history'); // Estado para el acordeón
 
-  const gameNames = {
-    'juego1': 'Comprensión de Textos',
-    'juego2': 'Razonamiento con Matrices',
-    'juego3': 'Recordar Secuencias',
-    'juego4': 'Planificación y Estrategia',
-    'juego5': 'Control Atencional',
-    'juego6': 'Memoria de Trabajo',
-    'juego7': 'Razonamiento Verbal',
-    'juego8': 'Flexibilidad Cognitiva'
+  const toggleAccordion = (section) => {
+    setActiveAccordion(activeAccordion === section ? null : section);
   };
 
-  const cognitiveRomains = {
+  const gameNames = {
+    'razonamiento_gramatical': 'Razonamiento Gramatical',
+    'matrices_progresivas': 'Matrices Progresivas', 
+    'aprendizaje_listas_verbales': 'Aprendizaje de Listas Verbales',
+    'balance_balanza': 'Balance de Balanza',
+    'reconociendo_objetos': 'Reconociendo Objetos',
+    'posner_haciendo_cola': 'Posner Haciendo Cola',
+    'forward_memory_span': 'Forward Memory Span',
+    'reverse_memory_span': 'Reverse Memory Span'
+  };
+
+  const cognitiveDomains = {
     'lenguaje': 'Lenguaje',
     'razonamiento_abstracto': 'Razonamiento Abstracto',
     'memoria': 'Memoria',
@@ -192,43 +197,306 @@ const Reports = () => {
   };
 
   const showGameDetails = (result) => {
-    const detailsData = {
-      sessionInfo: {
-        game: gameNames[result.gameId] || result.gameId,
-        domain: cognitiveRomains[result.cognitiveDomain] || result.cognitiveDomain,
-        date: formatDate(result),
-        level: result.level,
-        score: result.score,
-        timeSpent: result.timeSpent
-      },
-      performanceMetrics: {
-        reactionTime: result.details?.averageReactionTime || 'N/A',
-        consistency: result.details?.consistencyScore || 'N/A',
-        improvementTrend: result.details?.improvementFromLastSession || 'Sin datos previos',
-        difficultyProgression: result.details?.difficultyProgression || 'N/A'
-      },
-      cognitiveAnalysis: {
-        strengthAreas: result.details?.strongCognitiveAreas || ['Análisis en proceso'],
-        improvementAreas: result.details?.areasForImprovement || ['Análisis en proceso'],
-        cognitiveLoad: result.details?.cognitiveLoadLevel || 'Medio',
-        adaptationSuggestions: result.details?.adaptationRecommendations || ['Continuar práctica regular']
-      },
-      sessionBreakdown: {
-        totalQuestions: result.totalQuestions || 0,
-        correctAnswers: result.correctAnswers || 0,
-        accuracy: result.totalQuestions > 0 ? Math.round((result.correctAnswers / result.totalQuestions) * 100) : 0,
-        timePerQuestion: result.totalQuestions > 0 ? Math.round(result.timeSpent / result.totalQuestions) : 0,
-        errorPatterns: result.details?.errorAnalysis || 'Sin patrones identificados'
-      },
-      comparativeData: {
-        personalBest: result.details?.comparisonWithPersonalBest || 'Primera sesión',
-        sessionComparison: result.details?.comparisonWithPreviousSessions || 'Sin datos previos',
-        recommendedNextLevel: result.details?.nextRecommendedDifficulty || result.level
-      }
-    };
-    
+    const detailsData = getGameSpecificDetails(result);
     setSelectedGameDetails(detailsData);
     setShowDetailsModal(true);
+  };
+
+  const getGameSpecificDetails = (result) => {
+    const baseInfo = {
+      game: gameNames[result.gameId] || result.gameId,
+      domain: cognitiveDomains[result.cognitiveDomain] || result.cognitiveDomain,
+      date: formatDate(result),
+      level: result.level,
+      score: result.score,
+      timeSpent: result.timeSpent
+    };
+
+    switch(result.gameId) {
+      case 'razonamiento_gramatical': // Comprensión de Textos (Razonamiento gramatical)
+        return {
+          gameId: result.gameId,
+          sessionInfo: baseInfo,
+          specificMetrics: {
+            title: "Análisis de Razonamiento Gramatical",
+            metrics: [
+              {
+                label: "Puntuación Total",
+                value: `${result.correctAnswers || 0} - ${(result.totalQuestions - result.correctAnswers) || 0}`,
+                description: "(Respuestas correctas - incorrectas)"
+              },
+              {
+                label: "Tiempo Promedio por Enunciado",
+                value: result.totalQuestions > 0 ? `${Math.round(result.timeSpent / result.totalQuestions)}s` : 'N/A',
+                description: "Velocidad de procesamiento de texto"
+              },
+              {
+                label: "Dificultad Alcanzada",
+                value: result.details?.difficultyLevel || result.level,
+                description: "Complejidad de estructuras gramaticales"
+              },
+              {
+                label: "Elementos Complejos Procesados",
+                value: result.details?.complexElementsHandled || 'Información no disponible',
+                description: "Negaciones, distractores, estructuras complejas"
+              }
+            ],
+            evolution: result.details?.grammaticalEvolution || "Mejora en velocidad y precisión en desarrollo"
+          }
+        };
+
+      case 'matrices_progresivas': // Razonamiento con Matrices
+        return {
+          gameId: result.gameId,
+          sessionInfo: baseInfo,
+          specificMetrics: {
+            title: "Análisis de Matrices Progresivas",
+            metrics: [
+              {
+                label: "Ensayos Correctos",
+                value: result.correctAnswers || 0,
+                description: "Total de matrices resueltas correctamente"
+              },
+              {
+                label: "Nivel de Dificultad",
+                value: getDifficultyLevel(result.level),
+                description: "Complejidad de patrones abstractos"
+              },
+              {
+                label: "Tiempo Promedio por Matriz",
+                value: result.totalQuestions > 0 ? `${Math.round(result.timeSpent / result.totalQuestions)}s` : 'N/A',
+                description: "Velocidad de razonamiento abstracto"
+              },
+              {
+                label: "Intentos Fallidos",
+                value: result.details?.failedAttempts || 'N/A',
+                description: "Errores antes de completar"
+              }
+            ],
+            evolution: result.details?.matrixEvolution || "Capacidad de resolver problemas complejos en desarrollo"
+          }
+        };
+
+      case 'aprendizaje_listas_verbales': // Recordar Secuencias (Aprendizaje de listas verbales)
+        return {
+          gameId: result.gameId,
+          sessionInfo: baseInfo,
+          specificMetrics: {
+            title: "Análisis de Memoria Episódica",
+            metrics: [
+              {
+                label: "Palabras por Ronda",
+                value: result.details?.wordsPerRound || 'N/A',
+                description: "Progreso en las tres repeticiones"
+              },
+              {
+                label: "Puntuación Final",
+                value: result.details?.finalRecall || result.score,
+                description: "Total recordado en última ronda"
+              },
+              {
+                label: "Retención Entre Rondas",
+                value: result.details?.retentionRate ? `${result.details.retentionRate}%` : 'N/A',
+                description: "Porcentaje de mantenimiento"
+              },
+              {
+                label: "Confusiones con Distractores",
+                value: result.details?.distractorConfusions || 'N/A',
+                description: "Palabras incorrectamente recordadas"
+              }
+            ],
+            evolution: result.details?.memoryEvolution || "Aumento de palabras recordadas en desarrollo"
+          }
+        };
+
+      case 'balance_balanza': // Planificación y Estrategia (Balance de balanza)
+        return {
+          gameId: result.gameId,
+          sessionInfo: baseInfo,
+          specificMetrics: {
+            title: "Análisis de Funciones Ejecutivas",
+            metrics: [
+              {
+                label: "Respuestas Correctas",
+                value: result.correctAnswers || 0,
+                description: "Balanzas resueltas correctamente"
+              },
+              {
+                label: "Tiempo por Balanza",
+                value: result.totalQuestions > 0 ? `${Math.round(result.timeSpent / result.totalQuestions)}s` : 'N/A',
+                description: "Velocidad de razonamiento lógico"
+              },
+              {
+                label: "Complejidad Alcanzada",
+                value: result.details?.complexityLevel || result.level,
+                description: "Relaciones proporcionales avanzadas"
+              },
+              {
+                label: "Errores Típicos",
+                value: result.details?.commonErrors || 'Análisis en proceso',
+                description: "Patrones de error identificados"
+              }
+            ],
+            evolution: result.details?.executiveEvolution || "Mejora en resolución de problemas complejos"
+          }
+        };
+
+      case 'reconociendo_objetos': // Control Atencional (Reconocimiento de objetos)
+        return {
+          gameId: result.gameId,
+          sessionInfo: baseInfo,
+          specificMetrics: {
+            title: "Análisis de Memoria Visual",
+            metrics: [
+              {
+                label: "Aciertos vs Errores",
+                value: `${result.correctAnswers || 0} / ${(result.totalQuestions - result.correctAnswers) || 0}`,
+                description: "Reconocimiento correcto de objetos"
+              },
+              {
+                label: "Tiempo de Reacción",
+                value: result.details?.averageReactionTime || 'N/A',
+                description: "Velocidad de procesamiento visual"
+              },
+              {
+                label: "Porcentaje de Éxito",
+                value: result.totalQuestions > 0 ? `${Math.round((result.correctAnswers / result.totalQuestions) * 100)}%` : 'N/A',
+                description: "Precisión global"
+              },
+              {
+                label: "Análisis de Errores",
+                value: result.details?.errorAnalysis || 'Falsos positivos vs negativos en análisis',
+                description: "Tipo de errores cometidos"
+              }
+            ],
+            evolution: result.details?.visualEvolution || "Mejora en rapidez y precisión visual"
+          }
+        };
+
+      case 'posner_haciendo_cola': // Memoria de Trabajo (Posner haciendo cola)
+        return {
+          gameId: result.gameId,
+          sessionInfo: baseInfo,
+          specificMetrics: {
+            title: "Análisis de Atención Visual",
+            metrics: [
+              {
+                label: "Respuestas Correctas",
+                value: result.correctAnswers || 0,
+                description: "Total de ensayos atencionales correctos"
+              },
+              {
+                label: "Tiempo de Reacción",
+                value: result.details?.averageReactionTime || 'N/A',
+                description: "Velocidad de respuesta (ms)"
+              },
+              {
+                label: "Diferencia Válido/No Válido",
+                value: result.details?.validityDifference || 'N/A',
+                description: "Efecto de la señal de orientación"
+              },
+              {
+                label: "Aciertos Bajo Distracción",
+                value: result.details?.distractionAccuracy ? `${result.details.distractionAccuracy}%` : 'N/A',
+                description: "Resistencia a interferencias"
+              }
+            ],
+            evolution: result.details?.attentionEvolution || "Reducción del tiempo de reacción con práctica"
+          }
+        };
+
+      case 'forward_memory_span': // Razonamiento Verbal (Forward memory span)
+        return {
+          gameId: result.gameId,
+          sessionInfo: baseInfo,
+          specificMetrics: {
+            title: "Análisis de Memoria de Trabajo Visoespacial",
+            metrics: [
+              {
+                label: "Secuencia Máxima",
+                value: result.details?.maxSequenceLength || result.level,
+                description: "Longitud máxima alcanzada"
+              },
+              {
+                label: "Ensayos Correctos",
+                value: result.correctAnswers || 0,
+                description: "Total de secuencias reproducidas correctamente"
+              },
+              {
+                label: "Precisión Global",
+                value: result.totalQuestions > 0 ? `${Math.round((result.correctAnswers / result.totalQuestions) * 100)}%` : 'N/A',
+                description: "Porcentaje de clics en orden correcto"
+              },
+              {
+                label: "Tiempo por Clic",
+                value: result.details?.averageClickTime || 'N/A',
+                description: "Velocidad de respuesta promedio"
+              }
+            ],
+            evolution: result.details?.spanEvolution || "Comparación del span máximo a lo largo del tiempo"
+          }
+        };
+
+      case 'reverse_memory_span': // Flexibilidad Cognitiva (Reverse memory span)
+        return {
+          gameId: result.gameId,
+          sessionInfo: baseInfo,
+          specificMetrics: {
+            title: "Análisis de Memoria de Trabajo Inversa",
+            metrics: [
+              {
+                label: "Nivel Máximo Inverso",
+                value: result.details?.maxReverseLevel || result.level,
+                description: "Longitud máxima en orden inverso"
+              },
+              {
+                label: "Correctos vs Incorrectos",
+                value: `${result.correctAnswers || 0} / ${(result.totalQuestions - result.correctAnswers) || 0}`,
+                description: "Rendimiento en secuencias inversas"
+              },
+              {
+                label: "Tiempo por Respuesta",
+                value: result.details?.averageResponseTime || 'N/A',
+                description: "Velocidad de procesamiento inverso"
+              },
+              {
+                label: "Precisión Inversa",
+                value: result.totalQuestions > 0 ? `${Math.round((result.correctAnswers / result.totalQuestions) * 100)}%` : 'N/A',
+                description: "Exactitud en orden inverso"
+              }
+            ],
+            evolution: result.details?.reverseEvolution || "Comparación forward vs reverse span"
+          }
+        };
+
+      default:
+        return {
+          gameId: result.gameId,
+          sessionInfo: baseInfo,
+          specificMetrics: {
+            title: "Análisis General",
+            metrics: [
+              {
+                label: "Rendimiento",
+                value: `${result.score}/100`,
+                description: "Puntuación obtenida"
+              },
+              {
+                label: "Precisión",
+                value: result.totalQuestions > 0 ? `${Math.round((result.correctAnswers / result.totalQuestions) * 100)}%` : 'N/A',
+                description: "Porcentaje de aciertos"
+              }
+            ],
+            evolution: "Análisis específico en desarrollo"
+          }
+        };
+    }
+  };
+
+  const getDifficultyLevel = (level) => {
+    if (level <= 3) return 'Básico';
+    if (level <= 6) return 'Medio';
+    return 'Avanzado';
   };
 
   const formatDate = (result) => {
@@ -262,6 +530,188 @@ const Reports = () => {
       </div>
     );
   }
+
+  // Función para calcular estadísticas acumuladas por juego
+  const getAccumulatedStats = () => {
+    const gameStats = {};
+    
+    gameResults.forEach(result => {
+      const gameId = result.gameId;
+      
+      if (!gameStats[gameId]) {
+        gameStats[gameId] = {
+          gameName: gameNames[gameId] || gameId,
+          totalSessions: 0,
+          totalScore: 0,
+          totalTime: 0,
+          totalCorrect: 0,
+          totalQuestions: 0,
+          scores: [],
+          levels: [],
+          details: [],
+          firstSession: result.createdAt.toDate(),
+          lastSession: result.createdAt.toDate()
+        };
+      }
+      
+      const stats = gameStats[gameId];
+      stats.totalSessions++;
+      stats.totalScore += result.score;
+      stats.totalTime += result.timeSpent;
+      stats.totalCorrect += result.correctAnswers || 0;
+      stats.totalQuestions += result.totalQuestions || 0;
+      stats.scores.push(result.score);
+      stats.levels.push(result.level);
+      stats.details.push(result.details || {});
+      
+      // Actualizar fechas
+      const sessionDate = result.createdAt.toDate();
+      if (sessionDate < stats.firstSession) stats.firstSession = sessionDate;
+      if (sessionDate > stats.lastSession) stats.lastSession = sessionDate;
+    });
+    
+    return gameStats;
+  };
+
+  // Función para obtener estadísticas específicas por juego
+  const getGameSpecificStats = (gameId, stats) => {
+    const avgScore = stats.totalSessions > 0 ? Math.round(stats.totalScore / stats.totalSessions) : 0;
+    const accuracy = stats.totalQuestions > 0 ? Math.round((stats.totalCorrect / stats.totalQuestions) * 100) : 0;
+    
+    switch(gameId) {
+      case 'razonamiento_gramatical':
+        return {
+          primaryMetric: { label: "Precisión Promedio", value: `${accuracy}%` },
+          secondaryMetric: { label: "Tiempo Promedio por Enunciado", value: `${Math.round(stats.totalTime / stats.totalQuestions)}s` },
+          progressMetric: { label: "Mejora en Puntuación", value: getScoreImprovement(stats.scores) },
+          specialMetric: { label: "Nivel Máximo Alcanzado", value: getMaxLevel(stats.details) }
+        };
+
+      case 'matrices_progresivas':
+        return {
+          primaryMetric: { label: "Nivel Máximo de Dificultad", value: getMaxDifficultyLevel(stats.levels) },
+          secondaryMetric: { label: "Porcentaje de Aciertos Global", value: `${accuracy}%` },
+          progressMetric: { label: "Mejora en Puntuación", value: getScoreImprovement(stats.scores) },
+          specialMetric: { label: "Tiempo Promedio por Matriz", value: `${Math.round(stats.totalTime / stats.totalQuestions)}s` }
+        };
+
+      case 'aprendizaje_listas_verbales':
+        return {
+          primaryMetric: { label: "Promedio de Palabras Recordadas", value: Math.round(stats.totalCorrect / stats.totalSessions) },
+          secondaryMetric: { label: "Mejor Sesión", value: `${Math.max(...stats.scores)} palabras` },
+          progressMetric: { label: "Mejora en Retención", value: getScoreImprovement(stats.scores) },
+          specialMetric: { label: "Precisión Global", value: `${accuracy}%` }
+        };
+
+      case 'balance_balanza':
+        return {
+          primaryMetric: { label: "Problemas Resueltos Correctamente", value: stats.totalCorrect },
+          secondaryMetric: { label: "Tiempo Promedio por Balanza", value: `${Math.round(stats.totalTime / stats.totalQuestions)}s` },
+          progressMetric: { label: "Mejora en Puntuación", value: getScoreImprovement(stats.scores) },
+          specialMetric: { label: "Nivel de Complejidad Máximo", value: getMaxLevel(stats.details) }
+        };
+
+      case 'reconociendo_objetos':
+        return {
+          primaryMetric: { label: "Precisión de Reconocimiento", value: `${accuracy}%` },
+          secondaryMetric: { label: "Tiempo de Reacción Promedio", value: getAverageReactionTime(stats.details) },
+          progressMetric: { label: "Mejora en Velocidad", value: getReactionTimeImprovement(stats.details) },
+          specialMetric: { label: "Mejor Precisión", value: `${Math.max(...stats.scores)}%` }
+        };
+
+      case 'posner_haciendo_cola':
+        return {
+          primaryMetric: { label: "Tiempo de Reacción Promedio", value: getAverageReactionTime(stats.details) },
+          secondaryMetric: { label: "Precisión Atencional", value: `${accuracy}%` },
+          progressMetric: { label: "Mejora en Tiempo de Reacción", value: getReactionTimeImprovement(stats.details) },
+          specialMetric: { label: "Sesiones Completadas", value: stats.totalSessions }
+        };
+
+      case 'forward_memory_span':
+        return {
+          primaryMetric: { label: "Longitud Máxima Alcanzada", value: getMaxSpanLength(stats.details) },
+          secondaryMetric: { label: "Promedio de Niveles", value: getAverageLevel(stats.levels) },
+          progressMetric: { label: "Evolución de Precisión", value: getScoreImprovement(stats.scores) },
+          specialMetric: { label: "Secuencias Correctas Total", value: stats.totalCorrect }
+        };
+
+      case 'reverse_memory_span':
+        return {
+          primaryMetric: { label: "Longitud Máxima Inversa", value: getMaxReverseSpan(stats.details) },
+          secondaryMetric: { label: "Promedio de Niveles", value: getAverageLevel(stats.levels) },
+          progressMetric: { label: "Evolución de Precisión", value: getScoreImprovement(stats.scores) },
+          specialMetric: { label: "Comparación con Forward Span", value: getForwardVsReverse(stats.details) }
+        };
+
+      default:
+        return {
+          primaryMetric: { label: "Puntuación Promedio", value: avgScore },
+          secondaryMetric: { label: "Precisión Global", value: `${accuracy}%` },
+          progressMetric: { label: "Sesiones Completadas", value: stats.totalSessions },
+          specialMetric: { label: "Tiempo Total", value: formatDuration(stats.totalTime) }
+        };
+    }
+  };
+
+  // Funciones auxiliares para cálculos específicos
+  const getScoreImprovement = (scores) => {
+    if (scores.length < 2) return "Necesita más sesiones";
+    const firstHalf = scores.slice(0, Math.ceil(scores.length / 2));
+    const secondHalf = scores.slice(Math.ceil(scores.length / 2));
+    const firstAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
+    const secondAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
+    const improvement = secondAvg - firstAvg;
+    return improvement > 0 ? `+${improvement.toFixed(1)}%` : `${improvement.toFixed(1)}%`;
+  };
+
+  const getMaxLevel = (details) => {
+    const levels = details.map(d => d?.nivelMaximoAlcanzado || 0).filter(l => l > 0);
+    return levels.length > 0 ? Math.max(...levels) : 'N/A';
+  };
+
+  const getMaxDifficultyLevel = (levels) => {
+    const levelMap = { 'basico': 1, 'intermedio': 2, 'avanzado': 3 };
+    const maxLevel = Math.max(...levels.map(l => levelMap[l] || 0));
+    return Object.keys(levelMap).find(key => levelMap[key] === maxLevel) || 'N/A';
+  };
+
+  const getAverageReactionTime = (details) => {
+    const times = details.map(d => d?.averageReactionTime).filter(t => t && !isNaN(t));
+    if (times.length === 0) return 'N/A';
+    return `${Math.round(times.reduce((a, b) => a + b, 0) / times.length)}ms`;
+  };
+
+  const getReactionTimeImprovement = (details) => {
+    const times = details.map(d => d?.averageReactionTime).filter(t => t && !isNaN(t));
+    if (times.length < 2) return "Necesita más sesiones";
+    const firstHalf = times.slice(0, Math.ceil(times.length / 2));
+    const secondHalf = times.slice(Math.ceil(times.length / 2));
+    const firstAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
+    const secondAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
+    const improvement = firstAvg - secondAvg; // Menor tiempo es mejor
+    return improvement > 0 ? `-${improvement.toFixed(0)}ms` : `+${Math.abs(improvement).toFixed(0)}ms`;
+  };
+
+  const getMaxSpanLength = (details) => {
+    const spans = details.map(d => d?.maxSequenceLength || 0).filter(s => s > 0);
+    return spans.length > 0 ? Math.max(...spans) : 'N/A';
+  };
+
+  const getMaxReverseSpan = (details) => {
+    const spans = details.map(d => d?.maxReverseLevel || 0).filter(s => s > 0);
+    return spans.length > 0 ? Math.max(...spans) : 'N/A';
+  };
+
+  const getAverageLevel = (levels) => {
+    const levelMap = { 'basico': 1, 'intermedio': 2, 'avanzado': 3 };
+    const numericLevels = levels.map(l => levelMap[l] || 1);
+    const avg = numericLevels.reduce((a, b) => a + b, 0) / numericLevels.length;
+    return avg.toFixed(1);
+  };
+
+  const getForwardVsReverse = (details) => {
+    return "Análisis comparativo en desarrollo";
+  };
 
   return (
     <div className="reports-container">
@@ -334,67 +784,142 @@ const Reports = () => {
         </div>
       </div>
 
-      <div className="results-table">
-        <h2>Historial de Sesiones ({filteredResults.length})</h2>
-        
-        {filteredResults.length === 0 ? (
-          <div className="no-results">
-            No se encontraron resultados para los filtros seleccionados.
+      {/* ACORDEÓN/DESPLEGABLES */}
+      <div className="reports-accordion">
+        {/* Sección 1: Historial Desplegable */}
+        <div className="accordion-section">
+          <div 
+            className={`accordion-header ${activeAccordion === 'history' ? 'active' : ''}`}
+            onClick={() => toggleAccordion('history')}
+          >
+            <div className="accordion-title">
+              <h2>Historial de Sesiones ({filteredResults.length})</h2>
+            </div>
+            <span className={`accordion-arrow ${activeAccordion === 'history' ? 'open' : ''}`}>
+              ▼
+            </span>
           </div>
-        ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Juego</th>
-                <th>Dominio</th>
-                <th>Nivel</th>
-                <th>Puntuación</th>
-                <th>Tiempo</th>
-                <th>Precisión</th>
-                <th>Detalles</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredResults.map((result) => (
-                <tr key={result.id}>
-                  <td>{formatDate(result)}</td>
-                  <td>{gameNames[result.gameId] || result.gameId}</td>
-                  <td>{cognitiveRomains[result.cognitiveDomain] || result.cognitiveDomain}</td>
-                  <td>
-                    <span className={`level-badge level-${result.level}`}>
-                      {result.level}
-                    </span>
-                  </td>
-                  <td>
-                    <span 
-                      style={{ 
-                        color: getScoreColor(result.score), 
-                        fontWeight: 'bold' 
-                      }}
-                    >
-                      {result.score}
-                    </span>
-                  </td>
-                  <td>{formatDuration(result.timeSpent)}</td>
-                  <td>
-                    {result.totalQuestions > 0 
-                      ? Math.round((result.correctAnswers / result.totalQuestions) * 100) + '%'
-                      : 'N/A'}
-                  </td>
-                  <td>
-                    <button 
-                      className="btn-details"
-                      onClick={() => showGameDetails(result)}
-                    >
-                      Ver Análisis
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+          <div className={`accordion-content ${activeAccordion === 'history' ? 'open' : ''}`}>
+            {filteredResults.length === 0 ? (
+              <div className="no-results">
+                No se encontraron resultados para los filtros seleccionados.
+              </div>
+            ) : (
+              <div className="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Juego</th>
+                      <th>Dominio</th>
+                      <th>Nivel</th>
+                      <th>Puntuación</th>
+                      <th>Tiempo</th>
+                      <th>Precisión</th>
+                      <th>Detalles</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredResults.map((result) => (
+                      <tr key={result.id}>
+                        <td>{formatDate(result)}</td>
+                        <td>{gameNames[result.gameId] || result.gameId}</td>
+                        <td>{cognitiveDomains[result.cognitiveDomain] || result.cognitiveDomain}</td>
+                        <td>
+                          <span className={`level-badge level-${result.level}`}>
+                            {result.level}
+                          </span>
+                        </td>
+                        <td>
+                          <span 
+                            style={{ 
+                              color: getScoreColor(result.score), 
+                              fontWeight: 'bold' 
+                            }}
+                          >
+                            {result.score}
+                          </span>
+                        </td>
+                        <td>{formatDuration(result.timeSpent)}</td>
+                        <td>
+                          {result.totalQuestions > 0 
+                            ? Math.round((result.correctAnswers / result.totalQuestions) * 100) + '%'
+                            : 'N/A'}
+                        </td>
+                        <td>
+                          <button 
+                            className="btn-details"
+                            onClick={() => showGameDetails(result)}
+                          >
+                            Ver Detalles
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Sección 2: Reporte Acumulado Desplegable */}
+        <div className="accordion-section">
+          <div 
+            className={`accordion-header ${activeAccordion === 'accumulated' ? 'active' : ''}`}
+            onClick={() => toggleAccordion('accumulated')}
+          >
+            <div className="accordion-title">
+              <h2>Reporte Acumulado por Juego</h2>
+            </div>
+            <span className={`accordion-arrow ${activeAccordion === 'accumulated' ? 'open' : ''}`}>
+              ▼
+            </span>
+          </div>
+          <div className={`accordion-content ${activeAccordion === 'accumulated' ? 'open' : ''}`}>
+            <div className="accumulated-games-grid">
+              {Object.entries(getAccumulatedStats()).map(([gameId, stats]) => {
+                const specificStats = getGameSpecificStats(gameId, stats);
+                return (
+                  <div key={gameId} className="accumulated-game-card">
+                    <div className="accumulated-game-header">
+                      <h3>{stats.gameName}</h3>
+                      <span className="sessions-count">{stats.totalSessions} sesiones</span>
+                    </div>
+                    
+                    <div className="accumulated-stats">
+                      <div className="stat-item primary">
+                        <span className="stat-label">{specificStats.primaryMetric.label}</span>
+                        <span className="stat-value">{specificStats.primaryMetric.value}</span>
+                      </div>
+                      
+                      <div className="stat-item">
+                        <span className="stat-label">{specificStats.secondaryMetric.label}</span>
+                        <span className="stat-value">{specificStats.secondaryMetric.value}</span>
+                      </div>
+                      
+                      <div className="stat-item">
+                        <span className="stat-label">{specificStats.progressMetric.label}</span>
+                        <span className="stat-value progress">{specificStats.progressMetric.value}</span>
+                      </div>
+                      
+                      <div className="stat-item">
+                        <span className="stat-label">{specificStats.specialMetric.label}</span>
+                        <span className="stat-value">{specificStats.specialMetric.value}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="accumulated-game-footer">
+                      <span className="date-range">
+                        {stats.firstSession.toLocaleDateString('es-ES')} - {stats.lastSession.toLocaleDateString('es-ES')}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Modal de gráfica ampliada */}
@@ -431,7 +956,7 @@ const Reports = () => {
         <div className="details-modal-overlay" onClick={() => setShowDetailsModal(false)}>
           <div className="details-modal" onClick={(e) => e.stopPropagation()}>
             <div className="details-modal-header">
-              <h2>Análisis Detallado de Sesión</h2>
+              <h2>{selectedGameDetails.specificMetrics?.title || 'Análisis Detallado de Sesión'}</h2>
               <button 
                 className="close-modal-btn"
                 onClick={() => setShowDetailsModal(false)}
@@ -449,65 +974,44 @@ const Reports = () => {
                   <div><strong>Fecha:</strong> {selectedGameDetails.sessionInfo.date}</div>
                   <div><strong>Nivel:</strong> {selectedGameDetails.sessionInfo.level}</div>
                   <div><strong>Puntuación:</strong> {selectedGameDetails.sessionInfo.score}</div>
-                  <div><strong>Tiempo:</strong> {formatDuration(selectedGameDetails.sessionInfo.timeSpent)}</div>
+                  <div><strong>Tiempo Total:</strong> {formatDuration(selectedGameDetails.sessionInfo.timeSpent)}</div>
                 </div>
               </div>
 
-              <div className="details-section">
-                <h3>Métricas de Rendimiento</h3>
-                <div className="details-grid">
-                  <div><strong>Tiempo de Reacción:</strong> {selectedGameDetails.performanceMetrics.reactionTime}</div>
-                  <div><strong>Consistencia:</strong> {selectedGameDetails.performanceMetrics.consistency}</div>
-                  <div><strong>Tendencia de Mejora:</strong> {selectedGameDetails.performanceMetrics.improvementTrend}</div>
-                </div>
-              </div>
-
-              <div className="details-section">
-                <h3>Análisis de la Sesión</h3>
-                <div className="details-grid">
-                  <div><strong>Total de Preguntas:</strong> {selectedGameDetails.sessionBreakdown.totalQuestions}</div>
-                  <div><strong>Respuestas Correctas:</strong> {selectedGameDetails.sessionBreakdown.correctAnswers}</div>
-                  <div><strong>Precisión:</strong> {selectedGameDetails.sessionBreakdown.accuracy}%</div>
-                  <div><strong>Tiempo por Pregunta:</strong> {selectedGameDetails.sessionBreakdown.timePerQuestion}s</div>
-                </div>
-              </div>
-
-              <div className="details-section">
-                <h3>Análisis Cognitivo</h3>
-                <div className="cognitive-analysis">
-                  <div>
-                    <strong>Áreas Fuertes:</strong>
-                    <ul>
-                      {selectedGameDetails.cognitiveAnalysis.strengthAreas.map((area, index) => (
-                        <li key={index}>{area}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <strong>Áreas de Mejora:</strong>
-                    <ul>
-                      {selectedGameDetails.cognitiveAnalysis.improvementAreas.map((area, index) => (
-                        <li key={index}>{area}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <strong>Recomendaciones:</strong>
-                    <ul>
-                      {selectedGameDetails.cognitiveAnalysis.adaptationSuggestions.map((suggestion, index) => (
-                        <li key={index}>{suggestion}</li>
-                      ))}
-                    </ul>
+              {selectedGameDetails.specificMetrics && (
+                <div className="details-section">
+                  <h3>Métricas Específicas del Juego</h3>
+                  <div className="game-specific-metrics">
+                    {selectedGameDetails.specificMetrics.metrics.map((metric, index) => (
+                      <div key={index} className="metric-item">
+                        <div className="metric-header">
+                          <strong>{metric.label}:</strong> 
+                          <span className="metric-value">{metric.value}</span>
+                        </div>
+                        <div className="metric-description">{metric.description}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </div>
+              )}
+
+              {selectedGameDetails.specificMetrics?.evolution && (
+                <div className="details-section">
+                  <h3>Evolución y Progreso</h3>
+                  <div className="evolution-analysis">
+                    <p>{selectedGameDetails.specificMetrics.evolution}</p>
+                  </div>
+                </div>
+              )}
 
               <div className="details-section">
-                <h3>Datos Comparativos</h3>
-                <div className="details-grid">
-                  <div><strong>Mejor Puntuación Personal:</strong> {selectedGameDetails.comparativeData.personalBest}</div>
-                  <div><strong>Comparación con Sesiones Anteriores:</strong> {selectedGameDetails.comparativeData.sessionComparison}</div>
-                  <div><strong>Nivel Recomendado:</strong> {selectedGameDetails.comparativeData.recommendedNextLevel}</div>
+                <h3>Recomendaciones</h3>
+                <div className="recommendations">
+                  <ul>
+                    <li>Continúa practicando regularmente para mantener el progreso</li>
+                    <li>Intenta incrementar gradualmente el nivel de dificultad</li>
+                    <li>Enfócate en mejorar las áreas identificadas como oportunidades</li>
+                  </ul>
                 </div>
               </div>
             </div>

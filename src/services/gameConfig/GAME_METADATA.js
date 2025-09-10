@@ -1,9 +1,9 @@
 export const GAME_METADATA = {
-  juego1: {
-    id: 'juego1',
-    name: 'Comprensión Lectora',
-    displayName: 'Comprensión de Textos',
-    description: 'Evalúa la capacidad de entender y procesar información textual',
+  razonamiento_gramatical: {
+    id: 'razonamiento_gramatical',
+    name: 'Razonamiento Gramatical',
+    displayName: 'Razonamiento Gramatical',
+    description: 'Interpretar declaraciones lógicas sobre posiciones espaciales de figuras',
     cognitiveDomain: 'lenguaje',
     domainDisplayName: 'Lenguaje',
     category: 'verbal',
@@ -13,21 +13,21 @@ export const GAME_METADATA = {
       hard: { minTime: 10000, maxTime: 180000, maxScore: 1 }
     },
     scoring: {
-      type: 'percentage', // percentage, points, time-based
+      type: 'percentage',
       minScore: 0,
       maxScore: 1,
-      precision: 4 // decimales
+      precision: 4
     },
     version: '1.0',
     isActive: true,
-    tags: ['lectura', 'comprension', 'texto']
+    tags: ['razonamiento', 'gramatical', 'lenguaje', 'deductivo']
   },
   
-  juego2: {
-    id: 'juego2',
+  matrices_progresivas: {
+    id: 'matrices_progresivas',
     name: 'Matrices Progresivas',
-    displayName: 'Razonamiento con Matrices',
-    description: 'Evalúa el razonamiento abstracto y la capacidad de identificar patrones',
+    displayName: 'Matrices Progresivas',
+    description: 'Reconocer patrones en matrices 3x3 y completar la secuencia',
     cognitiveDomain: 'razonamiento_abstracto',
     domainDisplayName: 'Razonamiento Abstracto',
     category: 'visual-spatial',
@@ -44,17 +44,17 @@ export const GAME_METADATA = {
     },
     version: '1.0',
     isActive: true,
-    tags: ['matrices', 'patrones', 'visual', 'logica']
+    tags: ['matrices', 'patrones', 'visual', 'abstracto']
   },
 
-  juego3: {
-    id: 'juego3',
-    name: 'Memoria Visual',
-    displayName: 'Recordar Secuencias',
-    description: 'Evalúa la capacidad de recordar y reproducir secuencias visuales',
+  aprendizaje_listas_verbales: {
+    id: 'aprendizaje_listas_verbales',
+    name: 'Aprendizaje de Listas Verbales',
+    displayName: 'Aprendizaje de Listas Verbales',
+    description: 'Memorizar y recordar listas de palabras',
     cognitiveDomain: 'memoria',
     domainDisplayName: 'Memoria',
-    category: 'visual-memory',
+    category: 'verbal-memory',
     difficulty: {
       easy: { minTime: 8000, maxTime: 400000, maxScore: 1 },
       medium: { minTime: 12000, maxTime: 300000, maxScore: 1 },
@@ -68,14 +68,14 @@ export const GAME_METADATA = {
     },
     version: '1.0',
     isActive: true,
-    tags: ['memoria', 'visual', 'secuencias']
+    tags: ['memoria', 'verbal', 'listas', 'episodica']
   },
 
-  juego4: {
-    id: 'juego4',
-    name: 'Torre de Hanoi',
-    displayName: 'Planificación y Estrategia',
-    description: 'Evalúa las funciones ejecutivas y capacidad de planificación',
+  balance_balanza: {
+    id: 'balance_balanza',
+    name: 'Balance de Balanza',
+    displayName: 'Balance de Balanza',
+    description: 'Resolver problemas de equilibrio con formas geométricas',
     cognitiveDomain: 'funciones_ejecutivas',
     domainDisplayName: 'Funciones Ejecutivas',
     category: 'executive',
@@ -85,48 +85,48 @@ export const GAME_METADATA = {
       hard: { minTime: 30000, maxTime: 600000, maxScore: 1 }
     },
     scoring: {
-      type: 'efficiency', // Combina tiempo y movimientos
+      type: 'efficiency',
       minScore: 0,
       maxScore: 1,
       precision: 4
     },
     version: '1.0',
     isActive: true,
-    tags: ['planificacion', 'estrategia', 'ejecutivas']
+    tags: ['planificacion', 'balanza', 'ejecutivas', 'proporcional']
   },
 
-  juego5: {
-    id: 'juego5',
-    name: 'Stroop Test',
-    displayName: 'Control Atencional',
-    description: 'Evalúa la atención selectiva y control inhibitorio',
-    cognitiveDomain: 'atencion',
-    domainDisplayName: 'Atención',
-    category: 'attention',
+  reconociendo_objetos: {
+    id: 'reconociendo_objetos',
+    name: 'Reconociendo Objetos',
+    displayName: 'Reconociendo Objetos',
+    description: 'Memorizar figuras y reconocerlas posteriormente',
+    cognitiveDomain: 'memoria',
+    domainDisplayName: 'Memoria',
+    category: 'visual-memory',
     difficulty: {
       easy: { minTime: 5000, maxTime: 300000, maxScore: 1 },
       medium: { minTime: 8000, maxTime: 240000, maxScore: 1 },
       hard: { minTime: 10000, maxTime: 180000, maxScore: 1 }
     },
     scoring: {
-      type: 'accuracy-speed', // Combina precisión y velocidad
+      type: 'accuracy-speed',
       minScore: 0,
       maxScore: 1,
       precision: 4
     },
     version: '1.0',
     isActive: true,
-    tags: ['atencion', 'stroop', 'inhibicion']
+    tags: ['memoria', 'visual', 'reconocimiento', 'objetos']
   },
 
-  juego6: {
-    id: 'juego6',
-    name: 'N-Back Task',
-    displayName: 'Memoria de Trabajo',
-    description: 'Evalúa la capacidad de mantener y manipular información en memoria',
-    cognitiveDomain: 'memoria_trabajo',
-    domainDisplayName: 'Memoria de Trabajo',
-    category: 'working-memory',
+  posner_haciendo_cola: {
+    id: 'posner_haciendo_cola',
+    name: 'Posner Haciendo Cola',
+    displayName: 'Posner Haciendo Cola',
+    description: 'Enfocar atención según señales direccionales',
+    cognitiveDomain: 'atencion',
+    domainDisplayName: 'Atención',
+    category: 'attention',
     difficulty: {
       easy: { minTime: 10000, maxTime: 600000, maxScore: 1 },
       medium: { minTime: 15000, maxTime: 480000, maxScore: 1 },
@@ -140,17 +140,17 @@ export const GAME_METADATA = {
     },
     version: '1.0',
     isActive: true,
-    tags: ['memoria_trabajo', 'n-back', 'actualizacion']
+    tags: ['atencion', 'posner', 'visual', 'orientacion']
   },
 
-  juego7: {
-    id: 'juego7',
-    name: 'Analogías Verbales',
-    displayName: 'Razonamiento Verbal',
-    description: 'Evalúa el razonamiento abstracto mediante analogías verbales',
-    cognitiveDomain: 'razonamiento_abstracto',
-    domainDisplayName: 'Razonamiento Abstracto',
-    category: 'verbal-reasoning',
+  forward_memory_span: {
+    id: 'forward_memory_span',
+    name: 'Forward Memory Span',
+    displayName: 'Forward Memory Span',
+    description: 'Recordar secuencias de círculos en el mismo orden',
+    cognitiveDomain: 'memoria_trabajo',
+    domainDisplayName: 'Memoria de Trabajo',
+    category: 'working-memory',
     difficulty: {
       easy: { minTime: 12000, maxTime: 720000, maxScore: 1 },
       medium: { minTime: 18000, maxTime: 600000, maxScore: 1 },
@@ -164,31 +164,31 @@ export const GAME_METADATA = {
     },
     version: '1.0',
     isActive: true,
-    tags: ['analogias', 'verbal', 'razonamiento']
+    tags: ['memoria_trabajo', 'visoespacial', 'span', 'directo']
   },
 
-  juego8: {
-    id: 'juego8',
-    name: 'Wisconsin Card Sort',
-    displayName: 'Flexibilidad Cognitiva',
-    description: 'Evalúa la flexibilidad mental y capacidad de cambio de estrategia',
-    cognitiveDomain: 'funciones_ejecutivas',
-    domainDisplayName: 'Funciones Ejecutivas',
-    category: 'executive-flexibility',
+  reverse_memory_span: {
+    id: 'reverse_memory_span',
+    name: 'Reverse Memory Span',
+    displayName: 'Reverse Memory Span',
+    description: 'Recordar secuencias de círculos en orden inverso',
+    cognitiveDomain: 'memoria_trabajo',
+    domainDisplayName: 'Memoria de Trabajo',
+    category: 'working-memory-reverse',
     difficulty: {
       easy: { minTime: 8000, maxTime: 480000, maxScore: 1 },
       medium: { minTime: 12000, maxTime: 420000, maxScore: 1 },
       hard: { minTime: 18000, maxTime: 360000, maxScore: 1 }
     },
     scoring: {
-      type: 'categories-errors', // Categorías completadas vs errores
+      type: 'categories-errors',
       minScore: 0,
       maxScore: 1,
       precision: 4
     },
     version: '1.0',
     isActive: true,
-    tags: ['flexibilidad', 'wisconsin', 'cambio']
+    tags: ['memoria_trabajo', 'visoespacial', 'span', 'inverso']
   }
 };
 
