@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import GameLayout from '../GameLayout';
+import GameLayout from '../GameLayout/GameLayout';
 import { niveles, obtenerEnsayo, verificarRespuesta } from './juego4_funciones';
-import { auth } from "../../../../services/firebase/firebaseConfig";
-import { gameService } from "../../../../services/firebase/gameService";
-import { userService } from "../../../../services/firebase/userService";
+import { auth } from "../../../services/firebase/firebaseConfig";
+import { gameService } from "../../../services/firebase/gameService";
+import { userService } from "../../../services/firebase/userService";
 import './juego4_estilos.css';
 
 const Figura = ({ tipo, cantidad, x, y }) => {

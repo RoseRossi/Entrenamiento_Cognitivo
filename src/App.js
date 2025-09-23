@@ -2,20 +2,20 @@ import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./services/firebase/firebaseConfig";
-import AuthForm from "./components/AuthForm";
-import Dashboard from "./components/modules/Dashboard/Dashboard";
-import Loading from "./components/Loading";
-import Juego1 from "./components/modules/Games/juego1/Juego1";
-import Juego2 from "./components/modules/Games/juego2/Juego2";
-import Juego3 from "./components/modules/Games/juego3/juego3";
-import Juego4 from "./components/modules/Games/juego4/Juego4";
-import Juego5 from "./components/modules/Games/juego5/Juego5";
-import Juego6 from "./components/modules/Games/juego6/Juego6";
-import Juego7 from "./components/modules/Games/juego7/Juego7";
-import Juego8 from "./components/modules/Games/juego8/Juego8";
+import AuthForm from "./components/common/AuthForm/AuthForm";
+import Dashboard from "./pages/Dashboard/Dashboard";
+import Loading from "./components/common/Loading/Loading";
+import Juego1 from "./components/Games/juego1/Juego1";
+import Juego2 from "./components/Games/juego2/Juego2";
+import Juego3 from "./components/Games/juego3/juego3";
+import Juego4 from "./components/Games/juego4/Juego4";
+import Juego5 from "./components/Games/juego5/Juego5";
+import Juego6 from "./components/Games/juego6/Juego6";
+import Juego7 from "./components/Games/juego7/Juego7";
+import Juego8 from "./components/Games/juego8/Juego8";
 import { gameService } from "./services/firebase/gameService";
 import { userService } from "./services/firebase/userService";
-import Reports from './components/modules/Reports/Reports';
+import Reports from './pages/Reports/Reports';
 
 
 function App() {

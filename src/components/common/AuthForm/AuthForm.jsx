@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { auth, googleProvider } from '../services/firebase/firebaseConfig';
+import { auth, googleProvider } from '../../../services/firebase/firebaseConfig';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -9,7 +9,7 @@ import {
   getRedirectResult,
   onAuthStateChanged
 } from 'firebase/auth';
-import Loading from './Loading';
+import Loading from '../Loading/Loading';
 import './AuthForm.css';
 
 export default function AuthForm() {

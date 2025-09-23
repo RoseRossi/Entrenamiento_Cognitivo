@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { auth } from '../../../services/firebase/firebaseConfig';
-import { gameService } from '../../../services/firebase/gameService';
+import { auth } from '../../services/firebase/firebaseConfig';
+import { gameService } from '../../services/firebase/gameService';
 import {
   Chart as ChartJS,
   CategoryScale,

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { signOut } from "firebase/auth";
-import { auth } from "../../../services/firebase/firebaseConfig";
-import Loading from "../../Loading";
+import { auth } from "../../services/firebase/firebaseConfig";
+import Loading from "../../components/common/Loading/Loading";
 import { useNavigate } from 'react-router-dom';
 import './styles.css';
 
