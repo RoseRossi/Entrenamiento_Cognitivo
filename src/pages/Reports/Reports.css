@@ -1300,3 +1300,63 @@
     padding: 12px;
   }
 }
+
+/* Estilos para los filtros de fecha personalizada */
+.date-input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.btn-clear-dates {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.btn-clear-dates:hover {
+  background-color: #c0392b;
+}
+
+/* Responsive para los filtros extendidos */
+@media (max-width: 768px) {
+  .reports-filters {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .filter-group {
+    width: 100%;
+  }
+  
+  .date-input {
+    width: 100%;
+  }
+}
+
+/* Mejorar la visualización cuando hay muchos filtros */
+@media (max-width: 1024px) {
+  .reports-filters {
+    flex-wrap: wrap;
+  }
+  
+  .filter-group {
+    min-width: 200px;
+    flex: 1;
+  }
+}

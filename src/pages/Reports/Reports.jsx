@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { auth } from '../../../services/firebase/firebaseConfig';
-import { gameService } from '../../../services/firebase/gameService';
+import { auth } from '../../services/firebase/firebaseConfig';
+import { gameService } from '../../services/firebase/gameService';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -30,7 +30,8 @@ const Reports = () => {
   const [loading, setLoading] = useState(true);
   const [gameResults, setGameResults] = useState([]);
   const [selectedGame, setSelectedGame] = useState('all');
-  const [dateRange, setDateRange] = useState('all');
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedGameDetails, setSelectedGameDetails] = useState(null);
   const [showChartModal, setShowChartModal] = useState(false);
@@ -71,12 +72,10 @@ const Reports = () => {
     try {
       setLoading(true);
       const results = await gameService.getUserGameResults(userId);
-      
-      // Ordenar por fecha más reciente
+      // Ordenar por fecha ascendente (menor a mayor)
       const sortedResults = results.sort((a, b) => 
-        new Date(b.createdAt.toDate()) - new Date(a.createdAt.toDate())
+        new Date(a.createdAt.toDate()) - new Date(b.createdAt.toDate())
       );
-      
       setGameResults(sortedResults);
     } catch (error) {
       console.error('Error loading game results:', error);
@@ -85,61 +84,93 @@ const Reports = () => {
     }
   };
 
+  // Obtener fechas mínima y máxima de los resultados
+  const getDateLimits = () => {
+    if (gameResults.length === 0) return { min: '', max: '' };
+    const dates = gameResults.map(result => result.createdAt.toDate());
+    const minDate = new Date(Math.min(...dates));
+    const maxDate = new Date(Math.max(...dates));
+    return {
+      min: minDate.toISOString().split('T')[0],
+      max: maxDate.toISOString().split('T')[0]
+    };
+  };
+
+  const dateLimits = getDateLimits();
+
+  // Inicializar fechas al cargar resultados
+  useEffect(() => {
+    if (gameResults.length > 0) {
+      setCustomStartDate(dateLimits.min);
+      setCustomEndDate(dateLimits.max);
+    }   
+  }, [gameResults.length, dateLimits.min, dateLimits.max]);
+
+  // FILTRO PRINCIPAL: por juego y por fechas
   const filterResults = () => {
     let filtered = [...gameResults];
 
-    // Filtrar por juego
+    // Filtrar por juego si no es 'all'
     if (selectedGame !== 'all') {
       filtered = filtered.filter(result => result.gameId === selectedGame);
     }
 
-    // Filtrar por rango de fechas
-    if (dateRange !== 'all') {
-      const now = new Date();
-      let startDate;
-
-      switch (dateRange) {
-        case 'today':
-          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          break;
-        case 'week':
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          break;
-        case 'month':
-          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-          break;
-        default:
-          startDate = new Date(0);
-      }
-
-      filtered = filtered.filter(result => 
-        result.createdAt.toDate() >= startDate
-      );
+    // Filtrar por rango de fechas si ambos están definidos
+    if (customStartDate && customEndDate) {
+      const startDate = new Date(customStartDate);
+      const endDate = new Date(customEndDate);
+      endDate.setHours(23, 59, 59, 999); // Incluir todo el día final
+      filtered = filtered.filter(result => {
+        const resultDate = result.createdAt.toDate();
+        return resultDate >= startDate && resultDate <= endDate;
+      });
     }
 
+    // Ordenar por fecha ascendente
+    filtered.sort((a, b) => new Date(a.createdAt.toDate()) - new Date(b.createdAt.toDate()));
     return filtered;
   };
 
   const getChartData = () => {
     const filtered = filterResults();
-    
+
     // Agrupar por fecha y calcular promedio de puntuación
     const dateScores = {};
-    
     filtered.forEach(result => {
       const date = new Date(result.createdAt.toDate()).toLocaleDateString('es-ES');
       if (!dateScores[date]) {
-        dateScores[date] = { total: 0, count: 0 };
+        dateScores[date] = { total: 0, count: 0, results: [] };
       }
       dateScores[date].total += result.score;
       dateScores[date].count += 1;
+      dateScores[date].results.push(result);
     });
 
-    // Convertir a arrays para Chart.js
-    const dates = Object.keys(dateScores).sort((a, b) => new Date(a) - new Date(b));
-    const scores = dates.map(date => 
+    // Ordenar fechas de menor a mayor
+    const dates = Object.keys(dateScores)
+      .map(dateStr => {
+        const [day, month, year] = dateStr.split('/');
+        return new Date(`${year}-${month}-${day}`);
+      })
+      .sort((a, b) => a - b)
+      .map(dateObj => dateObj.toLocaleDateString('es-ES'));
+
+    const scores = dates.map(date =>
       Math.round(dateScores[date].total / dateScores[date].count)
     );
+
+    // Agregar información del juego con mayor puntaje por fecha
+    const highestScoreGameByDate = dates.map(date => {
+      const results = dateScores[date].results;
+      const highestResult = results.reduce((max, current) =>
+        current.score > max.score ? current : max
+      );
+      return {
+        game: gameNames[highestResult.gameId] || highestResult.gameId,
+        score: highestResult.score,
+        gameId: highestResult.gameId
+      };
+    });
 
     return {
       labels: dates,
@@ -155,6 +186,7 @@ const Reports = () => {
           pointBorderColor: 'rgb(59, 130, 246)',
           pointHoverBackgroundColor: 'rgb(29, 78, 216)',
           pointHoverBorderColor: 'rgb(29, 78, 216)',
+          highestScoreData: highestScoreGameByDate
         },
       ],
     };
@@ -174,6 +206,40 @@ const Reports = () => {
           weight: 'bold'
         }
       },
+      tooltip: {
+        callbacks: {
+          afterLabel: function(context) {
+            const dataset = context.dataset;
+            const dataIndex = context.dataIndex;
+            if (dataset.highestScoreData && dataset.highestScoreData[dataIndex]) {
+              const highestGame = dataset.highestScoreData[dataIndex];
+              return [
+                `Puntaje más alto: ${highestGame.score}`,
+                `Juego: ${highestGame.game}`
+              ];
+            }
+            return null;
+          },
+          label: function(context) {
+            return `Puntuación Promedio: ${context.parsed.y}`;
+          }
+        },
+        displayColors: false,
+        titleFont: {
+          size: 14,
+          weight: 'bold'
+        },
+        bodyFont: {
+          size: 12
+        },
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleColor: '#fff',
+        bodyColor: '#fff',
+        borderColor: 'rgba(59, 130, 246, 0.8)',
+        borderWidth: 1,
+        cornerRadius: 6,
+        padding: 10
+      }
     },
     scales: {
       y: {
@@ -732,19 +798,41 @@ const Reports = () => {
             ))}
           </select>
         </div>
-
         <div className="filter-group">
-          <label>Rango de fechas:</label>
-          <select 
-            value={dateRange} 
-            onChange={(e) => setDateRange(e.target.value)}
-          >
-            <option value="all">Todas las fechas</option>
-            <option value="today">Hoy</option>
-            <option value="week">Última semana</option>
-            <option value="month">Último mes</option>
-          </select>
+          <label>Fecha de inicio:</label>
+          <input
+            type="date"
+            value={customStartDate}
+            onChange={(e) => setCustomStartDate(e.target.value)}
+            min={dateLimits.min}
+            max={customEndDate || dateLimits.max}
+            className="date-input"
+          />
         </div>
+        <div className="filter-group">
+          <label>Fecha de fin:</label>
+          <input
+            type="date"
+            value={customEndDate}
+            onChange={(e) => setCustomEndDate(e.target.value)}
+            min={customStartDate || dateLimits.min}
+            max={dateLimits.max}
+            className="date-input"
+          />
+        </div>
+        {/* {customStartDate && customEndDate && (
+          <div className="filter-group">
+            <button
+              className="btn-clear-dates"
+              onClick={() => {
+                setCustomStartDate(dateLimits.min);
+                setCustomEndDate(dateLimits.max);
+              }}
+            >
+              Limpiar fechas
+            </button>
+          </div>
+        )} */}
       </div>
 
       <div className="results-summary">

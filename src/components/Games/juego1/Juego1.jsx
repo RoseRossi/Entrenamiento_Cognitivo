@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
-import GameLayout from "../GameLayout";
+import GameLayout from "../GameLayout/GameLayout";
 import { generarFormacion, verificarRespuesta } from "./juego1_funciones";
-import { auth } from "../../../../services/firebase/firebaseConfig";
-import { gameService } from "../../../../services/firebase/gameService";
-import { userService } from "../../../../services/firebase/userService";
+import { auth } from "../../../services/firebase/firebaseConfig";
+import { gameService } from "../../../services/firebase/gameService";
+import { userService } from "../../../services/firebase/userService";
 import "./juego1_estilos.css";
 
 const Juego1 = () => {

@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo, useReducer } from "react";
 import { generarEnsayo, verificarRespuesta } from "./juego6_funciones";
-import GameLayout from "../GameLayout";
-import { auth } from "../../../../services/firebase/firebaseConfig";
-import { gameService } from "../../../../services/firebase/gameService";
-import { userService } from "../../../../services/firebase/userService";
+import GameLayout from "../GameLayout/GameLayout";
+import { auth } from "../../../services/firebase/firebaseConfig";
+import { gameService } from "../../../services/firebase/gameService";
+import { userService } from "../../../services/firebase/userService";
 import "./juego6_estilos.css";
 
 // Configuración de niveles progresivos

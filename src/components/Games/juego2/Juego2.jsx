@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { patrones, verificarRespuesta } from "./juego2_funciones";
-import { auth } from "../../../../services/firebase/firebaseConfig";
-import { gameService } from "../../../../services/firebase/gameService";
-import { userService } from "../../../../services/firebase/userService";
+import { auth } from "../../../services/firebase/firebaseConfig";
+import { gameService } from "../../../services/firebase/gameService";
+import { userService } from "../../../services/firebase/userService";
 import "./juego2_estilos.css";
-import GameLayout from "../GameLayout";
+import GameLayout from "../GameLayout/GameLayout";
 
 const Juego2 = () => {
   const [indiceActual, setIndiceActual] = useState(0);

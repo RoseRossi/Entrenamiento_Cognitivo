@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { generarEjercicios, verificarRespuesta } from "./juego8_funciones";
-import { auth } from "../../../../services/firebase/firebaseConfig";
-import { gameService } from "../../../../services/firebase/gameService";
-import { userService } from "../../../../services/firebase/userService";
+import { auth } from "../../../services/firebase/firebaseConfig";
+import { gameService } from "../../../services/firebase/gameService";
+import { userService } from "../../../services/firebase/userService";
 import "./juego8_estilos.css";
-import GameLayout from "../GameLayout";
+import GameLayout from "../GameLayout/GameLayout";
 
 const Juego8 = () => {
   const [ejercicios] = useState(generarEjercicios());

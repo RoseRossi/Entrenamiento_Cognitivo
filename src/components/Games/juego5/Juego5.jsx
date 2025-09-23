@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from "react";
-import GameLayout from "../GameLayout";
-import { auth } from "../../../../services/firebase/firebaseConfig";
-import { gameService } from "../../../../services/firebase/gameService";
-import { userService } from "../../../../services/firebase/userService";
+import GameLayout from "../GameLayout/GameLayout";
+import { auth } from "../../../services/firebase/firebaseConfig";
+import { gameService } from "../../../services/firebase/gameService";
+import { userService } from "../../../services/firebase/userService";
 import "./juego5_estilos.css";
 import { generarSecuencia, generarPreguntas } from "./juego5_funciones";
 
