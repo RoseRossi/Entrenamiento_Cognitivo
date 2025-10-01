@@ -23,6 +23,8 @@ const Juego7 = () => {
   const [ensayosDetallados, setEnsayosDetallados] = useState([]);
   const [tiempoInicioEnsayo, setTiempoInicioEnsayo] = useState(null);
 
+  const [juegoIniciado, setJuegoIniciado] = useState(false);
+
   // Guardar resultado usando useCallback
   const guardarResultado = useCallback(async () => {
     if (!user) {
@@ -250,10 +252,23 @@ const Juego7 = () => {
     return `Span actual: ${amplitud} | Ensayos: ${ensayos} | Fallos: ${fallos}/2`;
   };
 
+  const InstruccionesJuego = () => (
+    <div style={{ textAlign: 'center', fontSize: '18px', color: '#34495e' }}>
+      <p>Instrucciones</p>
+    </div>
+  );
+
+  const iniciarJuego = () => {
+    setJuegoIniciado(true);
+  };
+
   return (
     <GameLayout
       title="Bloques de Corsi"
-      description="Observa y repite la secuencia de los círculos en el orden correcto. El span aumenta cada 3 aciertos consecutivos."
+      showInstructions={!juegoIniciado}
+      instructions={<InstruccionesJuego />}
+      onStartGame={iniciarJuego}
+      description={juegoIniciado ? "Observa y repite la secuencia de los círculos en el orden correcto. El span aumenta cada 3 aciertos consecutivos." : null}
       stats={{ 
         amplitud, 
         fallos,

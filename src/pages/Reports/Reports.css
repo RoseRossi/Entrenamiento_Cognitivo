@@ -420,9 +420,8 @@
   }
 }
 
-/* ...existing styles... */
 
-/* Nuevos estilos para el layout de resumen dividido */
+/* Estilos para el layout de resumen dividido */
 .summary-content {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -1036,10 +1035,6 @@
   transform: rotate(180deg);
 }
 
-/* Actualizar estilos de la tabla en Reports.css */
-
-/* Actualizar estilos de la tabla - REEMPLAZAR los estilos existentes */
-
 .accordion-content table {
   width: 100%;
   border-collapse: collapse;
@@ -1360,3 +1355,59 @@
     flex: 1;
   }
 }
+
+/* Agregar estos estilos en Reports.css */
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  font-size: 18px;
+  color: #666;
+}
+
+.no-data-container {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.no-data-container h2 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.no-data-container button:hover {
+  background-color: #2980b9 !important;
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+/* Mejorar el estilo de error de conexión específico para Reports */
+.reports-container .network-error {
+  background-color: #ff6b6b;
+  color: white;
+  padding: 12px;
+  margin: 20px 0;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Animación para elementos que se cargan */
+.accordion-content.open {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+  }
+}
+

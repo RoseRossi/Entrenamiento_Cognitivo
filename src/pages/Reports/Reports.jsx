@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
   BarElement,
+  Filler,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import './Reports.css';
@@ -23,7 +24,8 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  BarElement
+  BarElement,
+  Filler
 );
 
 const Reports = () => {
@@ -35,7 +37,7 @@ const Reports = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedGameDetails, setSelectedGameDetails] = useState(null);
   const [showChartModal, setShowChartModal] = useState(false);
-  const [activeAccordion, setActiveAccordion] = useState('history'); // Estado para el acordeón
+  const [activeAccordion, setActiveAccordion] = useState('history'); 
 
   const toggleAccordion = (section) => {
     setActiveAccordion(activeAccordion === section ? null : section);
@@ -68,21 +70,102 @@ const Reports = () => {
     }
   }, []);
 
-  const loadGameResults = async (userId) => {
-    try {
-      setLoading(true);
-      const results = await gameService.getUserGameResults(userId);
-      // Ordenar por fecha ascendente (menor a mayor)
-      const sortedResults = results.sort((a, b) => 
-        new Date(a.createdAt.toDate()) - new Date(b.createdAt.toDate())
-      );
-      setGameResults(sortedResults);
+const loadGameResults = async (userId) => {
+  try {
+    setLoading(true);
+    console.log('🔄 Cargando resultados para userId:', userId);
+    
+    if (navigator.onLine === false) {
+      console.warn('Sin conexión a internet, usando datos en caché');
+    }
+    
+    const results = await gameService.getUserGameResults(userId);
+    
+    console.log('📦 === DATOS RAW RECIBIDOS ===');
+    console.log('📦 results:', results);
+    console.log('📦 results.length:', results?.length);
+    
+    if (!Array.isArray(results)) {
+      console.warn('Los resultados no son un array válido');
+      setGameResults([]);
+      return;
+    }
+    
+    const sortedResults = results.sort((a, b) => {
+      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+      return dateA - dateB;
+    });
+    
+    setGameResults(sortedResults);
+    console.log(`Cargados ${sortedResults.length} resultados correctamente`);
+    
+    //   INICIALIZAR FECHAS 
+    if (sortedResults.length > 0) {
+      console.log('🔧 Calculando rango de fechas...');
+      
+      const dates = sortedResults.map(result => {
+        if (result.createdAt && typeof result.createdAt.toDate === 'function') {
+          return result.createdAt.toDate();
+        } else {
+          return new Date(result.createdAt || result.timestamp);
+        }
+      });
+      
+      const minDate = new Date(Math.min(...dates));
+      const maxDate = new Date(Math.max(...dates));
+      
+      // ✅ FORMATEAR FECHAS EN ZONA LOCAL
+      const minDateStr = minDate.getFullYear() + '-' + 
+        String(minDate.getMonth() + 1).padStart(2, '0') + '-' + 
+        String(minDate.getDate()).padStart(2, '0');
+        
+      const maxDateStr = maxDate.getFullYear() + '-' + 
+        String(maxDate.getMonth() + 1).padStart(2, '0') + '-' + 
+        String(maxDate.getDate()).padStart(2, '0');
+      
+      console.log('🔧 Fechas calculadas (LOCAL):', dates.map(d => d.toLocaleString()));
+      console.log('🔧 Estableciendo rango de fechas automático:', minDateStr, 'a', maxDateStr);
+      
+      setCustomStartDate(minDateStr);
+      setCustomEndDate(maxDateStr);
+    }
+
     } catch (error) {
       console.error('Error loading game results:', error);
+      
+      // Manejo específico de errores
+      if (error.code === 'unavailable' || error.message.includes('offline')) {
+        console.warn('Modo offline detectado');
+        // No mostrar alert si ya hay una barra de NetworkStatus
+        if (navigator.onLine !== false) {
+          alert('Sin conexión a internet. Algunos datos pueden no estar disponibles.');
+        }
+      } else if (error.code === 'permission-denied') {
+        alert('No tienes permisos para acceder a estos datos. Contacta al administrador.');
+      } else {
+        alert('Error cargando los resultados. Intenta recargar la página.');
+      }
+      
+      // En caso de error, mantener datos existentes si los hay
+      // setGameResults([]); // Solo limpiar si es necesario
+      
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        loadGameResults(user.uid);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Obtener fechas mínima y máxima de los resultados
   const getDateLimits = () => {
@@ -98,45 +181,107 @@ const Reports = () => {
 
   const dateLimits = getDateLimits();
 
-  // Inicializar fechas al cargar resultados
-  useEffect(() => {
-    if (gameResults.length > 0) {
-      setCustomStartDate(dateLimits.min);
-      setCustomEndDate(dateLimits.max);
-    }   
-  }, [gameResults.length, dateLimits.min, dateLimits.max]);
-
   // FILTRO PRINCIPAL: por juego y por fechas
   const filterResults = () => {
+    // console.log(' === DEBUGGING FILTER RESULTS ===');
+    // console.log(' gameResults completo:', gameResults);
+    // console.log(' gameResults.length:', gameResults.length);
+    // console.log(' selectedGame:', selectedGame);
+    // console.log(' Fechas - inicio:', customStartDate, 'fin:', customEndDate);
+    
     let filtered = [...gameResults];
 
-    // Filtrar por juego si no es 'all'
-    if (selectedGame !== 'all') {
-      filtered = filtered.filter(result => result.gameId === selectedGame);
+    // Filtrar por juego
+    if (selectedGame && selectedGame !== 'all') {
+      //console.log(' Filtrando por juego:', selectedGame);
+      filtered = filtered.filter(result => {
+        //console.log('  - Comparando:', result.gameId, 'con', selectedGame);
+        return result.gameId === selectedGame;
+      });
+      //console.log(' Después de filtrar por juego:', filtered.length);
     }
 
-    // Filtrar por rango de fechas si ambos están definidos
+    // Filtrar por fechas - ARREGLADO
     if (customStartDate && customEndDate) {
-      const startDate = new Date(customStartDate);
-      const endDate = new Date(customEndDate);
-      endDate.setHours(23, 59, 59, 999); // Incluir todo el día final
+      console.log('📅 Filtrando por fechas...');
+      
+      // ✅ CREAR FECHAS EN ZONA LOCAL (sin conversión UTC)
+      const [startYear, startMonth, startDay] = customStartDate.split('-').map(Number);
+      const [endYear, endMonth, endDay] = customEndDate.split('-').map(Number);
+      
+      const startDate = new Date(startYear, startMonth - 1, startDay, 0, 0, 0, 0);
+      const endDate = new Date(endYear, endMonth - 1, endDay, 23, 59, 59, 999);
+      
+      console.log('📅 Fechas input:', customStartDate, 'a', customEndDate);
+      console.log('📅 Rango de fechas configurado (LOCAL):', startDate, 'a', endDate);
+      
       filtered = filtered.filter(result => {
-        const resultDate = result.createdAt.toDate();
-        return resultDate >= startDate && resultDate <= endDate;
+        // ✅ ARREGLO: Manejar correctamente los timestamps de Firebase
+        let resultDate;
+        
+        if (result.createdAt && typeof result.createdAt.toDate === 'function') {
+          // Es un timestamp de Firebase
+          resultDate = result.createdAt.toDate();
+        } else if (result.createdAt) {
+          // Es una fecha normal
+          resultDate = new Date(result.createdAt);
+        } else if (result.timestamp) {
+          resultDate = new Date(result.timestamp);
+        } else {
+          console.warn('⚠️ Resultado sin fecha válida:', result);
+          return false;
+        }
+        
+        const isInRange = resultDate >= startDate && resultDate <= endDate;
+        console.log('  - Fecha resultado:', resultDate.toLocaleString(), 'en rango?', isInRange);
+        
+        return isInRange;
       });
+      console.log('📅 Después de filtrar por fechas:', filtered.length);
+    } else {
+      console.log(' Sin filtro de fechas aplicado');
     }
+    
+    //console.log(' Resultado final filtrado:', filtered);
+    //console.log('=== FIN DEBUGGING ===');
 
     // Ordenar por fecha ascendente
-    filtered.sort((a, b) => new Date(a.createdAt.toDate()) - new Date(b.createdAt.toDate()));
+    filtered.sort((a, b) => {
+      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+      return dateA - dateB;
+    });
+    
     return filtered;
   };
 
-  const getChartData = () => {
-    const filtered = filterResults();
+const getChartData = () => {
+  const filtered = filterResults();
+  
+  // Si no hay datos, retornar estructura vacía
+  if (filtered.length === 0) {
+    return {
+      labels: [],
+      datasets: [{
+        label: 'Puntuación Promedio',
+        data: [],
+        borderColor: 'rgb(59, 130, 246)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0.1,
+        fill: true,
+      }],
+    };
+  }
 
-    // Agrupar por fecha y calcular promedio de puntuación
-    const dateScores = {};
+  // Agrupar por fecha y calcular promedio de puntuación
+  const dateScores = {};
     filtered.forEach(result => {
+      // Validar que el resultado tenga los campos necesarios
+      if (!result.createdAt || !result.score) {
+        console.warn('Resultado inválido encontrado:', result);
+        return;
+      }
+      
       const date = new Date(result.createdAt.toDate()).toLocaleDateString('es-ES');
       if (!dateScores[date]) {
         dateScores[date] = { total: 0, count: 0, results: [] };
@@ -144,7 +289,7 @@ const Reports = () => {
       dateScores[date].total += result.score;
       dateScores[date].count += 1;
       dateScores[date].results.push(result);
-    });
+  });
 
     // Ordenar fechas de menor a mayor
     const dates = Object.keys(dateScores)
@@ -589,14 +734,6 @@ const Reports = () => {
 
   const filteredResults = filterResults();
 
-  if (loading) {
-    return (
-      <div className="reports-container">
-        <div className="loading">Cargando reportes...</div>
-      </div>
-    );
-  }
-
   // Función para calcular estadísticas acumuladas por juego
   const getAccumulatedStats = () => {
     const gameStats = {};
@@ -779,332 +916,473 @@ const Reports = () => {
     return "Análisis comparativo en desarrollo";
   };
 
+  if (loading) {
+    return (
+      <div className="reports-container">
+        <div className="reports-header">
+          <h1>Reportes de Juegos Cognitivos</h1>
+        </div>
+        <div className="loading-container" style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '300px',
+          fontSize: '18px',
+          color: '#666'
+        }}>
+          <div>
+            <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+              ⏳ Cargando reportes...
+            </div>
+            <div style={{ fontSize: '14px', textAlign: 'center', color: '#999' }}>
+              {navigator.onLine ? 'Obteniendo datos del servidor...' : 'Buscando datos en caché local...'}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Agregar también un estado para cuando no hay datos:
+  if (!loading && gameResults.length === 0) {
+    return (
+      <div className="reports-container">
+        <div className="reports-header">
+          <h1>Reportes de Juegos Cognitivos</h1>
+        </div>
+        <div className="no-data-container" style={{ 
+          textAlign: 'center', 
+          padding: '60px 20px',
+          color: '#666'
+        }}>
+          <div style={{ fontSize: '48px', marginBottom: '20px' }}>📊</div>
+          <h2 style={{ marginBottom: '10px' }}>No hay datos disponibles</h2>
+          <p>Completa algunos juegos para ver tus reportes de rendimiento.</p>
+          <button 
+            onClick={() => window.location.href = '/dashboard'}
+            style={{
+              marginTop: '20px',
+              padding: '10px 20px',
+              backgroundColor: '#3498db',
+              color: 'white',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer'
+            }}
+          >
+            Ir al Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  const getLevelClass = (level) => {
+  // Mapeo de nombres de nivel a clases CSS
+  const levelMapping = {
+      'Tutorial': 'level-tutorial',
+      'Básico': 'level-basico', 
+      'Intermedio': 'level-intermedio',
+      'Avanzado': 'level-avanzado',
+      'Experto': 'level-experto',
+      // Mantener compatibilidad con números antiguos
+      '0': 'level-tutorial',
+      '1': 'level-basico',
+      '2': 'level-intermedio', 
+      '3': 'level-avanzado',
+      '4': 'level-experto',
+      // Para otros juegos que puedan usar otros formatos
+      'basico': 'level-basico',
+      'intermedio': 'level-intermedio',
+      'avanzado': 'level-avanzado'
+    };
+    
+    return levelMapping[level] || 'level-default';
+  };
+
   return (
     <div className="reports-container">
-      <div className="reports-header">
-        <h1>Reportes de Juegos Cognitivos</h1>
-      </div>
-
-      <div className="reports-filters">
-        <div className="filter-group">
-          <label>Filtrar por juego:</label>
-          <select 
-            value={selectedGame} 
-            onChange={(e) => setSelectedGame(e.target.value)}
-          >
-            <option value="all">Todos los juegos</option>
-            {Object.entries(gameNames).map(([id, name]) => (
-              <option key={id} value={id}>{name}</option>
-            ))}
-          </select>
-        </div>
-        <div className="filter-group">
-          <label>Fecha de inicio:</label>
-          <input
-            type="date"
-            value={customStartDate}
-            onChange={(e) => setCustomStartDate(e.target.value)}
-            min={dateLimits.min}
-            max={customEndDate || dateLimits.max}
-            className="date-input"
-          />
-        </div>
-        <div className="filter-group">
-          <label>Fecha de fin:</label>
-          <input
-            type="date"
-            value={customEndDate}
-            onChange={(e) => setCustomEndDate(e.target.value)}
-            min={customStartDate || dateLimits.min}
-            max={dateLimits.max}
-            className="date-input"
-          />
-        </div>
-        {/* {customStartDate && customEndDate && (
-          <div className="filter-group">
-            <button
-              className="btn-clear-dates"
-              onClick={() => {
-                setCustomStartDate(dateLimits.min);
-                setCustomEndDate(dateLimits.max);
+      {/* Estado de carga */}
+      {loading ? (
+        <>
+          <div className="reports-header">
+            <h1>Reportes de Juegos Cognitivos</h1>
+          </div>
+          <div className="loading-container" style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            minHeight: '400px',
+            fontSize: '18px',
+            color: '#666'
+          }}>
+            <div>
+              <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+                ⏳ Cargando reportes...
+              </div>
+              <div style={{ fontSize: '14px', textAlign: 'center', color: '#999' }}>
+                {navigator.onLine ? 'Obteniendo datos del servidor...' : 'Buscando datos en caché local...'}
+              </div>
+            </div>
+          </div>
+        </>
+      ) : gameResults.length === 0 ? (
+        /* Estado sin datos */
+        <>
+          <div className="reports-header">
+            <h1>Reportes de Juegos Cognitivos</h1>
+          </div>
+          <div className="no-data-container" style={{ 
+            textAlign: 'center', 
+            padding: '60px 20px',
+            color: '#666'
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '20px' }}>📊</div>
+            <h2 style={{ marginBottom: '10px' }}>No hay datos disponibles</h2>
+            <p>Completa algunos juegos para ver tus reportes de rendimiento.</p>
+            <button 
+              onClick={() => window.location.href = '/dashboard'}
+              style={{
+                marginTop: '20px',
+                padding: '10px 20px',
+                backgroundColor: '#3498db',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                fontWeight: '500',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#2980b9';
+                e.target.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = '#3498db';
+                e.target.style.transform = 'translateY(0)';
               }}
             >
-              Limpiar fechas
+              Ir al Dashboard
             </button>
           </div>
-        )} */}
-      </div>
-
-      <div className="results-summary">
-        <h2>Resumen</h2>
-        <div className="summary-content">
-          {/* Gráfica a la izquierda */}
-          <div className="chart-container">
-            <div className="chart-wrapper" onClick={() => setShowChartModal(true)}>
-              <Line data={getChartData()} options={chartOptions} />
-              <div className="chart-overlay">
-                <span>Haz clic para ampliar</span>
-              </div>
-            </div>
+        </>
+      ) : (
+        /* Contenido principal con datos */
+        <>
+          <div className="reports-header">
+            <h1>Reportes de Juegos Cognitivos</h1>
           </div>
 
-          {/* Cards verticales a la derecha */}
-          <div className="summary-cards-vertical">
-            <div className="summary-card">
-              <h3>Total de Sesiones</h3>
-              <span className="summary-number">{filteredResults.length}</span>
+          <div className="reports-filters">
+            <div className="filter-group">
+              <label>Filtrar por juego:</label>
+              <select 
+                value={selectedGame} 
+                onChange={(e) => setSelectedGame(e.target.value)}
+              >
+                <option value="all">Todos los juegos</option>
+                {Object.entries(gameNames).map(([id, name]) => (
+                  <option key={id} value={id}>{name}</option>
+                ))}
+              </select>
             </div>
-            <div className="summary-card">
-              <h3>Puntuación Promedio</h3>
-              <span className="summary-number">
-                {filteredResults.length > 0 
-                  ? Math.round(filteredResults.reduce((sum, r) => sum + r.score, 0) / filteredResults.length)
-                  : 0}
-              </span>
+            <div className="filter-group">
+              <label>Fecha de inicio:</label>
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={(e) => setCustomStartDate(e.target.value)}
+                min={dateLimits.min}
+                max={customEndDate || dateLimits.max}
+                className="date-input"
+              />
             </div>
-            <div className="summary-card">
-              <h3>Tiempo Total</h3>
-              <span className="summary-number">
-                {formatDuration(filteredResults.reduce((sum, r) => sum + r.timeSpent, 0))}
-              </span>
+            <div className="filter-group">
+              <label>Fecha de fin:</label>
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={(e) => setCustomEndDate(e.target.value)}
+                min={customStartDate || dateLimits.min}
+                max={dateLimits.max}
+                className="date-input"
+              />
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* ACORDEÓN/DESPLEGABLES */}
-      <div className="reports-accordion">
-        {/* Sección 1: Historial Desplegable */}
-        <div className="accordion-section">
-          <div 
-            className={`accordion-header ${activeAccordion === 'history' ? 'active' : ''}`}
-            onClick={() => toggleAccordion('history')}
-          >
-            <div className="accordion-title">
-              <h2>Historial de Sesiones ({filteredResults.length})</h2>
-            </div>
-            <span className={`accordion-arrow ${activeAccordion === 'history' ? 'open' : ''}`}>
-              ▼
-            </span>
-          </div>
-          <div className={`accordion-content ${activeAccordion === 'history' ? 'open' : ''}`}>
-            {filteredResults.length === 0 ? (
-              <div className="no-results">
-                No se encontraron resultados para los filtros seleccionados.
-              </div>
-            ) : (
-              <div className="table-wrapper">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Fecha</th>
-                      <th>Juego</th>
-                      <th>Dominio</th>
-                      <th>Nivel</th>
-                      <th>Puntuación</th>
-                      <th>Tiempo</th>
-                      <th>Precisión</th>
-                      <th>Detalles</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredResults.map((result) => (
-                      <tr key={result.id}>
-                        <td>{formatDate(result)}</td>
-                        <td>{gameNames[result.gameId] || result.gameId}</td>
-                        <td>{cognitiveDomains[result.cognitiveDomain] || result.cognitiveDomain}</td>
-                        <td>
-                          <span className={`level-badge level-${result.level}`}>
-                            {result.level}
-                          </span>
-                        </td>
-                        <td>
-                          <span 
-                            style={{ 
-                              color: getScoreColor(result.score), 
-                              fontWeight: 'bold' 
-                            }}
-                          >
-                            {result.score}
-                          </span>
-                        </td>
-                        <td>{formatDuration(result.timeSpent)}</td>
-                        <td>
-                          {result.totalQuestions > 0 
-                            ? Math.round((result.correctAnswers / result.totalQuestions) * 100) + '%'
-                            : 'N/A'}
-                        </td>
-                        <td>
-                          <button 
-                            className="btn-details"
-                            onClick={() => showGameDetails(result)}
-                          >
-                            Ver Detalles
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Sección 2: Reporte Acumulado Desplegable */}
-        <div className="accordion-section">
-          <div 
-            className={`accordion-header ${activeAccordion === 'accumulated' ? 'active' : ''}`}
-            onClick={() => toggleAccordion('accumulated')}
-          >
-            <div className="accordion-title">
-              <h2>Reporte Acumulado por Juego</h2>
-            </div>
-            <span className={`accordion-arrow ${activeAccordion === 'accumulated' ? 'open' : ''}`}>
-              ▼
-            </span>
-          </div>
-          <div className={`accordion-content ${activeAccordion === 'accumulated' ? 'open' : ''}`}>
-            <div className="accumulated-games-grid">
-              {Object.entries(getAccumulatedStats()).map(([gameId, stats]) => {
-                const specificStats = getGameSpecificStats(gameId, stats);
-                return (
-                  <div key={gameId} className="accumulated-game-card">
-                    <div className="accumulated-game-header">
-                      <h3>{stats.gameName}</h3>
-                      <span className="sessions-count">{stats.totalSessions} sesiones</span>
-                    </div>
-                    
-                    <div className="accumulated-stats">
-                      <div className="stat-item primary">
-                        <span className="stat-label">{specificStats.primaryMetric.label}</span>
-                        <span className="stat-value">{specificStats.primaryMetric.value}</span>
-                      </div>
-                      
-                      <div className="stat-item">
-                        <span className="stat-label">{specificStats.secondaryMetric.label}</span>
-                        <span className="stat-value">{specificStats.secondaryMetric.value}</span>
-                      </div>
-                      
-                      <div className="stat-item">
-                        <span className="stat-label">{specificStats.progressMetric.label}</span>
-                        <span className="stat-value progress">{specificStats.progressMetric.value}</span>
-                      </div>
-                      
-                      <div className="stat-item">
-                        <span className="stat-label">{specificStats.specialMetric.label}</span>
-                        <span className="stat-value">{specificStats.specialMetric.value}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="accumulated-game-footer">
-                      <span className="date-range">
-                        {stats.firstSession.toLocaleDateString('es-ES')} - {stats.lastSession.toLocaleDateString('es-ES')}
-                      </span>
-                    </div>
+          <div className="results-summary">
+            <h2>Resumen</h2>
+            <div className="summary-content">
+              {/* Gráfica a la izquierda */}
+              <div className="chart-container">
+                <div className="chart-wrapper" onClick={() => setShowChartModal(true)}>
+                  <Line data={getChartData()} options={chartOptions} />
+                  <div className="chart-overlay">
+                    <span>Haz clic para ampliar</span>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Modal de gráfica ampliada */}
-      {showChartModal && (
-        <div className="chart-modal-overlay" onClick={() => setShowChartModal(false)}>
-          <div className="chart-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="chart-modal-header">
-              <h2>Progreso Detallado</h2>
-              <button 
-                className="close-modal-btn"
-                onClick={() => setShowChartModal(false)}
-              >
-                ×
-              </button>
-            </div>
-            <div className="chart-modal-content">
-              <Line data={getChartData()} options={{
-                ...chartOptions,
-                onClick: undefined,
-                plugins: {
-                  ...chartOptions.plugins,
-                  legend: {
-                    position: 'top',
-                  },
-                }
-              }} />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de detalles */}
-      {showDetailsModal && selectedGameDetails && (
-        <div className="details-modal-overlay" onClick={() => setShowDetailsModal(false)}>
-          <div className="details-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="details-modal-header">
-              <h2>{selectedGameDetails.specificMetrics?.title || 'Análisis Detallado de Sesión'}</h2>
-              <button 
-                className="close-modal-btn"
-                onClick={() => setShowDetailsModal(false)}
-              >
-                ×
-              </button>
-            </div>
-            
-            <div className="details-modal-content">
-              <div className="details-section">
-                <h3>Información de la Sesión</h3>
-                <div className="details-grid">
-                  <div><strong>Juego:</strong> {selectedGameDetails.sessionInfo.game}</div>
-                  <div><strong>Dominio:</strong> {selectedGameDetails.sessionInfo.domain}</div>
-                  <div><strong>Fecha:</strong> {selectedGameDetails.sessionInfo.date}</div>
-                  <div><strong>Nivel:</strong> {selectedGameDetails.sessionInfo.level}</div>
-                  <div><strong>Puntuación:</strong> {selectedGameDetails.sessionInfo.score}</div>
-                  <div><strong>Tiempo Total:</strong> {formatDuration(selectedGameDetails.sessionInfo.timeSpent)}</div>
                 </div>
               </div>
 
-              {selectedGameDetails.specificMetrics && (
-                <div className="details-section">
-                  <h3>Métricas Específicas del Juego</h3>
-                  <div className="game-specific-metrics">
-                    {selectedGameDetails.specificMetrics.metrics.map((metric, index) => (
-                      <div key={index} className="metric-item">
-                        <div className="metric-header">
-                          <strong>{metric.label}:</strong> 
-                          <span className="metric-value">{metric.value}</span>
+              {/* Cards verticales a la derecha */}
+              <div className="summary-cards-vertical">
+                <div className="summary-card">
+                  <h3>Total de Sesiones</h3>
+                  <span className="summary-number">{filteredResults.length}</span>
+                </div>
+                <div className="summary-card">
+                  <h3>Puntuación Promedio</h3>
+                  <span className="summary-number">
+                    {filteredResults.length > 0 
+                      ? Math.round(filteredResults.reduce((sum, r) => sum + r.score, 0) / filteredResults.length)
+                      : 0}
+                  </span>
+                </div>
+                <div className="summary-card">
+                  <h3>Tiempo Total</h3>
+                  <span className="summary-number">
+                    {formatDuration(filteredResults.reduce((sum, r) => sum + r.timeSpent, 0))}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ACORDEÓN/DESPLEGABLES */}
+          <div className="reports-accordion">
+            {/* Sección 1: Historial Desplegable */}
+            <div className="accordion-section">
+              <div 
+                className={`accordion-header ${activeAccordion === 'history' ? 'active' : ''}`}
+                onClick={() => toggleAccordion('history')}
+              >
+                <div className="accordion-title">
+                  <h2>Historial de Sesiones ({filteredResults.length})</h2>
+                </div>
+                <span className={`accordion-arrow ${activeAccordion === 'history' ? 'open' : ''}`}>
+                  ▼
+                </span>
+              </div>
+              <div className={`accordion-content ${activeAccordion === 'history' ? 'open' : ''}`}>                
+                {filteredResults.length === 0 ? (
+                  <div className="no-results">
+                    No se encontraron resultados para los filtros seleccionados.
+                  </div>
+                ) : (
+                  <div className="table-wrapper">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Fecha</th>
+                          <th>Juego</th>
+                          <th>Dominio</th>
+                          <th>Nivel</th>
+                          <th>Puntuación</th>
+                          <th>Tiempo</th>
+                          <th>Precisión</th>
+                          <th>Detalles</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredResults.map((result) => (
+                          <tr key={result.id}>
+                            <td>{formatDate(result)}</td>
+                            <td>{gameNames[result.gameId] || result.gameId}</td>
+                            <td>{cognitiveDomains[result.cognitiveDomain] || result.cognitiveDomain}</td>
+                            <td>
+                              <span className={`level-badge ${getLevelClass(result.level)}`}>
+                                {result.level}
+                              </span>
+                            </td>
+                            <td>
+                              <span 
+                                style={{ 
+                                  color: getScoreColor(result.score), 
+                                  fontWeight: 'bold' 
+                                }}
+                              >
+                                {result.score}
+                              </span>
+                            </td>
+                            <td>{formatDuration(result.timeSpent)}</td>
+                            <td>
+                              {result.totalQuestions > 0 
+                                ? Math.round((result.correctAnswers / result.totalQuestions) * 100) + '%'
+                                : 'N/A'}
+                            </td>
+                            <td>
+                              <button 
+                                className="btn-details"
+                                onClick={() => showGameDetails(result)}
+                              >
+                                Ver Detalles
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Sección 2: Reporte Acumulado Desplegable */}
+            <div className="accordion-section">
+              <div 
+                className={`accordion-header ${activeAccordion === 'accumulated' ? 'active' : ''}`}
+                onClick={() => toggleAccordion('accumulated')}
+              >
+                <div className="accordion-title">
+                  <h2>Reporte Acumulado por Juego</h2>
+                </div>
+                <span className={`accordion-arrow ${activeAccordion === 'accumulated' ? 'open' : ''}`}>
+                  ▼
+                </span>
+              </div>
+              <div className={`accordion-content ${activeAccordion === 'accumulated' ? 'open' : ''}`}>
+                <div className="accumulated-games-grid">
+                  {Object.entries(getAccumulatedStats()).map(([gameId, stats]) => {
+                    const specificStats = getGameSpecificStats(gameId, stats);
+                    return (
+                      <div key={gameId} className="accumulated-game-card">
+                        <div className="accumulated-game-header">
+                          <h3>{stats.gameName}</h3>
+                          <span className="sessions-count">{stats.totalSessions} sesiones</span>
                         </div>
-                        <div className="metric-description">{metric.description}</div>
+                        
+                        <div className="accumulated-stats">
+                          <div className="stat-item primary">
+                            <span className="stat-label">{specificStats.primaryMetric.label}</span>
+                            <span className="stat-value">{specificStats.primaryMetric.value}</span>
+                          </div>
+                          
+                          <div className="stat-item">
+                            <span className="stat-label">{specificStats.secondaryMetric.label}</span>
+                            <span className="stat-value">{specificStats.secondaryMetric.value}</span>
+                          </div>
+                          
+                          <div className="stat-item">
+                            <span className="stat-label">{specificStats.progressMetric.label}</span>
+                            <span className="stat-value progress">{specificStats.progressMetric.value}</span>
+                          </div>
+                          
+                          <div className="stat-item">
+                            <span className="stat-label">{specificStats.specialMetric.label}</span>
+                            <span className="stat-value">{specificStats.specialMetric.value}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="accumulated-game-footer">
+                          <span className="date-range">
+                            {stats.firstSession.toLocaleDateString('es-ES')} - {stats.lastSession.toLocaleDateString('es-ES')}
+                          </span>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedGameDetails.specificMetrics?.evolution && (
-                <div className="details-section">
-                  <h3>Evolución y Progreso</h3>
-                  <div className="evolution-analysis">
-                    <p>{selectedGameDetails.specificMetrics.evolution}</p>
-                  </div>
-                </div>
-              )}
-
-              <div className="details-section">
-                <h3>Recomendaciones</h3>
-                <div className="recommendations">
-                  <ul>
-                    <li>Continúa practicando regularmente para mantener el progreso</li>
-                    <li>Intenta incrementar gradualmente el nivel de dificultad</li>
-                    <li>Enfócate en mejorar las áreas identificadas como oportunidades</li>
-                  </ul>
+                    );
+                  })}
                 </div>
               </div>
             </div>
           </div>
-        </div>
+
+          {/* Modal de gráfica ampliada */}
+          {showChartModal && (
+            <div className="chart-modal-overlay" onClick={() => setShowChartModal(false)}>
+              <div className="chart-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="chart-modal-header">
+                  <h2>Progreso Detallado</h2>
+                  <button 
+                    className="close-modal-btn"
+                    onClick={() => setShowChartModal(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="chart-modal-content">
+                  <Line data={getChartData()} options={{
+                    ...chartOptions,
+                    onClick: undefined,
+                    plugins: {
+                      ...chartOptions.plugins,
+                      legend: {
+                        position: 'top',
+                      },
+                    }
+                  }} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modal de detalles */}
+          {showDetailsModal && selectedGameDetails && (
+            <div className="details-modal-overlay" onClick={() => setShowDetailsModal(false)}>
+              <div className="details-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="details-modal-header">
+                  <h2>{selectedGameDetails.specificMetrics?.title || 'Análisis Detallado de Sesión'}</h2>
+                  <button 
+                    className="close-modal-btn"
+                    onClick={() => setShowDetailsModal(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+                
+                <div className="details-modal-content">
+                  <div className="details-section">
+                    <h3>Información de la Sesión</h3>
+                    <div className="details-grid">
+                      <div><strong>Juego:</strong> {selectedGameDetails.sessionInfo.game}</div>
+                      <div><strong>Dominio:</strong> {selectedGameDetails.sessionInfo.domain}</div>
+                      <div><strong>Fecha:</strong> {selectedGameDetails.sessionInfo.date}</div>
+                      <div><strong>Nivel:</strong> {selectedGameDetails.sessionInfo.level}</div>
+                      <div><strong>Puntuación:</strong> {selectedGameDetails.sessionInfo.score}</div>
+                      <div><strong>Tiempo Total:</strong> {formatDuration(selectedGameDetails.sessionInfo.timeSpent)}</div>
+                    </div>
+                  </div>
+
+                  {selectedGameDetails.specificMetrics && (
+                    <div className="details-section">
+                      <h3>Métricas Específicas del Juego</h3>
+                      <div className="game-specific-metrics">
+                        {selectedGameDetails.specificMetrics.metrics.map((metric, index) => (
+                          <div key={index} className="metric-item">
+                            <div className="metric-header">
+                              <strong>{metric.label}:</strong> 
+                              <span className="metric-value">{metric.value}</span>
+                            </div>
+                            <div className="metric-description">{metric.description}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedGameDetails.specificMetrics?.evolution && (
+                    <div className="details-section">
+                      <h3>Evolución y Progreso</h3>
+                      <div className="evolution-analysis">
+                        <p>{selectedGameDetails.specificMetrics.evolution}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="details-section">
+                    <h3>Recomendaciones</h3>
+                    <div className="recommendations">
+                      <ul>
+                        <li>Continúa practicando regularmente para mantener el progreso</li>
+                        <li>Intenta incrementar gradualmente el nivel de dificultad</li>
+                        <li>Enfócate en mejorar las áreas identificadas como oportunidades</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

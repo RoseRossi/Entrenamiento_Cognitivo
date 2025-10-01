@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { auth, googleProvider } from '../../../services/firebase/firebaseConfig';
+import { auth, googleProvider, checkFirebaseConnection } from '../../../services/firebase/firebaseConfig';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
-  signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
-  onAuthStateChanged
+  signInWithPopup
 } from 'firebase/auth';
 import Loading from '../Loading/Loading';
 import './AuthForm.css';
@@ -18,60 +15,14 @@ export default function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [user, setUser] = useState(null);
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
-  const [useRedirect, setUseRedirect] = useState(false);
-  const [showRetryButton, setShowRetryButton] = useState(false);
 
-  // Escuchar cambios en el estado de autenticación
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // Verificar resultado de redirect al cargar la página
-  useEffect(() => {
-    const checkRedirectResult = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (result) {
-          console.log(' Redirect result:', result.user.email);
-          setSuccessMessage("¡Inicio de sesión con Google exitoso!");
-          setTimeout(() => {
-            window.location.href = "/";
-          }, 800);
-        }
-      } catch (error) {
-        console.error(' Error en redirect result:', error);
-        setErrors({ general: getErrorMessage(error.code) });
-      }
-    };
-    
-    checkRedirectResult();
-    
-    // Simplificar diagnóstico para evitar errores
-    const checkPopupSupport = () => {
-      try {
-        const popup = window.open('', '_blank', 'width=1,height=1');
-        if (!popup || popup.closed || typeof popup.closed === 'undefined') {
-          return false;
-        }
-        popup.close();
-        return true;
-      } catch (error) {
-        return false;
-      }
-    };
-    
-    // Si los popups no funcionan, usar redirect por defecto
-    if (!checkPopupSupport()) {
-      setUseRedirect(true);
-      console.log('🔧 Popups bloqueados, usando redirect por defecto');
-    }
-  }, []);
+    //console.log('🔍 Verificando Firebase al cargar AuthForm...');
+    //console.log('🔍 Auth state:', auth.currentUser);
+    checkFirebaseConnection();
+  }, []); 
 
   // Validación de formulario
   const validateForm = () => {
@@ -110,6 +61,8 @@ export default function AuthForm() {
         return 'Demasiados intentos fallidos. Intenta más tarde';
       case 'auth/network-request-failed':
         return 'Error de conexión. Verifica tu internet';
+      case 'auth/popup-blocked':
+        return 'Error de autenticación. Intenta nuevamente';
       default:
         return 'Ha ocurrido un error inesperado';
     }
@@ -141,11 +94,7 @@ export default function AuthForm() {
       setEmail('');
       setPassword('');
       
-      // Redireccionar después de un breve delay para mostrar el mensaje
-      setTimeout(() => {
-        // Aquí deberías usar React Router en lugar de window.location
-        window.location.href = "/";
-      }, 1500);
+      //console.log(' Auth completado, App.js manejará la navegación...');
       
     } catch (error) {
       setErrors({ general: getErrorMessage(error.code) });
@@ -172,122 +121,42 @@ export default function AuthForm() {
   };
 
   const handleGoogleLogin = async () => {
+    //console.log(' Iniciando autenticación con Google (popup)...');
     setGoogleLoading(true);
     clearMessages();
     
     try {
-      console.log('🚀 Iniciando autenticación con Google...');
-      const startTime = performance.now();
-      
-      // Configurar el proveedor de Google con configuraciones optimizadas
-      googleProvider.setCustomParameters({
-        prompt: 'select_account',
-        // Forzar el uso de redirect en lugar de popup si hay problemas
-        // redirect_uri: window.location.origin
-      });
-      
-      console.log('📱 Abriendo popup de Google...');
-      
-      // Detectar si el popup fue bloqueado
-      const popupPromise = signInWithPopup(auth, googleProvider);
-      
-      // Verificar si el popup se abre correctamente
-      const popupTest = window.open('', '_blank', 'width=1,height=1');
-      if (!popupTest || popupTest.closed || typeof popupTest.closed === 'undefined') {
-        console.warn('⚠️ Popup posiblemente bloqueado, cambiando a redirect automáticamente...');
-        popupTest?.close();
-        setUseRedirect(true);
-        // Ejecutar inmediatamente el método redirect
-        setTimeout(() => handleGoogleLoginRedirect(), 100);
-        return;
-      }
-      popupTest.close();
-      
-      // Usar signInWithPopup con timeout personalizado
-      const result = await Promise.race([
-        popupPromise,
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Timeout: La autenticación tardó demasiado')), 30000)
-        )
-      ]);
-      
-      const endTime = performance.now();
-      console.log(` Autenticación completada en ${Math.round(endTime - startTime)}ms`);
-      
-      // Verificar que el usuario se autenticó correctamente
-      if (result.user) {
-        console.log('👤 Usuario autenticado:', result.user.email);
-        setSuccessMessage("¡Inicio de sesión con Google exitoso!");
-        
-        // Reducir aún más el tiempo de redirección
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 800);
-      }
-    } catch (error) {
-      console.error(' Error en autenticación Google:', error);
-      
-      // Manejo específico de errores de Google
-      let errorMessage = '';
-      switch (error.code) {
-        case 'auth/popup-closed-by-user':
-          errorMessage = 'Ventana de Google cerrada. Intenta nuevamente';
-          break;
-        case 'auth/popup-blocked':
-          errorMessage = ' Popup bloqueado detectado. Cambiando automáticamente al método redirect...';
-          // Activar automáticamente el redirect si el popup está bloqueado
-          setUseRedirect(true);
-          setShowRetryButton(true);
-          // Intentar automáticamente con redirect después de un breve delay
-          setTimeout(() => {
-            console.log(' Reintentando con redirect...');
-            setShowRetryButton(false);
-            handleGoogleLoginRedirect();
-          }, 2000);
-          break;
-        case 'auth/cancelled-popup-request':
-          errorMessage = 'Solicitud cancelada. Intenta nuevamente';
-          break;
-        case 'auth/network-request-failed':
-          errorMessage = 'Error de conexión. Verifica tu internet';
-          break;
-        case 'auth/too-many-requests':
-          errorMessage = 'Demasiados intentos. Espera un momento';
-          break;
-        case 'auth/internal-error':
-          errorMessage = 'Error interno. Intenta recargar la página';
-          break;
-        default:
-          if (error.message === 'Timeout: La autenticación tardó demasiado') {
-            errorMessage = 'La autenticación está tardando demasiado. Prueba con la opción "Redirect"';
-            setUseRedirect(true);
-          } else {
-            errorMessage = getErrorMessage(error.code);
-          }
-      }
-      setErrors({ general: errorMessage });
-    } finally {
-      setGoogleLoading(false);
-    }
-  };
-
-  // Función alternativa usando redirect (más confiable en algunos casos)
-  const handleGoogleLoginRedirect = async () => {
-    setGoogleLoading(true);
-    clearMessages();
-    
-    try {
-      console.log('🔄 Iniciando autenticación con Google (redirect)...');
-      
       googleProvider.setCustomParameters({
         prompt: 'select_account'
       });
       
-      await signInWithRedirect(auth, googleProvider);
-      // El resultado se manejará en el useEffect de getRedirectResult
+      //console.log(' Ejecutando popup...');
+      const result = await signInWithPopup(auth, googleProvider);
+      
+      console.log(' Login exitoso:', result.user.email);
+      setSuccessMessage("¡Inicio de sesión con Google exitoso!");
+      
+      //console.log(' Auth completado, App.js manejará la navegación...');
+      
     } catch (error) {
-      console.error(' Error en redirect:', error);
-      setErrors({ general: getErrorMessage(error.code) });
+      console.error(' Error en Google Auth:', error);
+      
+      let errorMessage = 'Error de autenticación con Google';
+      
+      if (error.code === 'auth/popup-blocked') {
+        errorMessage = 'Los popups están bloqueados. Habilita popups para este sitio o intenta en modo incógnito.';
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        errorMessage = 'Ventana cerrada antes de completar el login. Intenta nuevamente.';
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        errorMessage = 'Proceso cancelado. Intenta nuevamente.';
+      } else if (error.code === 'auth/network-request-failed') {
+        errorMessage = 'Error de conexión. Verifica tu internet.';
+      } else {
+        errorMessage = `Error: ${error.message}`;
+      }
+      
+      setErrors({ general: errorMessage });
+    } finally {
       setGoogleLoading(false);
     }
   };
@@ -306,14 +175,15 @@ export default function AuthForm() {
   }
 
   if (googleLoading) {
-    const message = useRedirect ? "Redirigiendo a Google..." : "Abriendo ventana de Google...";
-    return <Loading message={message} />;
+    return <Loading message="Autenticando con Google..." />;
   }
 
   return (
     <div style={styles.container}>
       <div style={styles.card} className="auth-form-container">
-        <h2 style={styles.title}>{isLogin ? 'Iniciar sesión' : 'Registrarse'}</h2>
+        <h2 style={styles.title}>
+          {auth.currentUser ? 'Bienvenido/a' : (isLogin ? 'Iniciar sesión' : 'Registrarse')}
+        </h2>
         
         {/* Mensajes de éxito */}
         {successMessage && (
@@ -330,36 +200,24 @@ export default function AuthForm() {
         )}
         
         {/* Mostrar usuario logueado */}
-        {user && (
+        {auth.currentUser ? (
           <div style={styles.userInfo}>
-            <p>Conectado como: <strong>{user.email}</strong></p>
+            <p>Conectado como: <strong>{auth.currentUser.email}</strong></p>
+            <button 
+              onClick={handleLogout} 
+              style={{
+                ...styles.logoutButton,
+                ...(loading ? styles.buttonDisabled : {})
+              }}
+              className="auth-button logout-button"
+              disabled={loading}
+            >
+              {loading ? 'Cerrando sesión...' : 'Cerrar sesión'}
+            </button>
           </div>
-        )}
-        
-        {/* Formulario solo si no hay usuario logueado */}
-        {!user && (
+        ) : (
           <>
-            {/* Mensaje informativo para Google */}
-            {googleLoading && !useRedirect && (
-              <div style={styles.infoMessage}>
-                <p>Se abrirá una ventana de Google para autenticarte. Si no aparece automáticamente, revisa que los popups estén habilitados.</p>
-              </div>
-            )}
-            
-            {/* Mensaje para redirect */}
-            {googleLoading && useRedirect && (
-              <div style={styles.warningMessage}>
-                <p> Redirigiendo a Google... La página se recargará automáticamente.</p>
-              </div>
-            )}
-            
-            {/* Mensaje si se detectó popup bloqueado */}
-            {useRedirect && !googleLoading && (
-              <div style={styles.warningMessage}>
-                <p> Modo Redirect activado (popups bloqueados detectados)</p>
-              </div>
-            )}
-            
+            {/* Formulario de email/password */}
             <form onSubmit={handleSubmit} style={styles.form}>
               <div style={styles.inputGroup}>
                 <label htmlFor="email" style={styles.label}>Correo electrónico</label>
@@ -375,11 +233,10 @@ export default function AuthForm() {
                   }}
                   className="auth-input"
                   disabled={loading}
-                  aria-describedby={errors.email ? "email-error" : undefined}
                   required
                 />
                 {errors.email && (
-                  <span id="email-error" style={styles.fieldError}>
+                  <span style={styles.fieldError}>
                     {errors.email}
                   </span>
                 )}
@@ -399,11 +256,10 @@ export default function AuthForm() {
                   }}
                   className="auth-input"
                   disabled={loading}
-                  aria-describedby={errors.password ? "password-error" : undefined}
                   required
                 />
                 {errors.password && (
-                  <span id="password-error" style={styles.fieldError}>
+                  <span style={styles.fieldError}>
                     {errors.password}
                   </span>
                 )}
@@ -421,7 +277,38 @@ export default function AuthForm() {
                 {loading ? 'Procesando...' : (isLogin ? 'Ingresar' : 'Registrarse')}
               </button>
             </form>
+
+            {/* Botón de Google */}
+            <div style={styles.googleSection}>
+              <button 
+                onClick={handleGoogleLogin} 
+                style={{
+                  ...styles.googleButton,
+                  ...(googleLoading || loading ? styles.buttonDisabled : {})
+                }}
+                className="auth-button google-button"
+                disabled={googleLoading || loading}
+              >
+                {googleLoading ? (
+                  <span style={styles.loadingText}>
+                    <span style={styles.spinner} className="spinner"></span>
+                    Autenticando...
+                  </span>
+                ) : (
+                  <>
+                    <svg width="18" height="18" viewBox="0 0 24 24" style={styles.googleIconSvg}>
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Continuar con Google
+                  </>
+                )}
+              </button>
+            </div>
             
+            {/* Switch entre login/registro*/}
             <button 
               onClick={switchMode} 
               style={styles.switchButton}
@@ -429,68 +316,7 @@ export default function AuthForm() {
             >
               {isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión'}
             </button>
-            
-            <hr style={styles.hr} />
-            
-            {/* Opción para elegir método de Google */}
-            <div style={styles.googleMethodSelector}>
-              <label style={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={useRedirect}
-                  onChange={(e) => setUseRedirect(e.target.checked)}
-                  style={styles.checkbox}
-                />
-                Usar redirect (recomendado si popup es lento)
-              </label>
-            </div>
-            
-            <button 
-              onClick={useRedirect ? handleGoogleLoginRedirect : handleGoogleLogin} 
-              style={{
-                ...styles.googleButton,
-                ...(googleLoading || loading ? styles.buttonDisabled : {})
-              }}
-              className="auth-button google-button"
-              disabled={googleLoading || loading}
-            >
-              {googleLoading ? (
-                <span style={styles.loadingText}>
-                  <span style={styles.spinner} className="spinner"></span>
-                  {useRedirect ? 'Redirigiendo a Google...' : 'Abriendo Google...'}
-                </span>
-              ) : `Ingresar con Google ${useRedirect ? '(Redirect)' : '(Popup)'}`}
-            </button>
-            
-            {/* Botón de reintento automático */}
-            {showRetryButton && (
-              <button 
-                onClick={() => {
-                  setShowRetryButton(false);
-                  handleGoogleLoginRedirect();
-                }}
-                style={styles.retryButton}
-                className="auth-button"
-              >
-                 Reintentar con Redirect ahora
-              </button>
-            )}
           </>
-        )}
-        
-        {/* Botón de cerrar sesión solo si hay usuario logueado */}
-        {user && (
-          <button 
-            onClick={handleLogout} 
-            style={{
-              ...styles.logoutButton,
-              ...(loading ? styles.buttonDisabled : {})
-            }}
-            className="auth-button logout-button"
-            disabled={loading}
-          >
-            {loading ? 'Cerrando sesión...' : 'Cerrar sesión'}
-          </button>
         )}
       </div>
     </div>
@@ -520,6 +346,34 @@ const styles = {
     marginBottom: '1.5rem',
     fontSize: '1.5rem',
   },
+  
+  // SECCIÓN DE GOOGLE - PROMINENTE
+  googleSection: {
+    marginTop: '1rem',
+    marginBottom: '1rem',
+  },
+  googleButton: {
+    width: '100%',
+    backgroundColor: '#fff',
+    border: '1px solid #dadce0',
+    padding: '12px 16px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontWeight: '500',
+    color: '#3c4043',
+    fontSize: '14px',
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '12px',
+    boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+  },
+  googleIconSvg: {
+    flexShrink: 0,
+  },
+  
+  // FORMULARIO
   form: {
     display: 'flex',
     flexDirection: 'column',
@@ -581,22 +435,9 @@ const styles = {
     textDecoration: 'underline',
     transition: 'color 0.3s ease',
   },
-  googleButton: {
-    width: '100%',
-    marginTop: '10px',
-    backgroundColor: '#ffdee9',
-    border: 'none',
-    padding: '12px',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    color: '#333',
-    fontSize: '1rem',
-    transition: 'background-color 0.3s ease',
-  },
   logoutButton: {
     width: '100%',
-    marginTop: '10px',
+    marginTop: '15px',
     backgroundColor: '#fcd5ce',
     border: 'none',
     padding: '12px',
@@ -610,12 +451,6 @@ const styles = {
   buttonDisabled: {
     opacity: 0.6,
     cursor: 'not-allowed',
-  },
-  hr: {
-    margin: '1.5rem 0',
-    border: '0',
-    height: '1px',
-    background: '#e0e0e0',
   },
   successMessage: {
     backgroundColor: '#d4edda',
@@ -638,68 +473,17 @@ const styles = {
   userInfo: {
     backgroundColor: '#e7f3ff',
     color: '#004085',
-    padding: '12px',
+    padding: '20px',
     borderRadius: '8px',
     marginBottom: '16px',
     border: '1px solid #b3d7ff',
     fontSize: '0.9rem',
-  },
-  infoMessage: {
-    backgroundColor: '#fff3cd',
-    color: '#856404',
-    padding: '12px',
-    borderRadius: '8px',
-    marginBottom: '16px',
-    border: '1px solid #ffeaa7',
-    fontSize: '0.85rem',
-    textAlign: 'left',
-  },
-  warningMessage: {
-    backgroundColor: '#ffeaa7',
-    color: '#d68910',
-    padding: '12px',
-    borderRadius: '8px',
-    marginBottom: '16px',
-    border: '1px solid #f4d03f',
-    fontSize: '0.85rem',
-    textAlign: 'left',
-    fontWeight: '500',
   },
   loadingText: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     gap: '8px',
-  },
-  googleMethodSelector: {
-    marginBottom: '12px',
-    textAlign: 'left',
-  },
-  checkboxLabel: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    fontSize: '0.85rem',
-    color: '#666',
-    cursor: 'pointer',
-  },
-  checkbox: {
-    width: '16px',
-    height: '16px',
-    cursor: 'pointer',
-  },
-  retryButton: {
-    width: '100%',
-    marginTop: '10px',
-    backgroundColor: '#f39c12',
-    border: 'none',
-    padding: '12px',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    color: '#fff',
-    fontSize: '1rem',
-    transition: 'background-color 0.3s ease',
   },
   spinner: {
     width: '16px',

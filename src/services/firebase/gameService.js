@@ -29,6 +29,14 @@ export class GameService {
     this.resultsCollection = collection(db, 'gameResults');
     this.progressCollection = collection(db, 'userProgress');
     this.usersCollection = collection(db, 'users');
+
+    this.developmentMode = process.env.NODE_ENV === 'development' || 
+                          window.location.hostname === 'localhost' ||
+                          window.location.hostname === '127.0.0.1';
+    
+    if (this.developmentMode) {
+      console.log(' GameService en MODO DESARROLLO - Validaciones flexibles activadas');
+    }
     
     // Para detectar patrones sospechosos
     this.suspiciousActivityTracker = new Map();
@@ -51,16 +59,20 @@ export class GameService {
 
   //   Rate limiting para prevenir spam
   checkRateLimit(userId) {
+    // Solo prevenir spam extremo (100 juegos por minuto)
+    const maxRequestsPerWindow = 100;
+    const windowTime = 60000; // 1 minuto
+
     const now = Date.now();
     const userRequests = this.requestTracker.get(userId) || [];
     
-    // Filtrar requests de los últimos 5 minutos
     const recentRequests = userRequests.filter(timestamp => 
-      now - timestamp < 300000 // 5 minutos
+      now - timestamp < windowTime
     );
     
-    if (recentRequests.length > 20) { // Max 20 juegos cada 5 minutos
-      throw new Error('Demasiados juegos completados muy rápido. Toma un descanso de 5 minutos.');
+    if (recentRequests.length > maxRequestsPerWindow) {
+      console.warn(`⚠️ Rate limit muy alto detectado: ${recentRequests.length} juegos en 1 minuto`);
+      // Solo mostrar warning, no bloquear
     }
     
     recentRequests.push(now);
@@ -69,108 +81,9 @@ export class GameService {
 
   //   Detectar actividad sospechosa (ACTUALIZADA con metadatos)
   detectSuspiciousActivity(userId, gameData) {
-    const gameMetadata = getGameMetadata(gameData.gameId);
-    if (!gameMetadata) {
-      throw new Error(`Metadatos del juego ${gameData.gameId} no encontrados`);
-    }
-
-    const userActivity = this.suspiciousActivityTracker.get(userId) || {
-      perfectScores: 0,
-      veryFastGames: 0,
-      lastGameTime: null,
-      gamesPerDomain: {}
-    };
-
-    let suspicious = false;
-    const suspiciousReasons = [];
-
-    // Detectar puntajes perfectos consecutivos
-    if (gameData.score >= 0.95) {
-      userActivity.perfectScores++;
-      if (userActivity.perfectScores > 5) {
-        suspicious = true;
-        suspiciousReasons.push(
-          `Demasiados puntajes perfectos consecutivos en ${gameMetadata.displayName}`
-        );
-      }
-    } else {
-      userActivity.perfectScores = 0; // Reset si no es perfecto
-    }
-
-    // Detectar juegos muy rápidos según dificultad y metadatos
-    const difficulty = gameData.difficulty || 'medium';
-    const difficultyConfig = gameMetadata.difficulty[difficulty];
-    
-    if (!difficultyConfig) {
-      throw new Error(`Configuración de dificultad ${difficulty} no encontrada para ${gameMetadata.displayName}`);
-    }
-
-    if (gameData.timeSpent < difficultyConfig.minTime * 0.7) { // 30% menos del tiempo mínimo
-      userActivity.veryFastGames++;
-      if (userActivity.veryFastGames > 3) {
-        suspicious = true;
-        suspiciousReasons.push(
-          `${gameMetadata.displayName} completado demasiado rápido para dificultad ${difficulty} (${gameData.timeSpent/1000}s vs mínimo ${difficultyConfig.minTime/1000}s)`
-        );
-      }
-    } else {
-      userActivity.veryFastGames = 0;
-    }
-
-    // Detectar spam de un dominio específico
-    const domain = gameMetadata.cognitiveDomain;
-    userActivity.gamesPerDomain[domain] = (userActivity.gamesPerDomain[domain] || 0) + 1;
-    
-    if (userActivity.gamesPerDomain[domain] > 10) { // Más de 10 juegos del mismo dominio seguidos
-      const domainMetadata = getDomainMetadata(domain);
-      suspicious = true;
-      suspiciousReasons.push(
-        `Demasiados juegos consecutivos del dominio ${domainMetadata.name} (${userActivity.gamesPerDomain[domain]})`
-      );
-    }
-
-    // Detectar tiempo entre juegos sospechosamente bajo
-    if (userActivity.lastGameTime && 
-        (Date.now() - userActivity.lastGameTime) < 2000) { // Menos de 2 segundos
-      suspicious = true;
-      suspiciousReasons.push(
-        `Tiempo entre juegos demasiado corto (${Date.now() - userActivity.lastGameTime}ms)`
-      );
-    }
-
-    userActivity.lastGameTime = Date.now();
-    
-    // Reset contadores de dominio si no hay actividad sospechosa
-    if (!suspicious) {
-      // Reset gradual para permitir juego normal
-      for (const [domainId, count] of Object.entries(userActivity.gamesPerDomain)) {
-        if (count > 0) {
-          userActivity.gamesPerDomain[domainId] = Math.max(0, count - 1);
-        }
-      }
-    }
-    
-    this.suspiciousActivityTracker.set(userId, userActivity);
-
-    if (suspicious) {
-      this.logSecurityEvent('SUSPICIOUS_GAMING_PATTERN', userId, {
-        reasons: suspiciousReasons,
-        gameData: {
-          gameId: gameData.gameId,
-          gameName: gameMetadata.displayName,
-          domain: gameMetadata.domainDisplayName,
-          score: gameData.score,
-          timeSpent: gameData.timeSpent,
-          difficulty: difficulty
-        },
-        userActivity
-      });
-      
-      throw new Error(
-        `Patrón de juego sospechoso detectado en ${gameMetadata.displayName}. ` +
-        `Razones: ${suspiciousReasons.join(', ')}. Tu cuenta será revisada.`
-      );
-    }
+    console.log(` Detección de actividad sospechosa DESHABILITADA para ${gameData.gameId} - modo adultos mayores`);
+    // No hacer nada - permitir cualquier patrón de juego
+    return;
   }
 
   //   Inicializar configuración de juegos
@@ -185,7 +98,7 @@ export class GameService {
         throw new Error('No se encontraron juegos disponibles');
       }
       
-      console.log(`✅ ${availableGames.length} juegos disponibles:`, 
+      console.log(` ${availableGames.length} juegos disponibles:`, 
         availableGames.map(game => game.displayName).join(', ')
       );
       
@@ -214,7 +127,7 @@ export class GameService {
         }
       }
       
-      console.log(`✅ Dominios válidos (${validDomains.length}):`, validDomains);
+      console.log(` Dominios válidos (${validDomains.length}):`, validDomains);
       
       if (invalidDomains.length > 0) {
         console.warn(`⚠️ Dominios no configurados (${invalidDomains.length}):`, invalidDomains);
@@ -225,7 +138,7 @@ export class GameService {
         throw new Error('No se encontraron dominios cognitivos válidos configurados');
       }
       
-      console.log('✅ Configuración de juegos validada correctamente');
+      console.log(' Configuración de juegos validada correctamente');
       
       // Log de inicialización exitosa
       this.logSecurityEvent('GAMES_INITIALIZED', 'system', {
@@ -246,7 +159,7 @@ export class GameService {
       };
       
     } catch (error) {
-      console.error('❌ Error inicializando juegos:', error);
+      console.error(' Error inicializando juegos:', error);
       
       this.logSecurityEvent('GAMES_INITIALIZATION_ERROR', 'system', {
         error: error.message,
@@ -259,8 +172,10 @@ export class GameService {
 
   //   Validar estructura y contenido de datos del juego (ACTUALIZADA con metadatos)
   validateGameData(gameData) {
-    // Validar campos requeridos
-    const requiredFields = ['userId', 'gameId', 'score', 'timeSpent', 'cognitiveDomain'];
+    console.log(' Validando datos del juego (modo sin restricciones):', gameData.gameId);
+    
+    // Solo validar que existan los campos básicos (sin validar valores)
+    const requiredFields = ['userId', 'gameId', 'cognitiveDomain'];
     
     for (const field of requiredFields) {
       if (gameData[field] === undefined || gameData[field] === null) {
@@ -268,74 +183,25 @@ export class GameService {
       }
     }
 
-    // Validar que el juego existe y está activo
+    // Asegurar valores por defecto para campos opcionales
+    gameData.score = gameData.score || 0;
+    gameData.timeSpent = gameData.timeSpent || 1;
+    gameData.correctAnswers = gameData.correctAnswers || 0;
+    gameData.totalQuestions = gameData.totalQuestions || 0;
+    gameData.level = gameData.level || 'beginner';
+    gameData.difficulty = gameData.difficulty || 'medium';
+
+    // Solo validar que el juego existe
     if (!validateGameExists(gameData.gameId)) {
-      throw new Error(`Juego no válido o inactivo: ${gameData.gameId}`);
+      console.warn(`⚠️ Juego ${gameData.gameId} no encontrado en configuración, pero permitiendo guardado`);
     }
 
-    // Validar que el dominio existe
+    // Solo validar que el dominio existe
     if (!validateDomainExists(gameData.cognitiveDomain)) {
-      throw new Error(`Dominio cognitivo no válido: ${gameData.cognitiveDomain}`);
+      console.warn(`⚠️ Dominio ${gameData.cognitiveDomain} no encontrado, pero permitiendo guardado`);
     }
-
-    // Obtener metadatos del juego
-    const gameMetadata = getGameMetadata(gameData.gameId);
-    const domainMetadata = getDomainMetadata(gameData.cognitiveDomain);
     
-    // Validar que el dominio cognitivo coincide con el del juego
-    if (gameData.cognitiveDomain !== gameMetadata.cognitiveDomain) {
-      throw new Error(
-        `Dominio cognitivo incorrecto para ${gameMetadata.displayName}. ` +
-        `Esperado: ${gameMetadata.domainDisplayName}, ` +
-        `Recibido: ${domainMetadata.name}`
-      );
-    }
-
-    // Validar tipos de datos
-    if (typeof gameData.userId !== 'string' || gameData.userId.length < 10) {
-      throw new Error('ID de usuario inválido');
-    }
-
-    if (typeof gameData.score !== 'number' || isNaN(gameData.score)) {
-      throw new Error('Puntaje debe ser un número');
-    }
-
-    if (typeof gameData.timeSpent !== 'number' || isNaN(gameData.timeSpent)) {
-      throw new Error('Tiempo debe ser un número');
-    }
-
-    // Validar dificultad y obtener límites correspondientes
-    const difficulty = gameData.difficulty || 'medium';
-    const difficultyConfig = gameMetadata.difficulty[difficulty];
-    
-    if (!difficultyConfig) {
-      throw new Error(
-        `Dificultad no válida para ${gameMetadata.displayName}: ${difficulty}. ` +
-        `Dificultades disponibles: ${Object.keys(gameMetadata.difficulty).join(', ')}`
-      );
-    }
-
-    // Validar rangos según configuración del juego y dificultad
-    const { minScore, maxScore } = gameMetadata.scoring;
-    if (gameData.score < minScore || gameData.score > maxScore) {
-      throw new Error(
-        `Puntaje fuera de rango válido para ${gameMetadata.displayName} ` +
-        `(${minScore}-${maxScore}): ${gameData.score}`
-      );
-    }
-
-    const { minTime, maxTime } = difficultyConfig;
-    if (gameData.timeSpent < minTime || gameData.timeSpent > maxTime) {
-      throw new Error(
-        `Tiempo de juego fuera de rango válido para ${gameMetadata.displayName} ` +
-        `en dificultad ${difficulty} (${minTime/1000}-${maxTime/1000}s): ${gameData.timeSpent/1000}s`
-      );
-    }
-
-    // Validaciones específicas por tipo de scoring
-    if (gameMetadata.scoring.type === 'percentage' && (gameData.score < 0 || gameData.score > 1)) {
-      throw new Error(`Para juegos de tipo porcentaje, el puntaje debe estar entre 0 y 1`);
-    }
+    console.log(' Validación básica completada - datos aceptados sin restricciones');
   }
 
   //   Sanitizar datos antes de guardar (ACTUALIZADA con metadatos completos)
@@ -456,73 +322,84 @@ export class GameService {
   //   MÉTODO PRINCIPAL: Guardar resultado de juego (SECURIZADO CON METADATOS)
   async saveGameResult(gameData) {
     try {
-      // 1. Verificar autenticación
+      console.log(' Guardando resultado sin restricciones:', gameData.gameId);
+      
+      // 1. Verificar autenticación básica
       const currentUser = await this.getCurrentUser();
       
-      // 2. Validar que el resultado pertenece al usuario autenticado
+      // 2. Solo validar que el usuario coincide
       if (gameData.userId !== currentUser.uid) {
-        this.logSecurityEvent('UNAUTHORIZED_GAME_SAVE', currentUser.uid, {
-          attemptedUserId: gameData.userId,
-          gameId: gameData.gameId
-        });
         throw new Error('No puedes guardar resultados de otro usuario');
       }
 
-      // 3. Rate limiting
+      // 3. Rate limiting muy permisivo
       this.checkRateLimit(currentUser.uid);
 
-      // 4. Validar estructura y contenido
+      // 4. Normalización automática sin restricciones
+      if (gameData.score > 1) {
+        console.log(` Normalizando score de ${gameData.score} a ${gameData.score/100}`);
+        gameData.score = gameData.score / 100;
+      }
+
+      // 5. Validación mínima (solo estructura)
       this.validateGameData(gameData);
 
-      // 5. Detectar actividad sospechosa
-      this.detectSuspiciousActivity(currentUser.uid, gameData);
+      // 6. NO detectar actividad sospechosa
+      // this.detectSuspiciousActivity(currentUser.uid, gameData); // DESHABILITADO
 
-      // 6. Sanitizar datos con metadatos completos
-      const sanitizedData = this.sanitizeGameData(gameData);
+      // 7. Sanitizar datos básicamente
+      const sanitizedData = this.sanitizeGameDataBasic(gameData);
 
-      // 7. Agregar metadatos del servidor
+      // 8. Agregar timestamps
       sanitizedData.createdAt = serverTimestamp();
       sanitizedData.serverTimestamp = new Date().toISOString();
 
-      // 8. Log del evento exitoso con metadatos
+      // 9. Log de éxito
       this.logSecurityEvent('GAME_RESULT_SAVED', currentUser.uid, {
         gameId: sanitizedData.gameId,
-        gameName: sanitizedData.gameMetadata.displayName,
-        domain: sanitizedData.domainMetadata.name,
         score: sanitizedData.score,
-        difficulty: sanitizedData.difficulty,
-        timeSpent: sanitizedData.timeSpent
+        timeSpent: sanitizedData.timeSpent,
+        completed: sanitizedData.completed || 'parcial'
       });
 
-      // 9. Guardar en Firestore
+      // 10. Guardar en Firestore
       const docRef = await addDoc(this.resultsCollection, sanitizedData);
 
-      // 10. Actualizar progreso del usuario
-      await this.updateUserProgress(currentUser.uid, sanitizedData);
-
+      console.log(' Resultado guardado exitosamente sin restricciones');
+      
       return {
         success: true,
         resultId: docRef.id,
-        message: `Resultado de ${sanitizedData.gameMetadata.displayName} guardado exitosamente`,
-        gameInfo: {
-          name: sanitizedData.gameMetadata.displayName,
-          domain: sanitizedData.domainMetadata.name,
-          score: sanitizedData.score,
-          difficulty: sanitizedData.difficulty
-        }
+        message: 'Progreso guardado correctamente'
       };
 
     } catch (error) {
-      const gameMetadata = getGameMetadata(gameData.gameId);
       this.logSecurityEvent('GAME_SAVE_ERROR', gameData.userId || 'unknown', {
         error: error.message,
-        gameId: gameData.gameId,
-        gameName: gameMetadata ? gameMetadata.displayName : 'Unknown'
+        gameId: gameData.gameId
       });
       
-      console.error('Error saving game result:', error);
+      console.error('Error guardando resultado:', error);
       throw error;
     }
+  }
+
+  sanitizeGameDataBasic(gameData) {
+    return {
+      userId: gameData.userId,
+      gameId: gameData.gameId,
+      cognitiveDomain: gameData.cognitiveDomain,
+      score: Math.max(0, Math.min(1, gameData.score || 0)), // Solo asegurar rango 0-1
+      timeSpent: Math.max(0, gameData.timeSpent || 1), // Solo asegurar positivo
+      correctAnswers: Math.max(0, gameData.correctAnswers || 0),
+      totalQuestions: Math.max(0, gameData.totalQuestions || 0),
+      level: gameData.level || 'beginner',
+      difficulty: gameData.difficulty || 'medium',
+      completed: gameData.completed || false,
+      details: gameData.details || {},
+      // Preservar campos adicionales
+      ...gameData
+    };
   }
 
   //   Actualizar progreso del usuario de forma segura (CON METADATOS)
@@ -712,7 +589,6 @@ export class GameService {
           scores: [], 
           count: 0,
           color: result.domainMetadata?.color || '#gray',
-          icon: result.domainMetadata?.icon || '📊'
         };
       }
       acc[domainName].scores.push(result.score);

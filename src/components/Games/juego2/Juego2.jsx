@@ -21,6 +21,7 @@ const Juego2 = () => {
   const patronActual = indiceActual < patrones.length ? patrones[indiceActual] : null;
   const esEnsayo = patronActual?.nivel === 0;
   const juegoTerminado = !patronActual;
+  const [juegoIniciado, setJuegoIniciado] = useState(false);
 
   // Guardar resultado usando useCallback
   const guardarResultado = useCallback(async () => {
@@ -223,15 +224,43 @@ const Juego2 = () => {
     return "";
   };
 
+  const InstruccionesJuego2 = () => (
+    <div style={{ textAlign: 'left', fontSize: '16px', lineHeight: '1.6', color: '#34495e' }}>
+      <h3 style={{ color: '#3498db', marginBottom: '15px' }}>¿Cómo funciona?</h3>
+      <ul style={{ paddingLeft: '20px', marginBottom: '20px' }}>
+        <li style={{ marginBottom: '8px' }}>Se te muestra una matriz de diferentes tamaños con patrones abstractos</li>
+        <li style={{ marginBottom: '8px' }}>Tu tarea es <strong>completar el patrón</strong> seleccionando la opción correcta</li>
+        <li style={{ marginBottom: '8px' }}>La opción elegida debe completar el cuadrado inferior derecho</li>
+      </ul>
+
+      <h3 style={{ color: '#e74c3c', marginBottom: '15px' }}>Reglas del juego:</h3>
+      <ul style={{ paddingLeft: '20px', marginBottom: '20px' }}>
+        <li style={{ marginBottom: '8px' }}>Analiza los <strong>patrones y relaciones</strong> entre las figuras</li>
+        <li style={{ marginBottom: '8px' }}>Si fallas <strong>3 veces seguidas</strong>, el juego termina</li>
+        <li style={{ marginBottom: '8px' }}>El tiempo disponible <strong>se reduce</strong> conforme avanzas</li>
+        <li style={{ marginBottom: '8px' }}>La dificultad aumenta progresivamente</li>
+      </ul>
+    </div>
+  );
+
+  const iniciarJuego = () => {
+    setJuegoIniciado(true);
+  };
+
+
   return (
     <GameLayout
       title="Juego de Matrices Progresivas"
-      description={
+      showInstructions={!juegoIniciado}
+      instructions={<InstruccionesJuego2 />}
+      onStartGame={iniciarJuego}
+      description={juegoIniciado ? (
         <div>
           <p>Selecciona la opción que completa la matriz lógica.</p>
           <p>Analiza patrones y relaciones para elegir correctamente.</p>
+          {esEnsayo && <p style={{ color: '#f59e0b', fontWeight: 'bold' }}>Ejercicio de práctica</p>}
         </div>
-      }
+      ) : null}
       stats={{
         nivel,
         puntuacion,

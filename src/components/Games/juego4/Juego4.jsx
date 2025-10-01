@@ -158,6 +158,8 @@ const Juego4 = () => {
   const [respuestasDetalladas, setRespuestasDetalladas] = useState([]);
   const [tiemposPorNivel, setTiemposPorNivel] = useState([]);
 
+  const [juegoIniciado, setJuegoIniciado] = useState(false);
+
   // Guardar resultado usando useCallback
   const guardarResultado = useCallback(async () => {
     if (!user) {
@@ -466,10 +468,45 @@ const Juego4 = () => {
     return "";
   };
 
+  const InstruccionesJuego4 = () => (
+    <div style={{ textAlign: 'left', fontSize: '16px', lineHeight: '1.6', color: '#34495e' }}>
+      <h3 style={{ color: '#3498db', marginBottom: '15px' }}> ¿Cómo funciona?</h3>
+      <ul style={{ paddingLeft: '20px', marginBottom: '20px' }}>
+        <li style={{ marginBottom: '8px' }}>Se te muestran <strong>tres balanzas</strong> con conjuntos de formas geométricas</li>
+        <li style={{ marginBottom: '8px' }}>Las dos primeras balanzas están <strong>equilibradas</strong> y te muestran las relaciones</li>
+        <li style={{ marginBottom: '8px' }}>La tercera balanza tiene un <strong>signo de interrogación (?)</strong> en el lado derecho</li>
+        <li style={{ marginBottom: '8px' }}>Tu tarea es <strong>determinar qué conjunto de formas</strong> equilibrará esa balanza</li>
+      </ul>
+
+      <h3 style={{ color: '#e74c3c', marginBottom: '15px' }}> Reglas del juego:</h3>
+      <ul style={{ paddingLeft: '20px', marginBottom: '20px' }}>
+        <li style={{ marginBottom: '8px' }}>Analiza las <strong>relaciones y proporciones</strong> entre las formas</li>
+        <li style={{ marginBottom: '8px' }}>Si cometes <strong>3 errores consecutivos</strong>, el juego termina</li>
+        <li style={{ marginBottom: '8px' }}>Tienes <strong>tiempo limitado</strong> para completar todos los niveles</li>
+        <li style={{ marginBottom: '8px' }}>La dificultad aumenta con <strong>más formas y relaciones complejas</strong></li>
+      </ul>
+    </div>
+  );
+
+  const iniciarJuego = () => {
+    setJuegoIniciado(true);
+  };
+
   return (
     <GameLayout
       title="Balance de Balanzas - WAIS IV"
-      description="Determina qué conjunto de figuras equilibrará la tercera balanza basándote en las relaciones mostradas en las dos primeras balanzas"
+      showInstructions={!juegoIniciado}
+      instructions={<InstruccionesJuego4 />}
+      onStartGame={iniciarJuego}
+      description={juegoIniciado ? (
+            <div>
+              <p>Determina qué conjunto de figuras equilibrará la tercera balanza.</p>
+              <p>Analiza las relaciones mostradas en las dos primeras balanzas.</p>
+              <p style={{ color: '#f59e0b', fontWeight: 'bold' }}>
+                ⚠️ Cuidado: 3 errores consecutivos terminan el juego
+              </p>
+            </div>
+        ) : null}
       stats={{
         nivel: nivelActual,
         puntuacion: estadoJuego.puntuacion,

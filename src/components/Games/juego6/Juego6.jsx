@@ -204,6 +204,9 @@ const Juego6 = () => {
   // Estado principal usando reducer
   const [gameState, dispatch] = useReducer(gameReducer, initialGameState);
   
+  // Estado para controlar si se mostrarán las instrucciones
+  const [juegoIniciado, setJuegoIniciado] = useState(false);
+  
   // Determinar nivel actual
   const nivelActual = useNivelActual(gameState.ensayoActual);
   const configNivel = CONFIGURACION_NIVELES[nivelActual];
@@ -230,7 +233,10 @@ const Juego6 = () => {
   
   // Hook para estadísticas
   const estadisticas = useEstadisticas(respuestasDetalladas, tiemposReaccion);
-  
+
+  //Modal de pausa 
+  const [pausaModalAbierto, setPausaModalAbierto] = useState(false);
+
   // Actualizar nivel cuando cambie el ensayo
   useEffect(() => {
     if (gameState.nivelActual !== nivelActual) {
@@ -242,10 +248,9 @@ const Juego6 = () => {
   const clearAll = useCallback(() => {
     timeoutsRef.current.forEach(timeout => clearTimeout(timeout));
     timeoutsRef.current.clear();
-
   }, []);
 
-    // Función separada para limpiar todo incluyendo cronómetro
+  // Función separada para limpiar todo incluyendo cronómetro
   const clearAllIncludingTimer = useCallback(() => {
     timeoutsRef.current.forEach(timeout => clearTimeout(timeout));
     timeoutsRef.current.clear();
@@ -345,55 +350,49 @@ const Juego6 = () => {
     }, 1000); // Actualizar cada segundo
   }, []);
 
-  // Guardar resultado optimizado
-  const guardarResultado = useCallback(async () => {
-    if (!user || resultadoGuardado) {
-      console.log('No hay usuario autenticado o resultado ya guardado');
-      return;
-    }
+  const calcularVariabilidad = useCallback((tiempos) => {
+    if (!tiempos || tiempos.length === 0) return 0;
+    const promedio = tiempos.reduce((sum, t) => sum + t, 0) / tiempos.length;
+    const varianza = tiempos.reduce((sum, t) => Math.pow(t - promedio, 2), 0) / tiempos.length;
+    return Math.sqrt(varianza);
+  }, []);
 
+  // Función para guardar progreso parcial (CORREGIDA)
+  const guardarProgresoYSalir = useCallback(async () => {
+    if (!user || resultadoGuardado) return;
+    
     try {
-      console.log('Guardando resultado del Juego 6...');
+      console.log('💾 Guardando progreso y saliendo del Juego 6...');
       
       const tiempoTranscurrido = gameState.tiempoJugando;
-      const ensayosCompletados = gameState.ensayoActual - 1; // -1 porque empezamos desde 1
-      
+      const ensayosCompletados = gameState.ensayoActual - 1;
       const porcentajeCompletado = Math.round((ensayosCompletados / TOTAL_ENSAYOS) * 100);
       
-      // Separar ensayos por tipo con validación
-      const ensayosCongruentes = respuestasDetalladas.filter(r => r && r.congruente);
-      const ensayosIncongruentes = respuestasDetalladas.filter(r => r && !r.congruente);
-      
-      // Score optimizado
-      const scoreBase = Math.round((estadisticas.precision * 0.6) + (porcentajeCompletado * 0.3));
-      const bonusEficiencia = estadisticas.efectoValidez < 50 ? 10 : (estadisticas.efectoValidez < 100 ? 5 : 0);
-      const scoreFinal = Math.min(100, scoreBase + bonusEficiencia);
+      const scoreParcial = ensayosCompletados > 0 ? 
+        Math.round((gameState.respuestasCorrectas / ensayosCompletados) * 100) : 0;
 
-      // Cálculos seguros para evitar errores
-      const calcularVariabilidad = () => {
-        if (tiemposReaccion.length <= 1) return 0;
-        const mean = estadisticas.tiempoPromedio;
-        const variance = tiemposReaccion.reduce((sum, rt) => sum + Math.pow(rt - mean, 2), 0) / (tiemposReaccion.length - 1);
-        return Math.round(Math.sqrt(variance));
-      };
+      const ensayosCongruentes = respuestasDetalladas.filter(r => r.congruente);
+      const ensayosIncongruentes = respuestasDetalladas.filter(r => !r.congruente);
 
       const resultData = {
         userId: user.uid,
         gameId: 'posner_haciendo_cola',
         cognitiveDomain: 'atencion',
-        level: `progresivo_0-4`,
-        score: scoreFinal,
+        level: configNivel.nombre,
+        score: scoreParcial,
         timeSpent: tiempoTranscurrido,
         correctAnswers: gameState.respuestasCorrectas,
         totalQuestions: ensayosCompletados,
+        completed: gameState.ensayoActual > TOTAL_ENSAYOS, // true solo si completó todos
+        exitReason: gameState.ensayoActual > TOTAL_ENSAYOS ? 'completed' : 'user_paused_and_saved',
         details: {
-          modalidadJuego: 'progresivo',
+          modalidadJuego: gameState.ensayoActual > TOTAL_ENSAYOS ? 'progresivo_completado' : 'progresivo_pausado',
           nivelAlcanzado: nivelActual,
           totalEnsayosPosibles: TOTAL_ENSAYOS,
           porcentajeCompletado,
           porcentajePrecision: estadisticas.precision,
           fallosTotales: gameState.respuestasIncorrectas,
-          razonTermino: gameState.ensayoActual > TOTAL_ENSAYOS ? 'completado' : 'usuario_salio',
+          razonTermino: gameState.ensayoActual > TOTAL_ENSAYOS ? 'completado' : 'usuario_pausó_y_guardó',
           aciertosCongruentes,
           aciertosIncongruentes,
           totalEnsayosCongruentes: ensayosCongruentes.length,
@@ -404,7 +403,7 @@ const Juego6 = () => {
           tiempoReaccionPromedio: estadisticas.tiempoPromedio,
           tiempoReaccionMinimo: tiemposReaccion.length > 0 ? Math.min(...tiemposReaccion) : 0,
           tiempoReaccionMaximo: tiemposReaccion.length > 0 ? Math.max(...tiemposReaccion) : 0,
-          variabilidadTiempoReaccion: calcularVariabilidad(),
+          variabilidadTiempoReaccion: calcularVariabilidad(tiemposReaccion),
           respuestasDetalladas,
           tiemposReaccionCompletos: tiemposReaccion,
           configuracionNiveles: CONFIGURACION_NIVELES
@@ -412,15 +411,244 @@ const Juego6 = () => {
       };
 
       await gameService.saveGameResult(resultData);
-      await userService.updateUserProgress(user.uid, 'atencion', scoreFinal);
       
-      console.log('Resultado del Juego 6 guardado exitosamente');
+      try {
+        await userService.updateUserProgress(user.uid, 'atencion', scoreParcial / 100);
+      } catch (progressError) {
+        console.warn('⚠️ Error actualizando progreso:', progressError);
+      }
+      
       setResultadoGuardado(true);
+      console.log('✅ Progreso guardado, redirigiendo al dashboard...');
+      
+      // Redirigir al dashboard
+      window.location.href = '/dashboard';
       
     } catch (error) {
-      console.error('Error guardando resultado del Juego 6:', error);
+      console.error('❌ Error guardando progreso:', error);
+      alert('Error al guardar el progreso. Inténtalo de nuevo.');
     }
-  }, [user, gameState, aciertosCongruentes, aciertosIncongruentes, tiemposReaccion, respuestasDetalladas, estadisticas, resultadoGuardado, nivelActual]);
+  }, [
+    user, 
+    gameState,
+    estadisticas, 
+    aciertosCongruentes, 
+    aciertosIncongruentes,
+    tiemposReaccion, 
+    respuestasDetalladas, 
+    resultadoGuardado,
+    nivelActual,
+    configNivel,
+    calcularVariabilidad
+  ]);
+
+  // FUNCIÓN para manejar pausa
+  const handlePausa = useCallback(() => {
+    console.log('🔴 Pausando juego...');
+    // setJuegoEnPausa(true); // ← ELIMINAR esta línea
+    setPausaModalAbierto(true);
+    
+    // Pausar todos los timeouts
+    clearAll();
+    
+    // Pausar cronómetro
+    if (tiempoJuegoRef.current) {
+      clearInterval(tiempoJuegoRef.current);
+      tiempoJuegoRef.current = null;
+    }
+  }, [clearAll]);
+
+  // Función para guardar resultado completo (CORREGIDA)
+  const guardarResultado = useCallback(async () => {
+    if (!user || resultadoGuardado) return;
+
+    try {
+      console.log('Guardando resultado del Juego 6...');
+      
+      const tiempoTranscurrido = gameState.tiempoJugando;
+      const ensayosCompletados = gameState.ensayoActual - 1;
+      const porcentajeCompletado = Math.round((ensayosCompletados / TOTAL_ENSAYOS) * 100); // ← DEFINIR AQUÍ
+      
+      // CALCULAR score final
+      const scoreBase = ensayosCompletados > 0 ? 
+        Math.round((gameState.respuestasCorrectas / ensayosCompletados) * 100) : 0;
+      
+      // Bonus por eficiencia (opcional)
+      const bonusEficiencia = estadisticas.efectoValidez < 50 ? 10 : 
+        (estadisticas.efectoValidez < 100 ? 5 : 0);
+      
+      const scoreFinal = Math.min(100, scoreBase + bonusEficiencia); // ← DEFINIR AQUÍ
+
+      // CALCULAR ensayos congruentes e incongruentes
+      const ensayosCongruentes = respuestasDetalladas.filter(r => r.congruente); // ← DEFINIR AQUÍ
+      const ensayosIncongruentes = respuestasDetalladas.filter(r => !r.congruente); // ← DEFINIR AQUÍ
+
+      const resultData = {
+        userId: user.uid,
+        gameId: 'posner_haciendo_cola',
+        cognitiveDomain: 'atencion',
+        level: configNivel.nombre,
+        score: scoreFinal, // ← Ya definido arriba
+        timeSpent: tiempoTranscurrido,
+        correctAnswers: gameState.respuestasCorrectas,
+        totalQuestions: ensayosCompletados,
+        completed: gameState.ensayoActual > TOTAL_ENSAYOS, // ← Marcar si se completó
+        details: {
+          modalidadJuego: 'progresivo',
+          nivelAlcanzado: nivelActual,
+          totalEnsayosPosibles: TOTAL_ENSAYOS,
+          porcentajeCompletado, // ← Ya definido arriba
+          porcentajePrecision: estadisticas.precision,
+          fallosTotales: gameState.respuestasIncorrectas,
+          razonTermino: gameState.ensayoActual > TOTAL_ENSAYOS ? 'completado' : 'usuario_salio',
+          scoreBase,
+          bonusEficiencia,
+          scoreFinal,
+          aciertosCongruentes,
+          aciertosIncongruentes,
+          totalEnsayosCongruentes: ensayosCongruentes.length, // ← Ya definido arriba
+          totalEnsayosIncongruentes: ensayosIncongruentes.length, // ← Ya definido arriba
+          tiempoReaccionCongruente: estadisticas.tiempoCongruente,
+          tiempoReaccionIncongruente: estadisticas.tiempoIncongruente,
+          efectoValidez: estadisticas.efectoValidez,
+          tiempoReaccionPromedio: estadisticas.tiempoPromedio,
+          tiempoReaccionMinimo: tiemposReaccion.length > 0 ? Math.min(...tiemposReaccion) : 0,
+          tiempoReaccionMaximo: tiemposReaccion.length > 0 ? Math.max(...tiemposReaccion) : 0,
+          variabilidadTiempoReaccion: calcularVariabilidad(tiemposReaccion), // ← PASAR tiemposReaccion como parámetro
+          respuestasDetalladas,
+          tiemposReaccionCompletos: tiemposReaccion,
+          configuracionNiveles: CONFIGURACION_NIVELES
+        }
+      };
+
+      await gameService.saveGameResult(resultData);
+      
+      try {
+        await userService.updateUserProgress(user.uid, 'atencion', scoreFinal / 100);
+      } catch (progressError) {
+        console.warn('⚠️ Error actualizando progreso:', progressError);
+      }
+      
+      setResultadoGuardado(true);
+      console.log('✅ Resultado guardado exitosamente');
+      
+    } catch (error) {
+      console.error('❌ Error guardando resultado:', error);
+    }
+  }, [
+    user, 
+    gameState.tiempoJugando,
+    gameState.ensayoActual, 
+    gameState.respuestasCorrectas,
+    gameState.respuestasIncorrectas,
+    estadisticas, 
+    aciertosCongruentes, 
+    aciertosIncongruentes,
+    tiemposReaccion, 
+    respuestasDetalladas, 
+    resultadoGuardado,
+    nivelActual,
+    configNivel,
+    calcularVariabilidad
+  ]);
+
+  useEffect(() => {
+    if (gameState.juegoTerminado && !resultadoGuardado && user && tiempoInicio) {
+      guardarProgresoYSalir(); // Usar la misma función pero cuando termine naturalmente
+    }
+  }, [gameState.juegoTerminado, resultadoGuardado, user, tiempoInicio, guardarProgresoYSalir]);
+
+  const ModalPausa = () => (
+    <div 
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000
+      }}
+    >
+      <div 
+        style={{
+          backgroundColor: 'white',
+          borderRadius: '12px',
+          padding: '30px',
+          maxWidth: '400px',
+          width: '90%',
+          textAlign: 'center',
+          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)'
+        }}
+      >
+        <h3 style={{ color: '#3498db', marginBottom: '20px' }}>
+          ⏸️ Pausar Juego
+        </h3>
+        
+        <p style={{ marginBottom: '10px', color: '#2c3e50' }}>
+          <strong>Tu progreso actual:</strong>
+        </p>
+        <div style={{ 
+          backgroundColor: '#f8f9fa', 
+          padding: '15px', 
+          borderRadius: '8px', 
+          marginBottom: '20px',
+          fontSize: '14px'
+        }}>
+          <p style={{ margin: '5px 0' }}>
+            📊 Ensayo: {gameState.ensayoActual - 1} de {TOTAL_ENSAYOS}
+          </p>
+          <p style={{ margin: '5px 0' }}>
+            🎯 Aciertos: {gameState.respuestasCorrectas}
+          </p>
+          <p style={{ margin: '5px 0' }}>
+            ⏱️ Tiempo: {Math.floor(gameState.tiempoJugando / 60)}:{(gameState.tiempoJugando % 60).toString().padStart(2, '0')}
+          </p>
+          <p style={{ margin: '5px 0' }}>
+            🏆 Nivel: {configNivel.nombre}
+          </p>
+          <p style={{ margin: '5px 0', fontWeight: 'bold', color: '#e67e22' }}>
+            📈 Progreso: {Math.round(((gameState.ensayoActual - 1) / TOTAL_ENSAYOS) * 100)}%
+          </p>
+        </div>
+
+        <p style={{ marginBottom: '25px', color: '#7f8c8d', fontSize: '14px' }}>
+          ¿Quieres guardar tu progreso y volver al inicio?
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          
+          <button
+            onClick={guardarProgresoYSalir}
+            style={{
+              backgroundColor: '#3498db',
+              color: 'white',
+              border: 'none',
+              padding: '12px 20px',
+              borderRadius: '8px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              cursor: 'pointer'
+            }}
+          >
+            💾 Guardar Progreso y Volver al Inicio
+          </button>
+        </div>
+
+        <p style={{ 
+          marginTop: '15px', 
+          fontSize: '12px', 
+          color: '#95a5a6',
+          fontStyle: 'italic'
+        }}>
+          Tu progreso se guardará automáticamente
+        </p>
+      </div>
+    </div>
+  );
 
   // Función para iniciar ensayo adaptada al nivel progresivo
   const iniciarEnsayo = useCallback(() => {
@@ -545,7 +773,7 @@ const Juego6 = () => {
     } else {
       terminarJuego();
     }
-  }, [gameState.puedeResponder, gameState.mostrarEstimulo, gameState.ensayoActual, gameState.tiempoJugando, estimulo, flecha, clearAll, terminarJuego, setManagedTimeout, nivelActual, configNivel]);
+}, [gameState.puedeResponder, gameState.mostrarEstimulo, gameState.ensayoActual, gameState.tiempoJugando, estimulo, flecha, clearAll, terminarJuego, setManagedTimeout, nivelActual, configNivel]);
 
   // Función para iniciar el juego
   const iniciarJuego = useCallback(() => {
@@ -553,30 +781,26 @@ const Juego6 = () => {
     dispatch({ type: 'INICIAR_JUEGO' });
     iniciarContadorTiempo();
     
-    // Iniciar contador inmediatamente
-    iniciarContadorTiempo();
-
     // Pequeño delay para asegurar que el estado se actualice
     setTimeout(() => {
       iniciarEnsayo();
     }, 100);
   }, [iniciarEnsayo, iniciarContadorTiempo]);
 
+  // Función para iniciar desde GameLayout
+  const iniciarJuegoManual = useCallback(() => {
+    setJuegoIniciado(true);
+    iniciarJuego();
+  }, [iniciarJuego]);
+
   // Inicialización
   useEffect(() => {
-    console.log('Componente montado, inicializando juego progresivo...');
-    setUser(auth.currentUser);
+    const usuario = auth.currentUser;
+    setUser(usuario);
     setTiempoInicio(Date.now());
     
-    // Iniciar automáticamente sin delay
-    if (!gameState.juegoIniciado && !gameState.juegoTerminado) {
-      iniciarJuego();
-    }
-
-    return () => {
-      clearAll();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // NO iniciar el juego automáticamente
+    // Solo configurar usuario y tiempo
   }, []);
 
   // Guardar resultado cuando termine
@@ -618,6 +842,7 @@ const Juego6 = () => {
     console.log('=== REINICIANDO JUEGO PROGRESIVO ===');
     clearAllIncludingTimer(); // Usar la función que incluye el timer
     dispatch({ type: 'REINICIAR_JUEGO' });
+    setJuegoIniciado(false); // Mostrar instrucciones de nuevo
     setFlecha(null);
     setEstimulo(null);
     setRespuestaCorrecta(null);
@@ -627,11 +852,7 @@ const Juego6 = () => {
     setRespuestasDetalladas([]);
     setTiemposReaccion([]);
     setTiempoInicio(Date.now());
-    
-    setTimeout(() => {
-      iniciarJuego();
-    }, 500);
-  }, [clearAllIncludingTimer, iniciarJuego]);
+  }, [clearAllIncludingTimer]);
 
   // Componente Caja adaptado al nivel actual
   const Caja = React.memo(({ lado, mostrar, correcta, onClick }) => {
@@ -670,24 +891,95 @@ const Juego6 = () => {
     return `Progreso: ${porcentajeCompletado}% completado. Nivel actual: ${configNivel.nombre}. Tu atención visual ${aciertosCongruentes > aciertosIncongruentes ? 'responde mejor cuando las señales anticipan correctamente la ubicación del estímulo' : aciertosIncongruentes > aciertosCongruentes ? 'es más flexible y menos dependiente de señales externas' : 'es equilibrada entre ensayos con señales correctas e incorrectas'}.`;
   }, [gameState.ensayoActual, estadisticas, aciertosCongruentes, aciertosIncongruentes, configNivel]);
 
+  // Componente de instrucciones
+  const InstruccionesJuego6 = () => (
+    <div style={{ textAlign: 'left', fontSize: '16px', lineHeight: '1.6', color: '#34495e' }}>
+      <h3 style={{ color: '#3498db', marginBottom: '15px' }}> ¿Cómo funciona?</h3>
+      <ul style={{ paddingLeft: '20px', marginBottom: '20px' }}>
+        <li style={{ marginBottom: '8px' }}>Mantén tu vista fija en el <strong>signo + central</strong></li>
+        <li style={{ marginBottom: '8px' }}>Aparecerá una <strong>flecha direccional (← o →)</strong> que indica hacia dónde dirigir tu atención</li>
+        <li style={{ marginBottom: '8px' }}>Después de un breve momento, aparecerá una <strong>estrella (★)</strong> en una de las cajas laterales</li>
+        <li style={{ marginBottom: '8px' }}>Tu tarea es <strong>identificar rápidamente</strong> en qué lado apareció la estrella</li>
+      </ul>
+
+      <h3 style={{ color: '#e74c3c', marginBottom: '15px' }}> Reglas importantes:</h3>
+      <ul style={{ paddingLeft: '20px', marginBottom: '20px' }}>
+        <li style={{ marginBottom: '8px' }}>Responde lo <strong>más rápido posible</strong> usando las flechas del teclado o botones</li>
+        <li style={{ marginBottom: '8px' }}>En el <strong>60% de los ensayos</strong>, la estrella aparece donde indica la flecha</li>
+        <li style={{ marginBottom: '8px' }}>En el <strong>40% restante</strong>, la estrella aparece en el lado opuesto</li>
+        <li style={{ marginBottom: '8px' }}>El juego progresa automáticamente por <strong>5 niveles de dificultad</strong></li>
+      </ul>
+
+      <div style={{ backgroundColor: '#fff3cd', border: '1px solid #ffeaa7', borderRadius: '8px', padding: '15px',marginTop: '20px' 
+      }}>
+        <h3 style={{ color: '#d68910', marginBottom: '10px', fontSize: '16px' }}>
+         ¿Necesitas hacer una pausa?
+        </h3>
+        <p style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#7d6608' }}>
+          Si tienes que interrumpir el juego por algún motivo, puedes usar el <strong>botón de pausa </strong> 
+          que aparecerá durante el juego para guardar tu progreso actual.
+        </p>
+        <p style={{ margin: '0', fontSize: '13px', color: '#8b7355', fontStyle: 'italic' }}>
+          <strong>Nota:</strong> Una vez guardado, deberás reiniciar desde el principio en tu próxima sesión, 
+          pero tu mejor resultado quedará registrado.
+        </p>
+      </div>
+    </div>
+  );
+
   return (
     <GameLayout
       title="Señalización de Posner - Progresivo"
-      description={
-        <div>
-          <p>Fija tu vista en el <b>+</b> central. Aparecerá una flecha (← o →) y luego una estrella (★).</p>
+      showInstructions={!juegoIniciado}
+      instructions={<InstruccionesJuego6 />}
+      onStartGame={iniciarJuegoManual}
+      description={juegoIniciado ? (
+        <div style={{ justifyContent: 'space-between', alignItems: 'center', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <div style={{ flex: 1 }}>
+              <p style={{ margin: '0 0 10px 0' }}>
+                Fija tu vista en el <b>+</b> central. Aparecerá una flecha (← o →) y luego una estrella (★).
+              </p>
+            </div>
+          
           <p>Responde indicando en qué lado aparece el estímulo. Usa clics o flechas del teclado.</p>
           <p><em>El juego progresa automáticamente a través de 5 niveles de dificultad.</em></p>
-          <p><strong>Nivel actual:</strong> {configNivel.nombre} - {configNivel.descripcion}</p>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            marginTop: '20px',
+            width: '100%'
+          }}>
+            <button
+              onClick={handlePausa}
+              style={{
+                backgroundColor: '#5e82e5ff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '8px 16px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 2px 4px rgba(35, 23, 148, 0.2)',
+                transition: 'all 0.2s ease',
+                flexShrink: 0,
+              }}
+              title="Guardar progreso actual y volver al dashboard"
+            >
+              Guardar y Salir
+            </button>
+          </div>
         </div>
-      }
-      stats={{ 
+      ) : null}
+      stats={juegoIniciado && gameState.juegoIniciado ? { 
         nivel: nivelActual,
         ensayo: `${gameState.ensayoActual}/${TOTAL_ENSAYOS}`, 
         puntuacion: gameState.puntuacion, 
         fallos: gameState.respuestasIncorrectas, 
         tiempo: gameState.tiempoJugando
-      }}
+      } : {}}
       gameOver={gameState.juegoTerminado}
       finalStats={{ 
         completado: gameState.ensayoActual > TOTAL_ENSAYOS, 
@@ -701,117 +993,95 @@ const Juego6 = () => {
       }}
       onRestart={reiniciarJuego}
       analysis={generarAnalisis()}
-      // nivel={nivelActual}
-      // tiempoTranscurrido={formatearCronometro(gameState.tiempoJugando)}
       onFallo={gameState.respuestasIncorrectas}
       onCorrectAnswer={gameState.puntuacion}
     >
-      {!gameState.juegoTerminado ? (
-        <div className="juego6-container">
-          {!gameState.juegoIniciado ? (
-            <div style={{ textAlign: 'center', padding: '40px' }}>
-              <h3>Señalización de Posner - Modo Progresivo</h3>
-              <p>Progresarás automáticamente a través de 5 niveles:</p>
-              <div style={{ textAlign: 'left', maxWidth: '400px', margin: '20px auto' }}>
-                <p>📚 <strong>Nivel 0 - Tutorial:</strong> Ensayos 1-10</p>
-                <p>🎯 <strong>Nivel 1 - Básico:</strong> Ensayos 11-60</p>
-                <p>⚡ <strong>Nivel 2 - Intermedio:</strong> Ensayos 61-80</p>
-                <p>🔥 <strong>Nivel 3 - Avanzado:</strong> Ensayos 81-100</p>
-                <p>🏆 <strong>Nivel 4 - Experto:</strong> Ensayos 101-110</p>
+      {/* Modal de pausa */}
+      {pausaModalAbierto && <ModalPausa />}
+
+      {juegoIniciado && gameState.juegoIniciado ? (
+        !gameState.juegoTerminado ? (
+          <div className="juego6-container">
+            <div className="info-nivel" style={{ textAlign: 'center', marginBottom: '20px', padding: '10px', backgroundColor: '#f0f8ff', borderRadius: '8px' }}>
+              <p style={{ margin: '5px 0', fontWeight: 'bold', color: '#2c3e50' }}>
+                Nivel {nivelActual}: {configNivel.nombre}
+              </p>
+              <p style={{ margin: '5px 0', fontSize: '14px', color: '#7f8c8d' }}>
+                Ensayos {configNivel.ensayoInicio}-{configNivel.ensayoFin} | {configNivel.descripcion}
+              </p>
+            </div>
+            <div className="cajas-container">
+              <Caja
+                lado="izquierda"
+                mostrar={gameState.mostrarEstimulo && estimulo === "izquierda"}
+                correcta={respuestaCorrecta === "izquierda"}
+                onClick={() => manejarRespuesta("izquierda")}
+              />
+              <div className="punto-fijacion">
+                <span 
+                  style={{ 
+                    color: ensayoActualRef.current?.tipoFlecha?.color || "#000000",
+                    fontSize: nivelActual === 0 ? "3.5rem" : nivelActual === 4 ? "2rem" : "2.5rem",
+                    fontWeight: "bold"
+                  }}
+                >
+                  {gameState.mostrarFlecha && flecha && ensayoActualRef.current?.tipoFlecha ? 
+                    (flecha === "izquierda" ? 
+                      ensayoActualRef.current.tipoFlecha.izquierda : 
+                      ensayoActualRef.current.tipoFlecha.derecha
+                    ) : 
+                    "+"
+                  }
+                </span>
               </div>
+              <Caja
+                lado="derecha"
+                mostrar={gameState.mostrarEstimulo && estimulo === "derecha"}
+                correcta={respuestaCorrecta === "derecha"}
+                onClick={() => manejarRespuesta("derecha")}
+              />
+            </div>
+            <div className="controles">
               <button 
-                onClick={iniciarJuego}
-                style={{
-                  padding: '15px 30px',
-                  fontSize: '18px',
-                  backgroundColor: '#3498db',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  marginTop: '20px'
-                }}
+                onClick={() => manejarRespuesta("izquierda")} 
+                disabled={!gameState.puedeResponder}
+                aria-label="Responder izquierda"
               >
-                Iniciar Juego Progresivo
+                Izquierda (←)
+              </button>
+              <button 
+                onClick={() => manejarRespuesta("derecha")} 
+                disabled={!gameState.puedeResponder}
+                aria-label="Responder derecha"
+              >
+                Derecha (→)
               </button>
             </div>
-          ) : (
-            <>
-              <div className="info-nivel" style={{ textAlign: 'center', marginBottom: '20px', padding: '10px', backgroundColor: '#f0f8ff', borderRadius: '8px' }}>
-                <p style={{ margin: '5px 0', fontWeight: 'bold', color: '#2c3e50' }}>
-                  🎮 Nivel {nivelActual}: {configNivel.nombre}
-                </p>
-                <p style={{ margin: '5px 0', fontSize: '14px', color: '#7f8c8d' }}>
-                  Ensayos {configNivel.ensayoInicio}-{configNivel.ensayoFin} | {configNivel.descripcion}
-                </p>
-              </div>
-              <div className="cajas-container">
-                <Caja
-                  lado="izquierda"
-                  mostrar={gameState.mostrarEstimulo && estimulo === "izquierda"}
-                  correcta={respuestaCorrecta === "izquierda"}
-                  onClick={() => manejarRespuesta("izquierda")}
-                />
-                <div className="punto-fijacion">
-                  <span 
-                    style={{ 
-                      color: ensayoActualRef.current?.tipoFlecha?.color || "#000000",
-                      fontSize: nivelActual === 0 ? "3.5rem" : nivelActual === 4 ? "2rem" : "2.5rem",
-                      fontWeight: "bold"
-                    }}
-                  >
-                    {gameState.mostrarFlecha && flecha && ensayoActualRef.current?.tipoFlecha ? 
-                      (flecha === "izquierda" ? 
-                        ensayoActualRef.current.tipoFlecha.izquierda : 
-                        ensayoActualRef.current.tipoFlecha.derecha
-                      ) : 
-                      "+"
-                    }
-                  </span>
-                </div>
-                <Caja
-                  lado="derecha"
-                  mostrar={gameState.mostrarEstimulo && estimulo === "derecha"}
-                  correcta={respuestaCorrecta === "derecha"}
-                  onClick={() => manejarRespuesta("derecha")}
-                />
-              </div>
-              <div className="controles">
-                <button 
-                  onClick={() => manejarRespuesta("izquierda")} 
-                  disabled={!gameState.puedeResponder}
-                  aria-label="Responder izquierda"
-                >
-                  Izquierda (←)
-                </button>
-                <button 
-                  onClick={() => manejarRespuesta("derecha")} 
-                  disabled={!gameState.puedeResponder}
-                  aria-label="Responder derecha"
-                >
-                  Derecha (→)
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      ) : (
-        <div className="juego6-container">
-          <div style={{ textAlign: 'center', padding: '20px' }}>
-            {resultadoGuardado ? (
-              <p style={{ color: '#22c55e', fontWeight: 'bold' }}>
-                ✅ Resultado guardado correctamente
-              </p>
-            ) : (
-              <p style={{ color: '#f59e0b', fontWeight: 'bold' }}>
-                ⏳ Guardando resultado...
-              </p>
-            )}
           </div>
+        ) : (
+          <div className="juego6-container">
+            <div style={{ textAlign: 'center', padding: '20px' }}>
+              {resultadoGuardado ? (
+                <p style={{ color: '#22c55e', fontWeight: 'bold' }}>
+                  Resultado guardado correctamente
+                </p>
+              ) : (
+                <p style={{ color: '#f59e0b', fontWeight: 'bold' }}>
+                Guardando resultado...
+                </p>
+              )}
+            </div>
+          </div>
+        )
+      ) : juegoIniciado ? (
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <p style={{ fontSize: '18px', color: '#7f8c8d' }}>
+            Preparando el juego...
+          </p>
         </div>
-      )}
+      ) : null}
     </GameLayout>
   );
 };
 
-export default Juego6;
+export default Juego6;    
