@@ -25,6 +25,8 @@ const Juego5 = () => {
   const [tiempoMemorizacion, setTiempoMemorizacion] = useState(null);
   const [respuestasDetalladas, setRespuestasDetalladas] = useState([]);
 
+  const [juegoIniciado, setJuegoIniciado] = useState(false);
+
   // Guardar resultado usando useCallback
   const guardarResultado = useCallback(async () => {
     if (!user) {
@@ -259,11 +261,24 @@ const Juego5 = () => {
       return `Respondiendo: ${respuestas.length}/40 preguntas`;
     }
   };
+  
+  const InstruccionesJuego = () => (
+    <div style={{ textAlign: 'center', fontSize: '18px', color: '#34495e' }}>
+      <p>Instrucciones</p>
+    </div>
+  );
+
+  const iniciarJuego = () => {
+    setJuegoIniciado(true);
+  };
 
   return (
     <GameLayout
       title="Reconocimiento de Objetos"
-      description="Memoriza la secuencia de formas. Luego responde si viste o no cada una."
+      showInstructions={!juegoIniciado}
+      instructions={<InstruccionesJuego />}
+      onStartGame={iniciarJuego}
+      description={juegoIniciado ? "Memoriza la secuencia de formas. Luego responde si viste o no cada una." : null}
       stats={{
         nivel: 1,
         puntuacion,

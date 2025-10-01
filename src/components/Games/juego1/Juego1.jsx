@@ -19,6 +19,7 @@ const Juego1 = () => {
   const [user, setUser] = useState(null);
   const [tiempoInicio, setTiempoInicio] = useState(null);
   const [resultadoGuardado, setResultadoGuardado] = useState(false);
+  const [juegoIniciado, setJuegoIniciado] = useState(false);
 
   // Usar useCallback para estabilizar la función guardarResultado
   const guardarResultado = useCallback(async () => {
@@ -170,10 +171,23 @@ const Juego1 = () => {
     }
   };
 
+  const InstruccionesJuego = () => (
+    <div style={{ textAlign: 'center', fontSize: '18px', color: '#34495e' }}>
+      <p>Instrucciones</p>
+    </div>
+  );
+
+  const iniciarJuego = () => {
+    setJuegoIniciado(true);
+  };
+
   return (
     <GameLayout
       title="Juego de Formas Lógicas"
-      description="Determina si la afirmación sobre la posición de las formas es verdadera o falsa."
+      showInstructions={!juegoIniciado}
+      instructions={<InstruccionesJuego />}
+      onStartGame={iniciarJuego}
+      description={juegoIniciado ? "Determina si la afirmación sobre la posición de las formas es verdadera o falsa." : null}
       stats={{
         nivel,
         puntuacion,

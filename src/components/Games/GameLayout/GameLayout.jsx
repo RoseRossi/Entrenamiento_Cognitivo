@@ -17,14 +17,17 @@ const GameLayout = ({
   onRestart,
   analysis = "",
   onFallo, 
-  onCorrectAnswer 
+  onCorrectAnswer,
+  showInstructions = false,
+  instructions = null,
+  onStartGame = null
 }) => {
   const gameRef = useRef();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const navigate = useNavigate();
 
-  console.log("Prop onFallo recibida:", onFallo); // Imprime lo que trae onFallo desde Juego2
-  console.log("Prop onCorrectAnswer recibida:", onCorrectAnswer); // Imprime lo que trae onCorrectAnswer desde Juego2
+  console.log("Prop onFallo recibida:", onFallo);
+  console.log("Prop onCorrectAnswer recibida:", onCorrectAnswer);
 
   // Referencias a los sonidos
   const audioFalloRef = useRef(new Audio(falloSound));
@@ -39,7 +42,6 @@ const GameLayout = ({
   // Estado para rastrear los valores previos de fallos y respuestas correctas
   const prevFalloRef = useRef(onFallo);
   const prevCorrectAnswerRef = useRef(onCorrectAnswer);
-
 
   useEffect(() => {
     if (onFallo > prevFalloRef.current) {
@@ -57,19 +59,19 @@ const GameLayout = ({
     prevCorrectAnswerRef.current = onCorrectAnswer;
   }, [onFallo, onCorrectAnswer, playSound]);
 
-    // Precargar sonidos
-    useEffect(() => {
-      const falloAudio = audioFalloRef.current;
-      const correctoAudio = audioCorrectoRef.current;
+  // Precargar sonidos
+  useEffect(() => {
+    const falloAudio = audioFalloRef.current;
+    const correctoAudio = audioCorrectoRef.current;
 
-      falloAudio.load();
-      correctoAudio.load();
+    falloAudio.load();
+    correctoAudio.load();
 
-      return () => {
-        falloAudio.pause();
-        correctoAudio.pause();
-      };
-    }, []);
+    return () => {
+      falloAudio.pause();
+      correctoAudio.pause();
+    };
+  }, []);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -102,6 +104,29 @@ const GameLayout = ({
     };
   }, []);
 
+  // PANTALLA DE INSTRUCCIONES
+  if (showInstructions && instructions) {
+    return (
+      <div className="game-layout-container">
+        <h1 className="game-title-centered">{title}</h1>
+        <div className="instructions-wrapper">
+          <div className="instructions-container">
+            <div className="instructions-content">              
+              {instructions}
+              <button 
+                className="start-game-button"
+                onClick={onStartGame}
+              >
+                Comenzar Juego
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // PANTALLA DE RESULTADOS FINALES
   if (gameOver) {
     return (
       <div className="game-layout-container">
@@ -152,6 +177,7 @@ const GameLayout = ({
     );
   }
 
+  // JUEGO EN PROGRESO
   return (
     <div className="game-layout-container">
       <h1 className="game-title-centered">{title}</h1>
@@ -169,7 +195,7 @@ const GameLayout = ({
           <div className="game-stats">
             <div className="stat-item">
               <div className="stat-icon-wrapper bg-blue">
-                <BarChart2 size={14} className="stat-icon" />
+                <BarChart2 size={20} className="stat-icon" />
               </div>
               <div className="stat-text">
                 <p className="stat-label">Nivel</p>
@@ -179,7 +205,7 @@ const GameLayout = ({
 
             <div className="stat-item">
               <div className="stat-icon-wrapper bg-green">
-                <Award size={14} className="stat-icon" />
+                <Award size={20} className="stat-icon" />
               </div>
               <div className="stat-text">
                 <p className="stat-label">Puntuación</p>
@@ -189,7 +215,7 @@ const GameLayout = ({
 
             <div className="stat-item">
               <div className="stat-icon-wrapper bg-red">
-                <XCircle size={14} className="stat-icon" />
+                <XCircle size={20} className="stat-icon" />
               </div>
               <div className="stat-text">
                 <p className="stat-label">Fallos</p>
@@ -199,7 +225,7 @@ const GameLayout = ({
 
             <div className="stat-item">
               <div className="stat-icon-wrapper bg-yellow">
-                <Clock size={14} className="stat-icon" />
+                <Clock size={20} className="stat-icon" />
               </div>
               <div className="stat-text">
                 <p className="stat-label">Tiempo</p>

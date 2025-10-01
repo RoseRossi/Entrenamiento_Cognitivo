@@ -8,7 +8,6 @@
   animation: spin 1s linear infinite;
 }
 
-/* Mejoras adicionales para accesibilidad */
 .auth-form-container {
   position: relative;
 }
@@ -29,9 +28,10 @@
 
 /* Efectos hover para mejor UX */
 .google-button:hover:not(:disabled) {
-  background-color: #ffcdd9 !important;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  background-color: #f8f9fa !important;
+  border-color: #dadce0 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+  transform: none; /* Sin efecto de elevación */
 }
 
 .primary-button:hover:not(:disabled) {
