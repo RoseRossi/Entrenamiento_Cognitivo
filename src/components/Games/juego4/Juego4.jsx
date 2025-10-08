@@ -1,140 +1,193 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import GameLayout from '../GameLayout/GameLayout';
-import { niveles, obtenerEnsayo, verificarRespuesta } from './juego4_funciones';
+import { niveles, obtenerEnsayo, verificarRespuesta, hayMasEnsayosEnNivel } from './juego4_funciones';
 import { auth } from "../../../services/firebase/firebaseConfig";
 import { gameService } from "../../../services/firebase/gameService";
 import { userService } from "../../../services/firebase/userService";
 import './juego4_estilos.css';
 
-const Figura = ({ tipo, cantidad, x, y }) => {
-  const figuras = [];
-  const tamañoFigura = 20;
-  const espaciado = 8;
-  const totalWidth = cantidad * tamañoFigura + (cantidad - 1) * espaciado;
-  const startX = x - totalWidth / 2;
-  const startY = y - tamañoFigura / 2;
+const Figura = ({ tipo, x, y, size = 16 }) => {
+  const figuraProps = {
+    fill: getFiguraColor(tipo),
+    stroke: "black",
+    strokeWidth: 0.5
+  };
 
-  for (let i = 0; i < cantidad; i++) {
-    const offsetX = startX + i * (tamañoFigura + espaciado);
-
-    if (tipo === 'cuadrado') {
-      figuras.push(
-        <rect
-          key={i}
-          x={offsetX}
-          y={startY}
-          width={tamañoFigura}
-          height={tamañoFigura}
-          fill="blue"
-          stroke="black"
-        />
-      );
-    } else if (tipo === 'circulo') {
-      figuras.push(
-        <circle
-          key={i}
-          cx={offsetX + tamañoFigura / 2}
-          cy={startY + tamañoFigura / 2}
-          r={tamañoFigura / 2}
-          fill="red"
-          stroke="black"
-        />
-      );
-    } else if (tipo === 'triangulo') {
-      figuras.push(
+  const figuraElements = {
+    cuadrado: (
+      <rect
+        x={x}
+        y={y}
+        width={size}
+        height={size}
+        {...figuraProps}
+      />
+    ),
+    circulo: (
+      <circle
+        cx={x + size/2}
+        cy={y + size/2}
+        r={size/2}
+        {...figuraProps}
+      />
+    ),
+    triangulo: (
+      <polygon
+        points={`${x},${y + size} ${x + size/2},${y} ${x + size},${y + size}`}
+        {...figuraProps}
+      />
+    ),
+    diamante: (
+      <polygon
+        points={`${x + size/2},${y} ${x + size},${y + size/2} ${x + size/2},${y + size} ${x},${y + size/2}`}
+        {...figuraProps}
+      />
+    ),
+    cruz: (() => {
+      const quarterSize = size / 4;
+      return (
         <polygon
-          key={i}
-          points={`${offsetX},${startY + tamañoFigura} ${offsetX + tamañoFigura / 2},${startY} ${
-            offsetX + tamañoFigura
-          },${startY + tamañoFigura}`}
-          fill="green"
-          stroke="black"
+          points={`${x + quarterSize},${y} ${x + quarterSize * 3},${y} ${x + quarterSize * 3},${y + quarterSize} ${x + size},${y + quarterSize} ${x + size},${y + quarterSize * 3} ${x + quarterSize * 3},${y + quarterSize * 3} ${x + quarterSize * 3},${y + size} ${x + quarterSize},${y + size} ${x + quarterSize},${y + quarterSize * 3} ${x},${y + quarterSize * 3} ${x},${y + quarterSize} ${x + quarterSize},${y + quarterSize}`}
+          {...figuraProps}
         />
       );
-    } else if (tipo === 'diamante') {
-      const halfSize = tamañoFigura / 2;
-      figuras.push(
-        <polygon
-          key={i}
-          points={`${offsetX + halfSize},${startY} ${offsetX + tamañoFigura},${startY + halfSize} ${
-            offsetX + halfSize
-          },${startY + tamañoFigura} ${offsetX},${startY + halfSize}`}
-          fill="purple"
-          stroke="black"
-        />
-      );
-    } else if (tipo === 'cruz') {
-      const quarterSize = tamañoFigura / 4;
-      figuras.push(
-        <polygon
-          key={i}
-          points={`${offsetX + quarterSize},${startY} ${offsetX + quarterSize * 3},${startY} ${
-            offsetX + quarterSize * 3
-          },${startY + quarterSize} ${offsetX + tamañoFigura},${startY + quarterSize} ${
-            offsetX + tamañoFigura
-          },${startY + quarterSize * 3} ${offsetX + quarterSize * 3},${startY + quarterSize * 3} ${
-            offsetX + quarterSize * 3
-          },${startY + tamañoFigura} ${offsetX + quarterSize},${startY + tamañoFigura} ${
-            offsetX + quarterSize
-          },${startY + quarterSize * 3} ${offsetX},${startY + quarterSize * 3} ${offsetX},${
-            startY + quarterSize
-          } ${offsetX + quarterSize},${startY + quarterSize}`}
-          fill="orange"
-          stroke="black"
-        />
-      );
-    } else if (tipo === 'rectangulo') {
-      figuras.push(
-        <rect
-          key={i}
-          x={offsetX}
-          y={startY + tamañoFigura / 4}
-          width={tamañoFigura}
-          height={tamañoFigura / 2}
-          fill="teal"
-          stroke="black"
-        />
-      );
-    } else if (tipo === 'estrella') {
+    })(),
+    rectangulo: (
+      <rect
+        x={x}
+        y={y + size / 4}
+        width={size}
+        height={size / 2}
+        {...figuraProps}
+      />
+    ),
+    estrella: (() => {
       const points = [
-        `${offsetX + tamañoFigura / 2},${startY}`,
-        `${offsetX + tamañoFigura * 0.618},${startY + tamañoFigura * 0.382}`,
-        `${offsetX + tamañoFigura},${startY + tamañoFigura * 0.382}`,
-        `${offsetX + tamañoFigura * 0.691},${startY + tamañoFigura * 0.618}`,
-        `${offsetX + tamañoFigura * 0.809},${startY + tamañoFigura}`,
-        `${offsetX + tamañoFigura / 2},${startY + tamañoFigura * 0.809}`,
-        `${offsetX + tamañoFigura * 0.191},${startY + tamañoFigura}`,
-        `${offsetX + tamañoFigura * 0.309},${startY + tamañoFigura * 0.618}`,
-        `${offsetX},${startY + tamañoFigura * 0.382}`,
-        `${offsetX + tamañoFigura * 0.382},${startY + tamañoFigura * 0.382}`,
+        `${x + size / 2},${y}`,
+        `${x + size * 0.618},${y + size * 0.382}`,
+        `${x + size},${y + size * 0.382}`,
+        `${x + size * 0.691},${y + size * 0.618}`,
+        `${x + size * 0.809},${y + size}`,
+        `${x + size / 2},${y + size * 0.809}`,
+        `${x + size * 0.191},${y + size}`,
+        `${x + size * 0.309},${y + size * 0.618}`,
+        `${x},${y + size * 0.382}`,
+        `${x + size * 0.382},${y + size * 0.382}`,
       ];
-      figuras.push(
+      return (
         <polygon
-          key={i}
           points={points.join(' ')}
-          fill="gold"
-          stroke="black"
+          {...figuraProps}
         />
       );
-    } else if (tipo === 'hexagono') {
-      const halfSize = tamañoFigura / 2;
+    })(),
+    hexagono: (() => {
+      const halfSize = size / 2;
       const thirdHeight = Math.sin(Math.PI / 3) * halfSize;
-      figuras.push(
+      return (
         <polygon
-          key={i}
-          points={`${offsetX + halfSize},${startY} ${offsetX + tamañoFigura},${startY + thirdHeight} ${
-            offsetX + tamañoFigura
-          },${startY + tamañoFigura - thirdHeight} ${offsetX + halfSize},${startY + tamañoFigura} ${offsetX},${
-            startY + tamañoFigura - thirdHeight
-          } ${offsetX},${startY + thirdHeight}`}
-          fill="coral"
-          stroke="black"
+          points={`${x + halfSize},${y} ${x + size},${y + thirdHeight} ${x + size},${y + size - thirdHeight} ${x + halfSize},${y + size} ${x},${y + size - thirdHeight} ${x},${y + thirdHeight}`}
+          {...figuraProps}
         />
       );
-    }
+    })()
+  };
+
+  return figuraElements[tipo] || null;
+};
+
+// Función helper para colores consistentes
+const getFiguraColor = (tipo) => {
+  const colores = {
+    cuadrado: '#3b82f6',
+    circulo: '#ef4444', 
+    triangulo: '#22c55e',
+    diamante: '#a855f7',
+    cruz: '#f97316',
+    rectangulo: '#14b8a6',
+    estrella: '#eab308',
+    hexagono: '#f97171'
+  };
+  return colores[tipo] || '#6b7280';
+};
+
+const BalancePan = ({ items, x, y, width = 80, height = 30, showQuestionMark = false }) => {
+  if (showQuestionMark) {
+    return (
+      <text 
+        x={x} 
+        y={y + 5} 
+        fontSize="24" 
+        fill="black" 
+        textAnchor="middle"
+        dominantBaseline="middle"
+      >
+        ?
+      </text>
+    );
   }
 
-  return <>{figuras}</>;
+  if (!items || items.length === 0) return null;
+
+  // Calcular distribución inteligente de figuras
+  const totalItems = items.reduce((sum, item) => sum + item.cantidad, 0);
+  const figuraSize = Math.min(16, Math.max(8, width / Math.max(totalItems + 1, 4)));
+  const spacing = Math.max(2, Math.min(4, figuraSize * 0.25));
+  const maxPerRow = Math.floor(width / (figuraSize + spacing));
+  
+  // Calcular el layout completo primero
+  const layout = [];
+  let currentRow = 0;
+  let currentCol = 0;
+  
+  items.forEach((item, itemIdx) => {
+    for (let i = 0; i < item.cantidad; i++) {
+      if (currentCol >= maxPerRow) {
+        currentRow++;
+        currentCol = 0;
+      }
+      
+      layout.push({
+        tipo: item.figura,
+        row: currentRow,
+        col: currentCol,
+        itemIdx,
+        figureIdx: i
+      });
+      
+      currentCol++;
+    }
+  });
+
+  // Calcular dimensiones reales del contenido
+  const totalRows = Math.max(...layout.map(l => l.row)) + 1;
+  
+  // Calcular el ancho real de cada fila
+  const getRowWidth = (rowIndex) => {
+    const itemsInRow = layout.filter(l => l.row === rowIndex).length;
+    return itemsInRow * figuraSize + (itemsInRow - 1) * spacing;
+  };
+  
+  // Generar figuras centradas
+  const figuras = layout.map((item, index) => {
+    const rowWidth = getRowWidth(item.row);
+    const rowStartX = x - rowWidth / 2; // Centrar cada fila individualmente
+    
+    const figX = rowStartX + item.col * (figuraSize + spacing);
+    const figY = y - (totalRows * (figuraSize + spacing)) / 2 + item.row * (figuraSize + spacing);
+    
+    return (
+      <Figura
+        key={`${item.itemIdx}-${item.figureIdx}-${index}`}
+        tipo={item.tipo}
+        x={figX}
+        y={figY}
+        size={figuraSize}
+      />
+    );
+  });
+
+  return <g>{figuras}</g>; 
 };
 
 const Juego4 = () => {
@@ -142,9 +195,9 @@ const Juego4 = () => {
   const [ensayoActual, setEnsayoActual] = useState(null);
   const [estadoJuego, setEstadoJuego] = useState({
     puntuacion: 0,
-    tiempoRestante: niveles[0].tiempo,
-    respuestasIncorrectas: 0,
-    fallosTotales: 0, 
+    tiempoRestante: 600, // 10 minutos TOTAL
+    respuestasIncorrectas: 0, // Fallos consecutivos  
+    fallosTotales: 0, // TODOS los fallos acumulados
     juegoTerminado: false,
     todosNivelesCompletados: false,
   });
@@ -285,19 +338,17 @@ const Juego4 = () => {
   }, [estadoJuego.juegoTerminado, estadoJuego.tiempoRestante, nivelActual]);
 
   useEffect(() => {
-    const ensayo = obtenerEnsayo(nivelActual);
-    setEnsayoActual(ensayo);
-    setUltimoResultado(null); 
-
-    setEstadoJuego((prev) => ({
-      ...prev,
-      tiempoRestante: niveles[nivelActual - 1]?.tiempo || 0,
-    }));
-  }, [nivelActual]);
+    // Solo obtener ensayo si el juego ya está iniciado y no está terminado
+    if (juegoIniciado && !estadoJuego.juegoTerminado) {
+      const ensayo = obtenerEnsayo(nivelActual);
+      setEnsayoActual(ensayo);
+      setUltimoResultado(null);
+    }
+  }, [nivelActual, juegoIniciado, estadoJuego.juegoTerminado]);
 
   const manejarSeleccion = (opcion) => {
-    if (estadoJuego.juegoTerminado || !ensayoActual) return;
-  
+    if (estadoJuego.juegoTerminado || !ensayoActual || ultimoResultado) return;
+
     const esCorrecta = verificarRespuesta(ensayoActual, opcion);
     const tiempoRespuesta = Date.now() - tiempoInicio;
     
@@ -306,7 +357,7 @@ const Juego4 = () => {
       nivelId: nivelActual,
       ensayoId: ensayoActual.id || `nivel${nivelActual}_${Date.now()}`,
       respuestaUsuario: opcion,
-      respuestaCorrecta: ensayoActual.respuestaCorrecta,
+      respuestaCorrecta: ensayoActual.opciones[ensayoActual.respuestaCorrecta],
       correcta: esCorrecta,
       tiempoRespuesta: tiempoRespuesta,
       tiempoRestante: estadoJuego.tiempoRestante
@@ -314,135 +365,143 @@ const Juego4 = () => {
     setRespuestasDetalladas(prev => [...prev, nuevaRespuesta]);
 
     const nuevoEstado = { ...estadoJuego };
-  
+
     if (esCorrecta) {
       nuevoEstado.puntuacion += 1;
-      nuevoEstado.respuestasIncorrectas = 0; // Reiniciar fallos consecutivos
-      nuevoEstado.fallosTotales = nuevoEstado.fallosTotales || 0;
-  
-      // Actualizar el feedback visual
+      nuevoEstado.respuestasIncorrectas = 0;
+
       setUltimoResultado({ opcion, esCorrecta: true });
-  
-      // Avanzar al siguiente ensayo o nivel
+
       setTimeout(() => {
-        if (nivelActual === niveles.length && nuevoEstado.puntuacion % 3 === 0) {
-          nuevoEstado.juegoTerminado = true;
-          nuevoEstado.todosNivelesCompletados = true;
-        } else if (nuevoEstado.puntuacion % 3 === 0 && nivelActual < niveles.length) {
-          // Registrar tiempo del nivel completado
-          setTiemposPorNivel(prev => [...prev, {
-            nivel: nivelActual,
-            tiempoTranscurrido: Date.now() - tiempoInicio
-          }]);
-          setNivelActual((prev) => prev + 1);
+        if (hayMasEnsayosEnNivel(nivelActual)) {
+          const siguienteEnsayo = obtenerEnsayo(nivelActual);
+          if (siguienteEnsayo) {
+            setEnsayoActual(siguienteEnsayo);
+            console.log(`➡️ Siguiente ensayo en nivel ${nivelActual}`);
+          }
         } else {
-          setEnsayoActual(obtenerEnsayo(nivelActual));
+          if (nivelActual >= niveles.length) {
+            nuevoEstado.juegoTerminado = true;
+            nuevoEstado.todosNivelesCompletados = true;
+            console.log('🏆 ¡Todos los niveles completados!');
+          } else {
+            console.log(`📈 Avanzando del nivel ${nivelActual} al ${nivelActual + 1}`);
+            setTiemposPorNivel(prev => [...prev, {
+              nivel: nivelActual,
+              tiempoTranscurrido: Date.now() - tiempoInicio
+            }]);
+            setNivelActual((prev) => prev + 1);
+          }
         }
-  
-        setUltimoResultado(null); // Resetear feedback visual
+
+        setUltimoResultado(null);
         setEstadoJuego(nuevoEstado);
-      }, 300); // Agregar un pequeño retraso para evitar conflictos
+      }, 1000);
+
     } else {
       nuevoEstado.respuestasIncorrectas += 1;
       nuevoEstado.fallosTotales += 1;
-  
-      // Actualizar el feedback visual
+
       setUltimoResultado({ opcion, esCorrecta: false });
-  
-      // Finalizar el juego si hay 3 fallos consecutivos
+
       if (nuevoEstado.respuestasIncorrectas >= 3) {
         nuevoEstado.juegoTerminado = true;
+        console.log('❌ Juego terminado por 3 fallos consecutivos');
+        
+        setTimeout(() => {
+          setEstadoJuego(nuevoEstado);
+          setUltimoResultado(null);
+        }, 1500);
+      } else {
+        console.log(`❌ Fallo ${nuevoEstado.respuestasIncorrectas}/3 en ejercicio ${ensayoActual.id}. Intenta de nuevo.`);
+        
+        setTimeout(() => {
+          setUltimoResultado(null);
+          setEstadoJuego(nuevoEstado);
+        }, 1500);
       }
-  
+
       setEstadoJuego(nuevoEstado);
     }
   };
 
-  const renderBalanza = (balanza, showQuestionMark = false) => (
-    <svg className="balanza-svg" viewBox="0 0 309 250" width="300" height="260" xmlns="http://www.w3.org/2000/svg">
-      <rect width="309" height="250" fill="white" />
-      <line x1="58.4567" y1="35.7965" x2="99.4567" y2="127.796" stroke="black" />
-      <line x1="58.4491" y1="36.2197" x2="13.4492" y2="128.22" stroke="black" />
-      <path
-        d="M72 221C72 215.477 76.4772 211 82 211H218C223.523 211 228 215.477 228 221V227H72V221Z"
-        fill="#334458"
-      />
-      <path
-        d="M63 231C63 228.791 64.7909 227 67 227H232C234.209 227 236 228.791 236 231V239H63V231Z"
-        fill="#232D36"
-      />
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M56.5 148C82.1812 148 103 139.046 103 128H10C10 139.046 30.8188 148 56.5 148Z"
-        fill="#D9D9D9"
-      />
-      <rect x="6" y="125" width="101" height="6" rx="2" fill="#ADADAD" />
-      <line x1="245.457" y1="35.7965" x2="286.457" y2="127.796" stroke="black" />
-      <line x1="245.449" y1="36.2197" x2="200.449" y2="128.22" stroke="black" />
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M243.5 148C269.181 148 290 139.046 290 128H197C197 139.046 217.819 148 243.5 148Z"
-        fill="#D9D9D9"
-      />
-      <rect x="193" y="125" width="101" height="6" rx="2" fill="#ADADAD" />
-      <rect x="142" y="12" width="16" height="212" rx="8" fill="#242E37" />
-      <ellipse
-        cx="152.083"
-        cy="35.9277"
-        rx="95.0038"
-        ry="4"
-        transform="rotate(-0.101434 152.083 35.9277)"
-        fill="#252E38"
-      />
-      <circle cx="150" cy="36" r="3" fill="white" />
+  const renderBalanza = (balanza, showQuestionMark = false) => {
+    // Coordenadas de los platillos (relativas al viewBox)
+    const platilloIzq = { x: 56.5, y: 115, width: 80, height: 25 };
+    const platilloDer = { x: 243.5, y: 115, width: 80, height: 25 };
 
-      {balanza.izquierda.map((item, i) => (
-        <Figura
-          key={`izq-${i}`}
-          tipo={item.figura}
-          cantidad={item.cantidad}
-          x={50}
-          y={110}
+    return (
+      <svg 
+        className="balanza-svg" 
+        viewBox="0 0 309 250" 
+        style={{ width: '100%', maxWidth: '300px', height: 'auto' }}
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        {/* Estructura de la balanza */}
+        <rect width="309" height="250" fill="white" />
+        <line x1="58.4567" y1="35.7965" x2="99.4567" y2="127.796" stroke="black" />
+        <line x1="58.4491" y1="36.2197" x2="13.4492" y2="128.22" stroke="black" />
+        <path d="M72 221C72 215.477 76.4772 211 82 211H218C223.523 211 228 215.477 228 221V227H72V221Z" fill="#334458" />
+        <path d="M63 231C63 228.791 64.7909 227 67 227H232C234.209 227 236 228.791 236 231V239H63V231Z" fill="#232D36" />
+        <path fillRule="evenodd" clipRule="evenodd" d="M56.5 148C82.1812 148 103 139.046 103 128H10C10 139.046 30.8188 148 56.5 148Z" fill="#D9D9D9" />
+        <rect x="6" y="125" width="101" height="6" rx="2" fill="#ADADAD" />
+        <line x1="245.457" y1="35.7965" x2="286.457" y2="127.796" stroke="black" />
+        <line x1="245.449" y1="36.2197" x2="200.449" y2="128.22" stroke="black" />
+        <path fillRule="evenodd" clipRule="evenodd" d="M243.5 148C269.181 148 290 139.046 290 128H197C197 139.046 217.819 148 243.5 148Z" fill="#D9D9D9" />
+        <rect x="193" y="125" width="101" height="6" rx="2" fill="#ADADAD" />
+        <rect x="142" y="12" width="16" height="212" rx="8" fill="#242E37" />
+        <ellipse cx="152.083" cy="35.9277" rx="95.0038" ry="4" transform="rotate(-0.101434 152.083 35.9277)" fill="#252E38" />
+        <circle cx="150" cy="36" r="3" fill="white" />
+
+        {/* Platillo izquierdo con posicionamiento inteligente */}
+        <BalancePan
+          items={balanza.izquierda}
+          x={platilloIzq.x}
+          y={platilloIzq.y}
+          width={platilloIzq.width}
+          height={platilloIzq.height}
         />
-      ))}
 
-      {showQuestionMark ? (
-        <text x="243.5" y="120" fontSize="30" fill="black" textAnchor="middle">?</text>
-      ) : (
-        balanza.derecha.map((item, i) => (
-          <Figura
-            key={`der-${i}`}
-            tipo={item.figura}
-            cantidad={item.cantidad}
-            x={235}
-            y={110}
-          />
-        ))
-      )}
-    </svg>
-  );
+        {/* Platillo derecho */}
+        <BalancePan
+          items={balanza.derecha}
+          x={platilloDer.x}
+          y={platilloDer.y}
+          width={platilloDer.width}
+          height={platilloDer.height}
+          showQuestionMark={showQuestionMark}
+        />
+      </svg>
+    );
+  };
 
   const reiniciarJuego = () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
-    setNivelActual(1);
-    setEnsayoActual(obtenerEnsayo(1));
+
     setEstadoJuego({
       puntuacion: 0,
-      tiempoRestante: niveles[0].tiempo,
+      tiempoRestante: 600,
       respuestasIncorrectas: 0,
       fallosTotales: 0,
       juegoTerminado: false,
       todosNivelesCompletados: false,
     });
+
     setUltimoResultado(null);
     setResultadoGuardado(false);
     setRespuestasDetalladas([]);
     setTiemposPorNivel([]);
     setTiempoInicio(Date.now());
+    
+    setJuegoIniciado(false); // Volver a mostrar instrucciones
+    
+    setNivelActual(1);
+    const primerEnsayo = obtenerEnsayo(1, true); // true = reiniciar índices
+    setEnsayoActual(primerEnsayo);
+    
+    console.log('🔄 Juego reiniciado completamente');
   };
 
   const generarAnalisis = () => {
@@ -490,6 +549,11 @@ const Juego4 = () => {
 
   const iniciarJuego = () => {
     setJuegoIniciado(true);
+    
+    const primerEnsayo = obtenerEnsayo(1, true); // Reiniciar índices al iniciar
+    setEnsayoActual(primerEnsayo);
+    
+    console.log('Juego iniciado');
   };
 
   return (
@@ -499,18 +563,21 @@ const Juego4 = () => {
       instructions={<InstruccionesJuego4 />}
       onStartGame={iniciarJuego}
       description={juegoIniciado ? (
-            <div>
-              <p>Determina qué conjunto de figuras equilibrará la tercera balanza.</p>
-              <p>Analiza las relaciones mostradas en las dos primeras balanzas.</p>
-              <p style={{ color: '#f59e0b', fontWeight: 'bold' }}>
-                ⚠️ Cuidado: 3 errores consecutivos terminan el juego
-              </p>
-            </div>
-        ) : null}
+        <div>
+          <p>Determina qué conjunto de figuras equilibrará la tercera balanza.</p>
+          <p>Analiza las relaciones mostradas en las dos primeras balanzas.</p>
+          <p style={{ color: '#3498db', fontWeight: 'bold' }}>
+             Nivel {nivelActual}/4
+          </p>
+          <p style={{ color: '#f59e0b', fontWeight: 'bold' }}>
+             Cuidado: 3 errores consecutivos terminan el juego
+          </p>
+        </div>
+      ) : null}
       stats={{
         nivel: nivelActual,
         puntuacion: estadoJuego.puntuacion,
-        fallos: estadoJuego.respuestasIncorrectas,
+        fallos: estadoJuego.fallosTotales,
         tiempo: estadoJuego.tiempoRestante,
       }}
       gameOver={estadoJuego.juegoTerminado}
@@ -526,61 +593,62 @@ const Juego4 = () => {
       onFallo={estadoJuego.respuestasIncorrectas}
       onCorrectAnswer={estadoJuego.puntuacion}
     >
-      {!estadoJuego.juegoTerminado && ensayoActual ? (
-        <div className="juego4-container">
-          <div className="balanzas-container">
-            {renderBalanza(ensayoActual.balanza1)}
-            {renderBalanza(ensayoActual.balanza2)}
-            {renderBalanza({
-              izquierda: ensayoActual.problema.izquierda,
-              derecha: []
-            }, true)}
-          </div>
-          <div className="opciones-container">
-            {ensayoActual.opciones?.map((opcion, i) => (
-              <button
-                key={i}
-                className={`opcion-boton ${
-                  ultimoResultado?.opcion.figura === opcion.figura &&
-                  ultimoResultado?.opcion.cantidad === opcion.cantidad
-                    ? ultimoResultado.esCorrecta
-                      ? 'correct'
-                      : 'incorrect'
-                    : ''
-                }`}
-                data-figura={opcion.figura}
-                data-cantidad={opcion.cantidad}
-                onClick={() => manejarSeleccion(opcion)}
-                disabled={!ensayoActual}
-              >
-                <svg width="100%" height="100%" viewBox="0 0 200 80">
-                  <Figura
-                    tipo={opcion.figura}
-                    cantidad={opcion.cantidad}
-                    x={100}
-                    y={40}
-                  />
-                </svg>
-              </button>
-            ))}
-          </div>
+    {!estadoJuego.juegoTerminado && ensayoActual ? (
+      <div className="juego4-container">
+        <div className="balanzas-container">
+          {renderBalanza(ensayoActual.balanza1)}
+          {renderBalanza(ensayoActual.balanza2)}
+          {renderBalanza({
+            izquierda: ensayoActual.problema.izquierda,
+            derecha: []
+          }, true)}
         </div>
-      ) : (
-        // Mostrar estado de guardado cuando termine el juego
-        <div className="juego4-container">
-          <div style={{ textAlign: 'center', padding: '20px' }}>
-            {resultadoGuardado ? (
-              <p style={{ color: '#22c55e', fontWeight: 'bold' }}>
-                Resultado guardado correctamente
-              </p>
-            ) : (
-              <p style={{ color: '#f59e0b', fontWeight: 'bold' }}>
-                Guardando resultado...
-              </p>
-            )}
-          </div>
+        <div className="opciones-container">
+          {ensayoActual.opciones?.map((opcion, i) => (
+            <button
+              key={i}
+              className={`opcion-boton ${
+                ultimoResultado?.opcion.figura === opcion.figura &&
+                ultimoResultado?.opcion.cantidad === opcion.cantidad
+                  ? ultimoResultado.esCorrecta ? 'correct' : 'incorrect'
+                  : ''
+              }`}
+              onClick={() => manejarSeleccion(opcion)}
+              disabled={!ensayoActual || !!ultimoResultado || estadoJuego.juegoTerminado}
+              style={{ 
+                opacity: (!ensayoActual || !!ultimoResultado || estadoJuego.juegoTerminado) ? 1 : 1,
+                cursor: (!ensayoActual || !!ultimoResultado || estadoJuego.juegoTerminado) ? 'not-allowed' : 'pointer'
+              }}
+            >
+              <svg width="100%" height="60" viewBox="0 0 120 60">
+                <BalancePan
+                  items={[opcion]}
+                  x={60}
+                  y={30}
+                  width={100}
+                  height={40}
+                />
+              </svg>
+            </button>
+          ))}
         </div>
-      )}
+      </div>
+    ) : (
+      <div className="juego4-container">
+        <div style={{ textAlign: 'center', padding: '20px' }}>
+          {resultadoGuardado ? (
+            <p style={{ color: '#22c55e', fontWeight: 'bold' }}>
+               Resultado guardado correctamente
+            </p>
+          ) : (
+            <p style={{ color: '#f59e0b', fontWeight: 'bold' }}>
+               Guardando resultado
+              <span className="loading-spinner"></span>
+            </p>
+          )}
+        </div>
+      </div>
+    )}
     </GameLayout>
   );
 };
