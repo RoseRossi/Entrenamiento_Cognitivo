@@ -1,39 +1,156 @@
-.juego7-container {
-    padding: 20px;
-    text-align: center;
-    font-family: sans-serif;
+/* Estilos para Juego 7 - Bloques de Corsi (Memoria Visuoespacial) */
+
+.juego7-contenido {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 600px;
+  padding: 20px;
+}
+
+/* Información del juego */
+.info {
+  margin: 0 auto 20px;
+  font-size: 18px;
+  color: #2c3e50;
+  font-weight: 500;
+  height: 60px;
+  /* Altura fija para evitar movimiento del layout */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 600px;
+  text-align: center;
+}
+
+.info p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Área donde se muestran los círculos */
+.area-circulos {
+  position: relative;
+  width: 500px;
+  height: 500px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para cada círculo */
+.circulo {
+  width: 40px;
+  height: 40px;
+  background-color: #3498db;
+  /* Azul por defecto */
+  border-radius: 50%;
+  position: absolute;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Estado resaltado (naranja) */
+.circulo.resaltado {
+  background-color: #ff9800 !important;
+  /* Naranja */
+  transform: scale(1.2);
+  box-shadow: 0 4px 8px rgba(255, 152, 0, 0.4);
+}
+
+/* Hover cuando el círculo es seleccionable */
+.circulo.seleccionable:hover {
+  background-color: #2ecc71;
+  /* Verde al pasar el mouse */
+  transform: scale(1.15);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Responsive: ajustar área de círculos en pantallas más pequeñas */
+@media (max-width: 768px) {
+  .juego7-contenido {
+    min-height: 500px;
   }
-  
+
   .area-circulos {
-    position: relative;
     width: 400px;
     height: 400px;
-    margin: 0 auto;
-    background-color: #f0f0f0;
   }
-  
+
   .circulo {
-    width: 40px;
-    height: 40px;
-    background-color: blue;
-    border-radius: 50%;
-    position: absolute;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    width: 35px;
+    height: 35px;
   }
-  
-  .circulo.resaltado {
-    background-color: orange !important;
-  }
-  
-  .circulo.seleccionable:hover {
-    background-color: rgba(0, 255, 0, 0.5); /* Cambio de color al pasar el mouse */
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-  }
-  
+
   .info {
-    margin-top: 20px;
-    font-size: 18px;
+    font-size: 16px;
+    height: 50px;
   }
-  
+}
+
+@media (max-width: 480px) {
+  .juego7-contenido {
+    min-height: 450px;
+  }
+
+  .area-circulos {
+    width: 320px;
+    height: 320px;
+  }
+
+  .circulo {
+    width: 30px;
+    height: 30px;
+  }
+
+  .info {
+    font-size: 14px;
+    height: 45px;
+  }
+}
+
+/* Información del juego */
+.info {
+  margin: 20px auto;
+  font-size: 18px;
+  color: #2c3e50;
+  font-weight: 500;
+  min-height: 60px;
+  /* Altura fija para evitar movimiento del layout */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 600px;
+}
+
+/* Responsive: ajustar área de círculos en pantallas más pequeñas */
+@media (max-width: 768px) {
+  .area-circulos {
+    width: 400px;
+    height: 400px;
+  }
+
+  .circulo {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+@media (max-width: 480px) {
+  .area-circulos {
+    width: 320px;
+    height: 320px;
+  }
+
+  .circulo {
+    width: 30px;
+    height: 30px;
+  }
+
+  .info {
+    font-size: 16px;
+  }
+}

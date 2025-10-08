@@ -39,6 +39,11 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
+      {/* Botón perfil usuario en esquina superior izquierda */}
+      <button onClick={() => navigate('/user')} className="user-button-corner" title="Mi perfil">
+        <span className="user-icon">👤</span>
+      </button>
+
       {/* Botón de cerrar sesión en la esquina superior derecha */}
       <button onClick={handleLogout} className="logout-button-corner" title="Cerrar Sesión">
         <span className="logout-icon">⏻</span>
