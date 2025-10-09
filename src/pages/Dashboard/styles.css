@@ -14,40 +14,6 @@
   padding-top: 20px;
 }
 
-/* Botón de cerrar sesión en la esquina */
-.logout-button-corner {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  width: 50px;
-  height: 50px;
-  background-color: #ff4757;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: bold;
-  box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.logout-button-corner:hover {
-  background-color: #ff3742;
-  transform: scale(1.1);
-  box-shadow: 0 6px 16px rgba(255, 71, 87, 0.4);
-}
-
-.logout-button-corner:active {
-  transform: scale(0.95);
-}
-
-.logout-icon {
-  font-size: 1.5rem;
-}
 
 .title {
   font-size: 2.5rem;
@@ -356,17 +322,16 @@
 }
 
 
-
 /* Botón de usuario esquina superior izquierda */
 .user-button-corner {
   position: absolute;
   top: 16px;
-  left: 16px;
+  right: 30px;
   background: #ffffff;
-  border: 1px solid rgba(0,0,0,0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 9999px;
-  width: 44px;
-  height: 44px;
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -378,4 +343,4 @@
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(0,0,0,0.12);
 }
-.user-icon { font-size: 1.2rem; }
+.user-icon { font-size: 1.8rem;align-self: center; }

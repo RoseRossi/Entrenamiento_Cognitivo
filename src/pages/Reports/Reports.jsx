@@ -15,6 +15,7 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import './Reports.css';
+import { Link } from 'react-router-dom'; 
 
 ChartJS.register(
   CategoryScale,
@@ -948,7 +949,33 @@ const getChartData = () => {
     return (
       <div className="reports-container">
         <div className="reports-header">
-          <h1>Reportes de Juegos Cognitivos</h1>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+            <h1>Reportes de Juegos Cognitivos</h1>
+            <Link 
+              to="/dashboard" 
+              style={{
+                padding: '8px 16px',
+                background: 'transparent',
+                border: '1px solid #3498db',
+                color: '#3498db',
+                textDecoration: 'none',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '500',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#3498db';
+                e.target.style.color = 'white';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'transparent';
+                e.target.style.color = '#3498db';
+              }}
+            >
+              Volver al inicio
+            </Link>
+          </div>
         </div>
         <div className="no-data-container" style={{ 
           textAlign: 'center', 
@@ -1029,9 +1056,35 @@ const getChartData = () => {
       ) : gameResults.length === 0 ? (
         /* Estado sin datos */
         <>
-          <div className="reports-header">
+        <div className="reports-header">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
             <h1>Reportes de Juegos Cognitivos</h1>
+            <Link 
+              to="/dashboard" 
+              style={{
+                padding: '8px 16px',
+                background: 'transparent',
+                border: '1px solid #3498db',
+                color: '#3498db',
+                textDecoration: 'none',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '500',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#3498db';
+                e.target.style.color = 'white';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'transparent';
+                e.target.style.color = '#3498db';
+              }}
+            >
+              Volver al inicio
+            </Link>
           </div>
+        </div>
           <div className="no-data-container" style={{ 
             textAlign: 'center', 
             padding: '60px 20px',
@@ -1071,7 +1124,33 @@ const getChartData = () => {
         /* Contenido principal con datos */
         <>
           <div className="reports-header">
-            <h1>Reportes de Juegos Cognitivos</h1>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+              <h1>Reportes de Juegos Cognitivos</h1>
+              <Link 
+                to="/dashboard" 
+                style={{
+                  padding: '8px 16px',
+                  background: 'transparent',
+                  border: '1px solid #3498db',
+                  color: '#3498db',
+                  textDecoration: 'none',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = '#3498db';
+                  e.target.style.color = 'white';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'transparent';
+                  e.target.style.color = '#3498db';
+                }}
+              >
+                Volver al inicio
+              </Link>
+            </div>
           </div>
 
           <div className="reports-filters">
