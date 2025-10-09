@@ -8,6 +8,8 @@ import { userService } from './services/firebase/userService';
 import AuthForm from './components/common/AuthForm/AuthForm';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Reports from './pages/Reports/Reports';
+import UserProfile from './pages/User/User';
+
 import Loading from './components/common/Loading/Loading';
 
 import Juego1 from './components/Games/juego1/Juego1';
@@ -172,6 +174,11 @@ function App() {
             path="/reports" 
             element={user ? <Reports /> : <Navigate to="/login" />} 
           />
+          <Route 
+            path="/user" 
+            element={user ? <UserProfile /> : <Navigate to="/login" />} 
+          />
+          
           
           {/* Rutas de los juegos */}
           <Route 

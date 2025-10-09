@@ -1,3 +1,23 @@
+:root {
+  /* These variables will be set dynamically from juego1_config.js */
+  --shape-size: 100px;
+  --shape-gap: 50px;
+  --shape-color-cuadrado: #10b981;
+  --shape-color-triangulo: #3b82f6;
+  --shape-color-circulo: #8b5cf6;
+  --shape-color-estrella: #fbbf24;
+  --shape-color-diamante: #ec4899;
+  --shape-color-hexagono: #14b8a6;
+  --statement-font-size: 1.5rem;
+  --statement-color: #2d3748;
+  --button-padding: 12px 24px;
+  --button-radius: 8px;
+  --button-font-size: 1rem;
+  --feedback-font-size: 1.2rem;
+  --feedback-padding: 10px 20px;
+  --feedback-radius: 8px;
+}
+
 .game-container {
   display: flex;
   flex-direction: column;
@@ -11,22 +31,110 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 50px;
+  gap: var(--shape-gap);
   margin: 20px 0;
 }
 
-.triangle {
-  width: 0;
-  height: 0;
-  border-left: 50px solid transparent;
-  border-right: 50px solid transparent;
-  border-bottom: 100px solid #3b82f6;
+.shape {
+  width: var(--shape-size);
+  height: var(--shape-size);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.square {
-  width: 100px;
-  height: 100px;
-  background-color: #10b981;
+.triángulo {
+  width: 0;
+  height: 0;
+  border-left: calc(var(--shape-size) / 2) solid transparent;
+  border-right: calc(var(--shape-size) / 2) solid transparent;
+  border-bottom: var(--shape-size) solid var(--shape-color-triangulo);
+}
+
+.cuadrado {
+  background-color: var(--shape-color-cuadrado);
+}
+
+.círculo {
+  border-radius: 50%;
+  background-color: var(--shape-color-circulo);
+}
+
+.estrella {
+  margin: calc(var(--shape-size) / 4) 0;
+  position: relative;
+  display: block;
+  width: 0;
+  height: 0;
+  border-right: calc(var(--shape-size) * 0.4) solid transparent;
+  border-bottom: calc(var(--shape-size) * 0.28) solid var(--shape-color-estrella);
+  border-left: calc(var(--shape-size) * 0.4) solid transparent;
+  transform: rotate(35deg);
+  transform-origin: center;
+}
+
+.estrella:before {
+  content: '';
+  position: absolute;
+  height: 0;
+  width: 0;
+  top: -15px;
+  left: -25px;
+  border-bottom: 30px solid #fbbf24;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  transform: rotate(-35deg);
+}
+
+.estrella:after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: -41px;
+  width: 0;
+  height: 0;
+  border-right: 40px solid transparent;
+  border-bottom: 28px solid #fbbf24;
+  border-left: 40px solid transparent;
+  transform: rotate(-70deg);
+}
+
+.diamante {
+  background-color: var(--shape-color-diamante);
+  width: calc(var(--shape-size) / 1.414);
+  /* 100px / √2 */
+  height: calc(var(--shape-size) / 1.414);
+  transform: rotate(45deg);
+  margin: calc(var(--shape-size) * 0.15);
+}
+
+.hexágono {
+  width: calc(var(--shape-size) * 1.04);
+  height: calc(var(--shape-size) * 0.6);
+  background-color: var(--shape-color-hexagono);
+  position: relative;
+  margin: calc(var(--shape-size) * 0.2) 0;
+}
+
+.hexágono:before,
+.hexágono:after {
+  content: "";
+  position: absolute;
+  width: 0;
+  border-left: calc(var(--shape-size) * 0.52) solid transparent;
+  border-right: calc(var(--shape-size) * 0.52) solid transparent;
+}
+
+.hexagon:before {
+  bottom: 100%;
+  border-bottom: 30px solid #14b8a6;
+}
+
+.hexagon:after {
+  top: 100%;
+  width: 0;
+  border-top: 30px solid #14b8a6;
 }
 
 .statement {
@@ -100,26 +208,26 @@
   .shapes {
     gap: 30px;
   }
-  
+
   .triangle {
     border-left: 30px solid transparent;
     border-right: 30px solid transparent;
     border-bottom: 60px solid #3b82f6;
   }
-  
+
   .square {
     width: 60px;
     height: 60px;
   }
-  
+
   .statement {
     font-size: 1.2rem;
   }
-  
+
   .buttons {
     gap: 15px;
   }
-  
+
   .buttons button {
     padding: 10px 20px;
     font-size: 0.9rem;
