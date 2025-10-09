@@ -3,8 +3,7 @@ import GameLayout from "../GameLayout/GameLayout";
 import { auth } from "../../../services/firebase/firebaseConfig";
 import { gameService } from "../../../services/firebase/gameService";
 import { userService } from "../../../services/firebase/userService";
-import { generarSecuencia, generarPreguntas } from "./juego5_funciones";
-import JUEGO5_CONFIG from './juego5_config';
+import { generarSecuencia, generarPreguntas, JUEGO5_CONFIG } from "./juego5_funciones";
 import "./juego5_estilos.css";
 
 const Juego5 = () => {

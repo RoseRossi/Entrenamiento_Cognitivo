@@ -1,4 +1,33 @@
-import JUEGO5_CONFIG from './juego5_config';
+// Central configuration for Juego5 (Visual Recognition Memory)
+// Update these values to change game behavior without editing the main component
+
+const JUEGO5_CONFIG = {
+  START_LEVEL: 1,
+  MAX_LEVEL: 3,
+  PASS_THRESHOLD: 0.7,
+  RESPONSE_TIME_LIMIT: 5, // seconds per response
+
+  LEVELS: {
+    BASICO: {
+      nombre: 'Básico',
+      figureCount: 5,
+      displayTime: 1500,
+      testFigureCount: 10
+    },
+    INTERMEDIO: {
+      nombre: 'Intermedio',
+      figureCount: 7,
+      displayTime: 1000,
+      testFigureCount: 14
+    },
+    AVANZADO: {
+      nombre: 'Avanzado',
+      figureCount: 10,
+      displayTime: 750,
+      testFigureCount: 20
+    }
+  }
+};
 
 // Simple shapes using Unicode symbols - only distinct shapes, no size variations
 const formas = [
@@ -57,3 +86,6 @@ export const generarPreguntas = (secuencia, nivel) => {
   // Shuffle questions
   return preguntas.sort(() => Math.random() - 0.5);
 };
+
+// Export the config for use in the main component
+export { JUEGO5_CONFIG };

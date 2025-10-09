@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import GameLayout from "../GameLayout/GameLayout";
-import { generarPalabrasOriginales, generarMarDePalabras, getDisplayTimeForLevel, getPalabrasCountForLevel, getSelectionTimeForLevel } from "./juego3_funciones";
+import { generarPalabrasOriginales, generarMarDePalabras, getDisplayTimeForLevel, getPalabrasCountForLevel, getSelectionTimeForLevel, JUEGO3_CONFIG } from "./juego3_funciones";
 import { auth } from "../../../services/firebase/firebaseConfig";
 import { gameService } from "../../../services/firebase/gameService";
 import { userService } from "../../../services/firebase/userService";
-import JUEGO3_CONFIG from "./juego3_config";
 import "./juego3_estilos.css";
 
 const Juego3 = () => {

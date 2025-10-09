@@ -3,8 +3,7 @@ import GameLayout from "../GameLayout/GameLayout";
 import { auth } from "../../../services/firebase/firebaseConfig";
 import { gameService } from "../../../services/firebase/gameService";
 import { userService } from "../../../services/firebase/userService";
-import JUEGO7_CONFIG from "./juego7_config";
-import { generarCirculos, generarSecuencia } from "./juego7_funciones";
+import { generarCirculos, generarSecuencia, JUEGO7_CONFIG } from "./juego7_funciones";
 import "./juego7_estilo.css";
 
 const Juego7 = () => {
