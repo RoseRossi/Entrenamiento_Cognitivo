@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { patrones, verificarRespuesta } from "./juego2_funciones";
+import { patrones, verificarRespuesta, obtenerNombreNivel, determinarNivelDificultad, obtenerDescripcionNivel, obtenerTiempoPorNivel } from "./juego2_funciones";
 import { auth } from "../../../services/firebase/firebaseConfig";
 import { gameService } from "../../../services/firebase/gameService";
 import { userService } from "../../../services/firebase/userService";
@@ -13,6 +13,7 @@ const Juego2 = () => {
   const [tiempo, setTiempo] = useState(30);
   const [estadoOpciones, setEstadoOpciones] = useState([]);
   const [fallosSeguidos, setFallosSeguidos] = useState(0);
+  const [fallosTotales, setFallosTotales] = useState(0); // NUEVO ESTADO
   const [user, setUser] = useState(null);
   const [tiempoInicio, setTiempoInicio] = useState(null);
   const [resultadoGuardado, setResultadoGuardado] = useState(false);
@@ -38,21 +39,18 @@ const Juego2 = () => {
       const matricesCompletadas = indiceActual;
       const porcentajeCompletado = Math.round((matricesCompletadas / totalMatrices) * 100);
       
+      // Calcular respuestas correctas y precisión
+      const respuestasCorrectas = respuestasDetalladas.filter(r => r.correcta).length;
+      const precision = respuestasDetalladas.length > 0 ? 
+        Math.round((respuestasCorrectas / respuestasDetalladas.length) * 100) : 0;
+      
       // Calcular score basado en puntuación y completitud
       const scoreBase = Math.round((puntuacion / totalMatrices) * 100);
       const bonusCompletitud = matricesCompletadas === totalMatrices ? 10 : 0;
       const finalScore = Math.min(100, scoreBase + bonusCompletitud);
 
-      // Determinar nivel basado en rendimiento
-      let nivelJuego = 'basico';
-      if (finalScore >= 80 && matricesCompletadas >= totalMatrices * 0.8) {
-        nivelJuego = 'avanzado';
-      } else if (finalScore >= 60 && matricesCompletadas >= totalMatrices * 0.6) {
-        nivelJuego = 'intermedio';
-      }
-
-      // Calcular respuestas correctas
-      const respuestasCorrectas = respuestasDetalladas.filter(r => r.correcta).length;
+      // Determinar nivel basado en rendimiento usando la nueva función
+      const nivelJuego = determinarNivelDificultad(matricesCompletadas, precision, nivel);
 
       const resultData = {
         userId: user.uid,
@@ -69,7 +67,10 @@ const Juego2 = () => {
           totalMatrices: totalMatrices,
           porcentajeCompletado: porcentajeCompletado,
           fallosSeguidos: fallosSeguidos,
+          fallosTotales: fallosTotales,
           nivelMaximo: nivel,
+          nivelMaximoNombre: obtenerNombreNivel(nivel),
+          precision: precision,
           razonTermino: tiempo <= 0 ? 'tiempo_agotado' : 
                        (fallosSeguidos >= 3 ? 'demasiados_errores' : 
                        (matricesCompletadas === totalMatrices ? 'completado' : 'usuario_salio')),
@@ -91,7 +92,7 @@ const Juego2 = () => {
     } catch (error) {
       console.error('Error guardando resultado del Juego 2:', error);
     }
-  }, [user, tiempoInicio, indiceActual, puntuacion, nivel, tiempo, fallosSeguidos, respuestasDetalladas]);
+  }, [user, tiempoInicio, indiceActual, puntuacion, nivel, tiempo, fallosSeguidos, fallosTotales,respuestasDetalladas]);
 
   // Inicialización
   useEffect(() => {
@@ -111,12 +112,16 @@ const Juego2 = () => {
     if (!patronActual) return;
 
     if (patronActual.nivel === 0) {
-      setNivel(0);
+      setNivel(0); // Ejercicios de práctica
+      setTiempo(60); // Más tiempo para práctica
     } else {
-      const inicio3x3 = patrones.findIndex(p => p.nivel === 1);
-      const posicionAbsoluta = indiceActual - inicio3x3;
-      const nuevoNivel = Math.floor(posicionAbsoluta / 3) + 1;
-      setNivel(nuevoNivel);
+      // Usar directamente el nivel del patrón actual
+      const nivelActual = patronActual.nivel;
+      setNivel(nivelActual);
+      
+      // Establecer tiempo basado en el nivel de dificultad
+      const tiempoNivel = obtenerTiempoPorNivel(nivelActual);
+      setTiempo(tiempoNivel);
     }
   }, [indiceActual, patronActual]);
 
@@ -134,14 +139,16 @@ const Juego2 = () => {
 
   const reiniciarJuego = () => {
     setIndiceActual(0);
-    setTiempo(30);
+    setTiempo(obtenerTiempoPorNivel(1)); // Comenzar con tiempo del primer nivel
     setPuntuacion(0);
-    setNivel(0);
+    setNivel(1); // Comenzar en nivel 1
     setFallosSeguidos(0);
+    setFallosTotales(0);
     setEstadoOpciones([]);
     setResultadoGuardado(false);
     setRespuestasDetalladas([]);
     setTiempoInicio(Date.now());
+    setJuegoIniciado(true); // Asegurar que el juego esté iniciado
   };
 
   const manejarSeleccion = (indiceSeleccionado) => {
@@ -174,23 +181,29 @@ const Juego2 = () => {
 
         let puntosGanados = 1;
         if (!esEnsayo) {
-          const inicio3x3 = patrones.findIndex(p => p.nivel === 1);
-          const posicionAbsoluta = indiceActual - inicio3x3;
-          const bloqueDeDos = Math.floor(posicionAbsoluta / 2);
-          puntosGanados = bloqueDeDos * 2;
-          if (puntosGanados === 0) puntosGanados = 2;
+          // Puntos basados en el nivel de dificultad
+          const nivelActual = patronActual.nivel;
+          puntosGanados = nivelActual * 2; // Más puntos para niveles más difíciles
         }
 
         setPuntuacion(p => p + puntosGanados);
-        setIndiceActual(prev => prev + 1);
+        
+        // Avanzar al siguiente patrón
+        const siguienteIndice = indiceActual + 1;
+        setIndiceActual(siguienteIndice);
 
-        if (!esEnsayo) {
-          const inicio3x3 = patrones.findIndex(p => p.nivel === 1);
-          const posicionAbsoluta = indiceActual - inicio3x3;
-          const nuevoTiempo = Math.max(5, 30 - Math.floor(posicionAbsoluta / 2) * 2);
-          setTiempo(nuevoTiempo);
+        // Establecer tiempo para el siguiente patrón (si existe)
+        if (siguienteIndice < patrones.length) {
+          const siguientePatron = patrones[siguienteIndice];
+          if (siguientePatron.nivel === 0) {
+            setTiempo(60); // Tiempo para práctica
+          } else {
+            const tiempoSiguiente = obtenerTiempoPorNivel(siguientePatron.nivel);
+            setTiempo(tiempoSiguiente);
+          }
         }
       } else {
+        setFallosTotales(prev => prev + 1);
         setFallosSeguidos(prev => {
           const nuevosFallos = prev + 1;
           if (nuevosFallos >= 3) {
@@ -208,18 +221,22 @@ const Juego2 = () => {
     const porcentajeAciertos = respuestasDetalladas.length > 0 ? 
       Math.round((respuestasCorrectas / respuestasDetalladas.length) * 100) : 0;
 
+    // Obtener nombre del nivel alcanzado
+    const nombreNivel = obtenerNombreNivel(nivel);
+    const descripcionNivel = obtenerDescripcionNivel(nivel);
+
     if (indiceActual === patrones.length || fallosSeguidos >= 3) {
       if (porcentajeCompletado === 100) {
-        return `¡Excelente! Has completado todas las matrices con ${porcentajeAciertos}% de precisión, demostrando una gran capacidad de razonamiento lógico y abstracción.`;
+        return `¡Excelente! Has completado todas las matrices hasta el nivel ${nombreNivel} (${descripcionNivel}) con ${porcentajeAciertos}% de precisión, demostrando una gran capacidad de razonamiento lógico y abstracción.`;
       } else if (porcentajeCompletado >= 75) {
-        return `Buen trabajo. Has completado ${Math.round(porcentajeCompletado)}% de las matrices con ${porcentajeAciertos}% de precisión. Sigue practicando para mejorar.`;
+        return `Buen trabajo. Has completado ${Math.round(porcentajeCompletado)}% de las matrices, alcanzando el nivel ${nombreNivel} con ${porcentajeAciertos}% de precisión. Sigue practicando para mejorar.`;
       } else if (fallosSeguidos >= 3) {
-        return `Has cometido tres errores consecutivos. Completaste ${Math.round(porcentajeCompletado)}% con ${porcentajeAciertos}% de precisión. Analiza más cuidadosamente los patrones.`;
+        return `Has cometido tres errores consecutivos en el nivel ${nombreNivel}. Completaste ${Math.round(porcentajeCompletado)}% con ${porcentajeAciertos}% de precisión. Analiza más cuidadosamente los patrones.`;
       } else {
-        return `Completaste ${Math.round(porcentajeCompletado)}% de las matrices con ${porcentajeAciertos}% de precisión. Sigue practicando para mejorar tu razonamiento lógico.`;
+        return `Completaste ${Math.round(porcentajeCompletado)}% de las matrices, llegando al nivel ${nombreNivel} con ${porcentajeAciertos}% de precisión. Sigue practicando para mejorar tu razonamiento lógico.`;
       }
     } else if (tiempo <= 0) {
-      return `Se te acabó el tiempo. Completaste ${Math.round(porcentajeCompletado)}% con ${porcentajeAciertos}% de precisión. Intenta ser más rápido identificando patrones.`;
+      return `Se te acabó el tiempo en el nivel ${nombreNivel}. Completaste ${Math.round(porcentajeCompletado)}% con ${porcentajeAciertos}% de precisión. Intenta ser más rápido identificando patrones.`;
     }
     return "";
   };
@@ -257,14 +274,44 @@ const Juego2 = () => {
       description={juegoIniciado ? (
         <div>
           <p>Selecciona la opción que completa la matriz lógica.</p>
-          <p>Analiza patrones y relaciones para elegir correctamente.</p>
+          <p>Nivel actual: <strong>{obtenerNombreNivel(nivel)}</strong></p>
+          <p>{obtenerDescripcionNivel(nivel)}</p>
+          {patronActual && patronActual.recomendacion && (
+            <div style={{ 
+              marginTop: '15px', 
+              padding: '12px', 
+              backgroundColor: '#f0f9ff', 
+              border: '1px solid #0ea5e9', 
+              borderRadius: '8px',
+              fontSize: '14px',
+              lineHeight: '1.4'
+            }}>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'flex-start', 
+                gap: '8px' 
+              }}>
+                <span style={{ 
+                  fontSize: '16px', 
+                  flexShrink: 0,
+                  marginTop: '1px'
+                }}>💡</span>
+                <div>
+                  <strong style={{ color: '#0369a1' }}>Consejo:</strong>
+                  <span style={{ color: '#0c4a6e', marginLeft: '5px' }}>
+                    {patronActual.recomendacion}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
           {esEnsayo && <p style={{ color: '#f59e0b', fontWeight: 'bold' }}>Ejercicio de práctica</p>}
         </div>
       ) : null}
       stats={{
-        nivel,
+        nivel: `${obtenerNombreNivel(nivel)}`,
         puntuacion,
-        fallos: fallosSeguidos,
+        fallos: fallosTotales,
         tiempo: esEnsayo ? "--" : tiempo
       }}
       gameOver={juegoTerminado}
@@ -272,12 +319,12 @@ const Juego2 = () => {
         completed: indiceActual === patrones.length,
         level: nivel,
         score: puntuacion,
-        mistakes: fallosSeguidos,
+        mistakes: fallosTotales,
         timeRemaining: tiempo
       }}
       onRestart={reiniciarJuego}
       analysis={generarAnalisis()}
-      onFallo={fallosSeguidos}
+      onFallo={fallosTotales}
       onCorrectAnswer={puntuacion}
     >
       {!juegoTerminado ? (
