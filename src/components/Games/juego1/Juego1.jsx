@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import GameLayout from "../GameLayout/GameLayout";
-import { generarFormacion, verificarRespuesta } from "./juego1_funciones";
+import { generarFormacion, verificarRespuesta, JUEGO1_CONFIG } from "./juego1_funciones";
 import { auth } from "../../../services/firebase/firebaseConfig";
 import { gameService } from "../../../services/firebase/gameService";
 import { userService } from "../../../services/firebase/userService";
@@ -11,9 +11,11 @@ const Juego1 = () => {
   const [statement, setStatement] = useState("");
   const [isCorrect, setIsCorrect] = useState(null);
   const [puntuacion, setPuntuacion] = useState(0);
-  const [nivel, setNivel] = useState(1);
-  const [tiempo, setTiempo] = useState(30);
+  const [nivel, setNivel] = useState(JUEGO1_CONFIG.START_LEVEL);
+  const [tiempo, setTiempo] = useState(JUEGO1_CONFIG.MAIN_TIMER_SECONDS);
   const [fallos, setFallos] = useState(0);
+  const [fallosTotales, setFallosTotales] = useState(0);
+  const [innerTiempo, setInnerTiempo] = useState(JUEGO1_CONFIG.INITIAL_INNER_TIMER);
   const [juegoTerminado, setJuegoTerminado] = useState(false);
   const [rondasCompletadas, setRondasCompletadas] = useState(0);
   const [user, setUser] = useState(null);
@@ -21,7 +23,66 @@ const Juego1 = () => {
   const [resultadoGuardado, setResultadoGuardado] = useState(false);
   const [juegoIniciado, setJuegoIniciado] = useState(false);
 
-  // Usar useCallback para estabilizar la función guardarResultado
+  const timerRef = useRef(null);
+  const innerTimerRef = useRef(null);
+  const handlingInnerExpiryRef = useRef(false);
+
+  const startInnerTimer = (level) => {
+    const initial = Math.max(
+      JUEGO1_CONFIG.MIN_INNER_TIMER,
+      JUEGO1_CONFIG.INITIAL_INNER_TIMER - (Math.max(JUEGO1_CONFIG.START_LEVEL, level) - JUEGO1_CONFIG.START_LEVEL)
+    );
+    setInnerTiempo(initial);
+
+    handlingInnerExpiryRef.current = false;
+
+    if (innerTimerRef.current) {
+      clearInterval(innerTimerRef.current);
+      innerTimerRef.current = null;
+    }
+
+    innerTimerRef.current = setInterval(() => {
+      setInnerTiempo(prev => {
+        if (prev <= 1) {
+          if (handlingInnerExpiryRef.current) return 0;
+          handlingInnerExpiryRef.current = true;
+
+          if (innerTimerRef.current) {
+            clearInterval(innerTimerRef.current);
+            innerTimerRef.current = null;
+          }
+
+          setFallos(prevFallos => {
+            const nuevosFallos = prevFallos + 1;
+            setFallosTotales(prevTot => prevTot + 1);
+            if (nuevosFallos >= JUEGO1_CONFIG.FAILS_TO_END) {
+              setJuegoTerminado(true);
+            } else {
+              // Time ran out for this question: decrease level by 1 (min START_LEVEL)
+              setNivel(prevNivel => {
+                const decreased = Math.max(JUEGO1_CONFIG.START_LEVEL, prevNivel - 1);
+                avanzarRonda(decreased);
+                return decreased;
+              });
+            }
+            return nuevosFallos;
+          });
+
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const stopInnerTimer = () => {
+    if (innerTimerRef.current) {
+      clearInterval(innerTimerRef.current);
+      innerTimerRef.current = null;
+    }
+    handlingInnerExpiryRef.current = false;
+  };
+
   const guardarResultado = useCallback(async () => {
     if (!user) {
       console.log('No hay usuario autenticado para guardar resultado');
@@ -30,11 +91,10 @@ const Juego1 = () => {
 
     try {
       console.log('Guardando resultado del Juego 1...');
-      
+
       const tiempoTranscurrido = Math.round((Date.now() - tiempoInicio) / 1000); // en segundos
       const porcentajeAciertos = rondasCompletadas > 0 ? Math.round((puntuacion / rondasCompletadas) * 100) : 0;
-      
-      // Determinar nivel basado en rendimiento
+
       let nivelJuego = 'basico';
       if (porcentajeAciertos >= 80 && tiempoTranscurrido <= 25) {
         nivelJuego = 'avanzado';
@@ -53,8 +113,9 @@ const Juego1 = () => {
         totalQuestions: rondasCompletadas,
         details: {
           fallos: fallos,
-          tiempoLimite: 30,
-          razonTermino: tiempo <= 0 ? 'tiempo_agotado' : (fallos >= 3 ? 'demasiados_errores' : 'completado'),
+          fallosTotales: fallosTotales,
+          tiempoLimite: 45,
+          razonTermino: tiempo <= 0 ? 'tiempo_agotado' : (fallos >= JUEGO1_CONFIG.FAILS_TO_END ? 'demasiados_errores' : 'completado'),
           nivelMaximoAlcanzado: nivel,
           promedioTiempoPorRonda: rondasCompletadas > 0 ? Math.round(tiempoTranscurrido / rondasCompletadas * 100) / 100 : 0
         }
@@ -62,104 +123,150 @@ const Juego1 = () => {
 
       // Guardar resultado del juego
       await gameService.saveGameResult(resultData);
-      
+
       // Actualizar progreso del usuario en el dominio cognitivo
       await userService.updateUserProgress(user.uid, 'lenguaje', porcentajeAciertos);
-      
+
       console.log('Resultado del Juego 1 guardado exitosamente');
       setResultadoGuardado(true);
-      
+
     } catch (error) {
       console.error('Error guardando resultado del Juego 1:', error);
     }
-  }, [user, tiempoInicio, rondasCompletadas, puntuacion, fallos, tiempo, nivel]);
+  }, [user, tiempoInicio, rondasCompletadas, puntuacion, fallos, tiempo, nivel, fallosTotales]);
 
   useEffect(() => {
     // Obtener usuario autenticado
-    setUser(auth.currentUser);
-    setTiempoInicio(Date.now());
-    
-    nuevaRonda();
-    const timer = setInterval(() => {
+    setUser(auth.currentUser);    // Cleanup on unmount: ensure timer is stopped
+    return () => {
+      stopTimer();
+      // also clear inner timer if active
+      if (innerTimerRef.current) {
+        clearInterval(innerTimerRef.current);
+        innerTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  // Guardar resultado y detener todos los timers cuando el juego termine
+  useEffect(() => {
+    if (juegoTerminado) {
+      stopTimer();
+      stopInnerTimer();
+      if (!resultadoGuardado && user && tiempoInicio) {
+        guardarResultado();
+      }
+    }
+  }, [juegoTerminado, resultadoGuardado, user, tiempoInicio, guardarResultado]);
+
+  const startTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    // main game timer (45s)
+    timerRef.current = setInterval(() => {
       setTiempo(prev => {
         if (prev <= 1) {
-          clearInterval(timer);
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
           setJuegoTerminado(true);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+  };
 
-  // Guardar resultado cuando el juego termine
-  useEffect(() => {
-    if (juegoTerminado && !resultadoGuardado && user && tiempoInicio) {
-      guardarResultado();
+  const stopTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
-  }, [juegoTerminado, resultadoGuardado, user, tiempoInicio, guardarResultado]);
+  };
 
   const nuevaRonda = () => {
-    const { nuevaFormacion, nuevaDeclaracion } = generarFormacion();
+    const { nuevaFormacion, nuevaDeclaracion, declaracionEsVerdadera } = generarFormacion(nivel);
     setShapes(nuevaFormacion);
     setStatement(nuevaDeclaracion);
+    // Store if the statement is true in the shapes state object
+    setShapes(prev => ({ ...nuevaFormacion, declaracionEsVerdadera }));
     setIsCorrect(null);
     setRondasCompletadas(prev => prev + 1);
   };
 
+  const avanzarRonda = (level) => {
+    // advance round state and start inner timer for provided level
+    nuevaRonda();
+    startInnerTimer(level || nivel);
+  };
+
   const manejarRespuesta = (respuestaUsuario) => {
     if (juegoTerminado) return;
-    
-    const correcto = verificarRespuesta(statement, shapes, respuestaUsuario);
+
+    // stop inner timer when an answer arrives
+    stopInnerTimer();
+
+    const correcto = verificarRespuesta(shapes.declaracionEsVerdadera, respuestaUsuario);
     setIsCorrect(correcto);
-    
+
     if (correcto) {
+      const nuevoNivel = nivel + 1;
       setPuntuacion(prev => prev + 1);
-      setNivel(prev => prev + 1);
+      setNivel(nuevoNivel);
       setFallos(0);
+      setTimeout(() => {
+        avanzarRonda(nuevoNivel);
+      }, 1000);
     } else {
       const nuevosFallos = fallos + 1;
       setFallos(nuevosFallos);
-      
-      if (nuevosFallos >= 3) {
+      setFallosTotales(prev => prev + 1);
+      if (nuevosFallos >= JUEGO1_CONFIG.FAILS_TO_END) {
         setJuegoTerminado(true);
       }
     }
-    
-    setTimeout(() => {
-      if (!juegoTerminado && fallos < 2) { // Solo continuar si no se termina el juego
-        nuevaRonda();
-      }
-    }, 1000);
+
+    if (!correcto) {
+      setTimeout(() => {
+        if (!juegoTerminado) { // Solo continuar si no se termina el juego
+          avanzarRonda(nivel);
+        }
+      }, 1000);
+    }
   };
 
+  // --- Game Control ---
   const reiniciarJuego = () => {
     setShapes({});
     setStatement("");
     setIsCorrect(null);
     setPuntuacion(0);
-    setNivel(1);
-    setTiempo(30);
+    setNivel(JUEGO1_CONFIG.START_LEVEL);
+    setTiempo(JUEGO1_CONFIG.MAIN_TIMER_SECONDS);
     setFallos(0);
     setJuegoTerminado(false);
     setRondasCompletadas(0);
     setResultadoGuardado(false);
+    setFallosTotales(0);
     setTiempoInicio(Date.now());
-    nuevaRonda();
+    setJuegoIniciado(true);
+    avanzarRonda(JUEGO1_CONFIG.START_LEVEL);
+    startTimer();
   };
 
+  // --- Analysis ---
   const generarAnalisis = () => {
     const porcentajeAciertos = rondasCompletadas > 0 ? Math.round((puntuacion / rondasCompletadas) * 100) : 0;
-    
     if (juegoTerminado && tiempo <= 0) {
       return "Se te acabó el tiempo. Intenta responder más rápido manteniendo la precisión.";
     }
-    
-    if (fallos >= 3) {
+    if (fallos >= JUEGO1_CONFIG.FAILS_TO_END) {
       return "Has cometido demasiados errores seguidos. Analiza con más cuidado la posición de las formas antes de responder.";
     }
-    
     if (porcentajeAciertos >= 90) {
       return "¡Excelente! Tu comprensión de las posiciones lógicas es muy precisa.";
     } else if (porcentajeAciertos >= 70) {
@@ -171,14 +278,26 @@ const Juego1 = () => {
     }
   };
 
+  // --- UI ---
+  // Instrucciones del juego
   const InstruccionesJuego = () => (
     <div style={{ textAlign: 'center', fontSize: '18px', color: '#34495e' }}>
-      <p>Instrucciones</p>
+      <p><b>Instrucciones</b></p>
+      <ul style={{ textAlign: 'left', maxWidth: 400, margin: '0 auto', fontSize: 16 }}>
+        <li>Observa la posición de las formas y responde si la afirmación es <b>verdadera</b> o <b>falsa</b>.</li>
+        <li>El tiempo para cada pregunta disminuye a medida que subes de nivel.</li>
+        <li>El juego termina si se acaba el tiempo total (<b>{JUEGO1_CONFIG.MAIN_TIMER_SECONDS}s</b>) o cometes <b>{JUEGO1_CONFIG.FAILS_TO_END}</b> errores seguidos.</li>
+        <li>¡Intenta lograr la mayor precisión posible!</li>
+      </ul>
     </div>
   );
 
   const iniciarJuego = () => {
     setJuegoIniciado(true);
+    setTiempoInicio(Date.now());
+    setTiempo(JUEGO1_CONFIG.MAIN_TIMER_SECONDS);
+    avanzarRonda(JUEGO1_CONFIG.START_LEVEL);
+    startTimer();
   };
 
   return (
@@ -192,14 +311,15 @@ const Juego1 = () => {
         nivel,
         puntuacion,
         fallos,
-        tiempo
+        tiempo,
+        innerTiempo
       }}
       gameOver={juegoTerminado}
       finalStats={{
-        completed: rondasCompletadas >= 10, // Ejemplo de condición de completitud
+        completed: rondasCompletadas >= JUEGO1_CONFIG.ROUND_TO_COMPLETE,
         level: nivel,
         score: puntuacion,
-        mistakes: fallos,
+        mistakes: fallosTotales,
         timeRemaining: tiempo
       }}
       onRestart={reiniciarJuego}
@@ -210,36 +330,27 @@ const Juego1 = () => {
       {!juegoTerminado ? (
         <div className="game-container">
           <div className="shapes">
-            {!shapes.squareRight ? (
-              <>
-                <div className="triangle"></div>
-                <div className="square"></div>
-              </>
-            ) : (
-              <>
-                <div className="square"></div>
-                <div className="triangle"></div>
-              </>
-            )}
+            <div className={`shape ${shapes.leftShape}`}></div>
+            <div className={`shape ${shapes.rightShape}`}></div>
           </div>
-          
+
           <p className="statement">{statement}</p>
-          
+
           <div className="buttons">
-            <button 
+            <button
               onClick={() => manejarRespuesta(true)}
               className={isCorrect === true ? 'correct' : ''}
             >
               Verdadero
             </button>
-            <button 
+            <button
               onClick={() => manejarRespuesta(false)}
               className={isCorrect === false ? 'incorrect' : ''}
             >
               Falso
             </button>
           </div>
-          
+
           {isCorrect !== null && (
             <p className={`feedback ${isCorrect ? "correct" : "incorrect"}`}>
               {isCorrect ? "¡Correcto!" : "Incorrecto"}
