@@ -1,13 +1,11 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { signOut } from "firebase/auth";
 import { auth } from "../../services/firebase/firebaseConfig";
 import Loading from "../../components/common/Loading/Loading";
 import { useNavigate } from 'react-router-dom';
 import './styles.css';
 
 const Dashboard = () => {
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const navigate = useNavigate();
 
   // Configuración de los juegos con imágenes y nombres
@@ -22,31 +20,11 @@ const Dashboard = () => {
     { id: 8, name: "Reverse memory span", icon: "🔄", color: "#FFD3F5" }, // Magenta pastel
   ];
 
-  const handleLogout = async () => {
-    setIsLoggingOut(true);
-    try {
-      await signOut(auth);
-      console.log("Usuario desconectado");
-    } catch (error) {
-      console.error("Error al cerrar sesión:", error);
-      setIsLoggingOut(false);
-    }
-  };
-
-  if (isLoggingOut) {
-    return <Loading message="Cerrando sesión..." />;
-  }
-
   return (
     <div className="dashboard-container">
       {/* Botón perfil usuario en esquina superior izquierda */}
       <button onClick={() => navigate('/user')} className="user-button-corner" title="Mi perfil">
         <span className="user-icon">👤</span>
-      </button>
-
-      {/* Botón de cerrar sesión en la esquina superior derecha */}
-      <button onClick={handleLogout} className="logout-button-corner" title="Cerrar Sesión">
-        <span className="logout-icon">⏻</span>
       </button>
 
       <div className="dashboard-content">
