@@ -1,6 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');
 
-/* Estilos del Dashboard */
+@keyframes gradient-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
 
 .dashboard-container {
   text-align: center;
@@ -11,52 +21,38 @@
 }
 
 .dashboard-header {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  color: white;
+  background: linear-gradient(to bottom, #d5f4ff, #f7f8fc);
+  color: #2d2d2d;
   padding: 20px 40px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  width: 100%;
-  margin-bottom: 40px;
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  width: 100%;
+  justify-content: space-between;
+  /* max-width: 1200px; */
+  margin: 0 auto 40px auto; 
 }
 
 .header-logo {
-  height: 50px;
-  border-radius: 8px;
+  height: 80px;
 }
 
 @keyframes color-rotate {
-  0% { color: #FFD3E1; }
-  12.5% { color: #D3E5FF; }
-  25% { color: #E1FFD3; }
-  37.5% { color: #FFFFD3; }
-  50% { color: #FFE1D3; }
-  62.5% { color: #E1D3FF; }
-  75% { color: #D3FFFF; }
-  87.5% { color: #FFD3F5; }
-  100% { color: #FFD3E1; }
+  0% { color: #79cfed; }
+  12.5% { color: #4f9cb8; }
+  25% { color: #31748d; }
+  37.5% { color: #255a6d; }
+  50% { color: #0a1f27; }
+  62.5% { color: #255a6d; }
+  75% { color: #31748d; }
+  87.5% { color: #4f9cb8; }
+  100% { color: #79cfed; }
 }
 
+
 .header-title {
-  font-family: 'Poppins', sans-serif;
-  font-size: 2.5rem;
+  font-size: 3rem;
   font-weight: 700;
   margin: 0;
-  animation: color-rotate 10s linear infinite;
+  animation: color-rotate 15s linear infinite;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
 }
 
@@ -397,8 +393,6 @@
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0,0,0,0.08);
   transition: transform .15s ease, box-shadow .15s ease;
-  position: absolute;
-  right: 40px;
 }
 .user-button-corner:hover {
   transform: translateY(-2px);

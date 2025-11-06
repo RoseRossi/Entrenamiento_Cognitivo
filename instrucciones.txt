@@ -1,8 +1,0 @@
-1. necesito que uses estos codigos en el fondo de registro de usuario y inicio de sesion 
-CAMBIOS REALIZADOS: Se ha implementado el fondo animado `PixelBlast` en la página de autenticación. Para ello, se creó un nuevo componente en `src/components/common/PixelBlast/PixelBlast.jsx` y sus estilos en `src/components/common/PixelBlast/PixelBlast.css`. Este componente se ha integrado en `src/components/common/AuthForm/AuthForm.jsx`, y se han ajustado los estilos en `src/components/common/AuthForm/AuthForm.css` para que el formulario de autenticación se muestre correctamente sobre el fondo animado, con un fondo blanco y una ligera transparencia en la tarjeta del formulario. El color de los píxeles del `PixelBlast` se ha configurado a `#B19EEF` como se especificó en el código original.
-
-2. Necesito que el fondo de PixelBlast sea de color #1a3138
-CAMBIOS REALIZADOS: Se ha cambiado el color de fondo del componente `PixelBlast` a `#1a3138` modificando la propiedad `background-color` de la clase `.pixel-blast-background` en `src/components/common/AuthForm/AuthForm.css`.
-
-3. necesito que los pixeles de PixelBlast sean de color #001f29 y colores similares
-CAMBIOS REALIZADOS: Se ha cambiado el color de los píxeles del componente `PixelBlast` a `#001f29` modificando la propiedad `color` en el componente `PixelBlast` dentro de `src/components/common/AuthForm/AuthForm.jsx`.

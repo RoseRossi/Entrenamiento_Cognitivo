@@ -22,10 +22,8 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <header className="dashboard-header">
-        <div className="header-content">
-          <img src={Logo} alt="Train Your Brain Logo" className="header-logo" />
-          <h1 className="header-title">Train Your Brain</h1>
-        </div>
+        <img src={Logo} alt="Train Your Brain Logo" className="header-logo" />
+        <h1 className="header-title">Train Your Brain</h1>
         <button onClick={() => navigate('/user')} className="user-button-corner" title="Mi perfil">
           <span className="user-icon">👤</span>
         </button>

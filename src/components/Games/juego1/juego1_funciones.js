@@ -13,14 +13,17 @@ const JUEGO1_CONFIG = {
   // Configuración de formas disponibles
   SHAPES: {
     INITIAL_SHAPES: 2,     // Número de formas al inicio
-    MAX_SHAPES: 6,         // Número máximo de formas
+    MAX_SHAPES: 9,         // Número máximo de formas
     SHAPES_LIST: [         // Lista de formas disponibles en orden de aparición
       'cuadrado',
       'triángulo',
       'círculo',
       'estrella',
       'diamante',
-      'hexágono'
+      'hexágono',
+      'rectángulo',
+      'elipse',
+      'semicírculo'
     ],
     LEVEL_TO_ADD_SHAPE: 3, // Cada cuántos niveles se agrega una nueva forma
     POSITION_RATIO: 0.5    // Probabilidad de que la primera forma esté a la derecha

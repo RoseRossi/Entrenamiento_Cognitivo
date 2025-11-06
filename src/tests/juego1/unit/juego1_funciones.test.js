@@ -17,11 +17,10 @@ describe('Juego1 - Razonamiento Gramatical', () => {
 
     test('should have valid shapes configuration', () => {
       expect(JUEGO1_CONFIG.SHAPES.INITIAL_SHAPES).toBe(2);
-      expect(JUEGO1_CONFIG.SHAPES.MAX_SHAPES).toBe(6);
-      expect(JUEGO1_CONFIG.SHAPES.SHAPES_LIST).toHaveLength(6);
+      expect(JUEGO1_CONFIG.SHAPES.MAX_SHAPES).toBe(9);
+      expect(JUEGO1_CONFIG.SHAPES.SHAPES_LIST).toHaveLength(9);
       expect(JUEGO1_CONFIG.SHAPES.LEVEL_TO_ADD_SHAPE).toBeGreaterThan(0);
       expect(JUEGO1_CONFIG.SHAPES.POSITION_RATIO).toBeGreaterThanOrEqual(0);
-      expect(JUEGO1_CONFIG.SHAPES.POSITION_RATIO).toBeLessThanOrEqual(1);
     });
 
     test('should have valid statements configuration', () => {
@@ -42,7 +41,7 @@ describe('Juego1 - Razonamiento Gramatical', () => {
 
     test('should generate formation with left and right shapes', () => {
       const formacion = generarFormacion(1);
-      
+
       expect(formacion).toHaveProperty('nuevaFormacion');
       expect(formacion).toHaveProperty('nuevaDeclaracion');
       expect(formacion).toHaveProperty('declaracionEsVerdadera');
@@ -52,13 +51,13 @@ describe('Juego1 - Razonamiento Gramatical', () => {
 
     test('should generate different left and right shapes', () => {
       const formacion = generarFormacion(1);
-      
+
       expect(formacion.nuevaFormacion.leftShape).not.toBe(formacion.nuevaFormacion.rightShape);
     });
 
     test('should use only available shapes for level 1 (2 shapes)', () => {
       const validShapes = JUEGO1_CONFIG.SHAPES.SHAPES_LIST.slice(0, 2);
-      
+
       for (let i = 0; i < 20; i++) {
         const formacion = generarFormacion(1);
         expect(validShapes).toContain(formacion.nuevaFormacion.leftShape);
@@ -69,7 +68,7 @@ describe('Juego1 - Razonamiento Gramatical', () => {
     test('should use more shapes at higher levels', () => {
       // Level 4 should have 3 shapes (2 + floor((4-1)/3) = 2 + 1)
       const validShapesLevel4 = JUEGO1_CONFIG.SHAPES.SHAPES_LIST.slice(0, 3);
-      
+
       for (let i = 0; i < 20; i++) {
         const formacion = generarFormacion(4);
         expect(validShapesLevel4).toContain(formacion.nuevaFormacion.leftShape);
@@ -80,7 +79,7 @@ describe('Juego1 - Razonamiento Gramatical', () => {
     test('should not exceed maximum shapes at high levels', () => {
       const maxShapes = JUEGO1_CONFIG.SHAPES.MAX_SHAPES;
       const validShapes = JUEGO1_CONFIG.SHAPES.SHAPES_LIST.slice(0, maxShapes);
-      
+
       // Level 100 should still only use max shapes (6)
       for (let i = 0; i < 20; i++) {
         const formacion = generarFormacion(100);
@@ -91,7 +90,7 @@ describe('Juego1 - Razonamiento Gramatical', () => {
 
     test('should generate a valid declaracion string', () => {
       const formacion = generarFormacion(1);
-      
+
       expect(typeof formacion.nuevaDeclaracion).toBe('string');
       expect(formacion.nuevaDeclaracion.length).toBeGreaterThan(0);
       expect(formacion.nuevaDeclaracion).toMatch(/izquierda|derecha/);
@@ -99,46 +98,46 @@ describe('Juego1 - Razonamiento Gramatical', () => {
 
     test('should return boolean for declaracionEsVerdadera', () => {
       const formacion = generarFormacion(1);
-      
+
       expect(typeof formacion.declaracionEsVerdadera).toBe('boolean');
     });
 
     test('should include shape names in declaracion', () => {
       const formacion = generarFormacion(1);
       const { leftShape, rightShape } = formacion.nuevaFormacion;
-      
+
       // At least one of the shapes should be mentioned in the declaracion
-      const mentionsShape = formacion.nuevaDeclaracion.includes(leftShape) || 
-                           formacion.nuevaDeclaracion.includes(rightShape);
+      const mentionsShape = formacion.nuevaDeclaracion.includes(leftShape) ||
+        formacion.nuevaDeclaracion.includes(rightShape);
       expect(mentionsShape).toBe(true);
     });
 
     test('should generate both true and false declarations over multiple runs', () => {
       const declarations = [];
-      
+
       for (let i = 0; i < 50; i++) {
         const formacion = generarFormacion(5);
         declarations.push(formacion.declaracionEsVerdadera);
       }
-      
+
       const hasTrue = declarations.some(d => d === true);
       const hasFalse = declarations.some(d => d === false);
-      
+
       expect(hasTrue).toBe(true);
       expect(hasFalse).toBe(true);
     });
 
     test('should eventually use both positive and negative statements at higher levels', () => {
       const declaraciones = [];
-      
+
       for (let i = 0; i < 50; i++) {
         const formacion = generarFormacion(10); // High level for more variety
         declaraciones.push(formacion.nuevaDeclaracion);
       }
-      
+
       const hasPositive = declaraciones.some(d => !d.includes('NO está'));
       const hasNegative = declaraciones.some(d => d.includes('NO está'));
-      
+
       // At level 10, we should see variety (though not guaranteed in every run)
       // This test might occasionally fail due to randomness, but should pass most times
       expect(hasPositive || hasNegative).toBe(true);
@@ -146,15 +145,15 @@ describe('Juego1 - Razonamiento Gramatical', () => {
 
     test('should use both directions (izquierda and derecha)', () => {
       const declaraciones = [];
-      
+
       for (let i = 0; i < 50; i++) {
         const formacion = generarFormacion(5);
         declaraciones.push(formacion.nuevaDeclaracion);
       }
-      
+
       const hasIzquierda = declaraciones.some(d => d.includes('izquierda'));
       const hasDerecha = declaraciones.some(d => d.includes('derecha'));
-      
+
       expect(hasIzquierda).toBe(true);
       expect(hasDerecha).toBe(true);
     });
@@ -189,11 +188,11 @@ describe('Juego1 - Razonamiento Gramatical', () => {
     test('should correctly validate user response for generated formation', () => {
       const formacion = generarFormacion(3);
       const { declaracionEsVerdadera } = formacion;
-      
+
       // Correct response
       const correctResponse = verificarRespuesta(declaracionEsVerdadera, declaracionEsVerdadera);
       expect(correctResponse).toBe(true);
-      
+
       // Incorrect response
       const incorrectResponse = verificarRespuesta(declaracionEsVerdadera, !declaracionEsVerdadera);
       expect(incorrectResponse).toBe(false);

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { auth, googleProvider, checkFirebaseConnection } from '../../../services/firebase/firebaseConfig';
+import { userService } from '../../../services/firebase/userService';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -76,11 +77,41 @@ export default function AuthForm() {
     if (!validateForm()) return;
     setLoading(true);
     try {
+      let userCredential;
+
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+        // 🔒 VALIDAR CUENTA DESPUÉS DEL LOGIN EXITOSO
+        const validation = await userService.validateAccountForLogin(userCredential.user.uid);
+
+        if (!validation.valid) {
+          // Forzar logout inmediato
+          await signOut(auth);
+
+          // Mostrar mensaje específico
+          let errorMessage = '';
+          switch (validation.reason) {
+            case 'account_deleted':
+              errorMessage = 'Tu cuenta ha sido eliminada. No puedes acceder al sistema.';
+              break;
+            case 'account_inactive':
+              errorMessage = 'Tu cuenta está inactiva. Contacta al administrador.';
+              break;
+            case 'account_suspended':
+              errorMessage = validation.message || 'Tu cuenta está suspendida temporalmente.';
+              break;
+            default:
+              errorMessage = 'No puedes acceder al sistema en este momento.';
+          }
+
+          setErrors({ general: errorMessage });
+          return;
+        }
+
         setSuccessMessage("¡Inicio de sesión exitoso!");
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
         setSuccessMessage("¡Registro exitoso! Bienvenido/a");
       }
       setEmail('');
@@ -112,12 +143,60 @@ export default function AuthForm() {
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     clearMessages();
+
     try {
-      googleProvider.setCustomParameters({ prompt: 'select_account' });
-      await signInWithPopup(auth, googleProvider);
-      setSuccessMessage("¡Inicio de sesión con Google exitoso!");
+      googleProvider.setCustomParameters({
+        prompt: 'select_account'
+      });
+
+      const result = await signInWithPopup(auth, googleProvider);
+
+      // 🔒 VALIDAR CUENTA DESPUÉS DEL LOGIN CON GOOGLE
+      const validation = await userService.validateAccountForLogin(result.user.uid);
+
+      if (!validation.valid) {
+        // Forzar logout inmediato
+        await signOut(auth);
+
+        // Mostrar mensaje específico
+        let errorMessage = '';
+        switch (validation.reason) {
+          case 'account_deleted':
+            errorMessage = 'Tu cuenta ha sido eliminada. No puedes acceder al sistema.';
+            break;
+          case 'account_inactive':
+            errorMessage = 'Tu cuenta está inactiva. Contacta al administrador.';
+            break;
+          case 'account_suspended':
+            errorMessage = validation.message || 'Tu cuenta está suspendida temporalmente.';
+            break;
+          default:
+            errorMessage = 'No puedes acceder al sistema en este momento.';
+        }
+
+        setErrors({ general: errorMessage });
+        return;
+      }
+
+      // ✅ VALIDACIÓN EXITOSA - LOGIN COMPLETADO
+      setSuccessMessage('¡Inicio de sesión con Google exitoso!');
+
     } catch (error) {
-      setErrors({ general: getErrorMessage(error.code) });
+      let errorMessage = 'Error de autenticación con Google';
+
+      if (error.code === 'auth/popup-blocked') {
+        errorMessage = 'Los popups están bloqueados. Habilita popups para este sitio o intenta en modo incógnito.';
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        errorMessage = 'Ventana cerrada antes de completar el login. Intenta nuevamente.';
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        errorMessage = 'Proceso cancelado. Intenta nuevamente.';
+      } else if (error.code === 'auth/network-request-failed') {
+        errorMessage = 'Error de conexión. Verifica tu internet.';
+      } else {
+        errorMessage = `Error: ${error.message}`;
+      }
+
+      setErrors({ general: errorMessage });
     } finally {
       setGoogleLoading(false);
     }

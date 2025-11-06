@@ -8,6 +8,9 @@
   --shape-color-estrella: #fbbf24;
   --shape-color-diamante: #ec4899;
   --shape-color-hexagono: #14b8a6;
+  --shape-color-rectangulo: #f97316;
+  --shape-color-elipse: #06b6d4;
+  --shape-color-semicirculo: #84cc16;
   --statement-font-size: 1.5rem;
   --statement-color: #2d3748;
   --button-padding: 12px 24px;
@@ -137,6 +140,29 @@
   border-top: 30px solid #14b8a6;
 }
 
+.rectángulo {
+  background-color: var(--shape-color-rectangulo);
+  width: calc(var(--shape-size) * 1.4);
+  height: calc(var(--shape-size) * 0.7);
+  margin: calc(var(--shape-size) * 0.15) 0;
+}
+
+.elipse {
+  background-color: var(--shape-color-elipse);
+  width: calc(var(--shape-size) * 1.3);
+  height: calc(var(--shape-size) * 0.8);
+  border-radius: 50%;
+  margin: calc(var(--shape-size) * 0.1) 0;
+}
+
+.semicírculo {
+  background-color: var(--shape-color-semicirculo);
+  width: var(--shape-size);
+  height: calc(var(--shape-size) * 0.5);
+  border-radius: var(--shape-size) var(--shape-size) 0 0;
+  margin: calc(var(--shape-size) * 0.25) 0;
+}
+
 .statement {
   font-size: 1.5rem;
   font-weight: 600;
@@ -218,6 +244,22 @@
   .square {
     width: 60px;
     height: 60px;
+  }
+
+  .rectángulo {
+    width: 84px;
+    height: 42px;
+  }
+
+  .elipse {
+    width: 78px;
+    height: 48px;
+  }
+
+  .semicírculo {
+    width: 60px;
+    height: 30px;
+    border-radius: 60px 60px 0 0;
   }
 
   .statement {

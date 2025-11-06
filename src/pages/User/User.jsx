@@ -13,7 +13,10 @@ import {
   Clock,
   TrendingUp,
   Calendar,
-  ExternalLink
+  ExternalLink,
+  LogOut,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 import './user.css';
 
@@ -40,6 +43,9 @@ const UserProfile = () => {
   const [bestScores, setBestScores] = useState([]); // Store best scores for each game
   const [totalSessionsAvailable, setTotalSessionsAvailable] = useState(0);
   const [error, setError] = useState(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const user = auth.currentUser;
   const navigate = useNavigate();
 
@@ -316,6 +322,98 @@ const UserProfile = () => {
     load();
   }, [user]);
 
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await userService.logoutUser();
+
+      // Redirect to home page or login page
+      navigate('/');
+    } catch (error) {
+      console.error('Error during logout:', error);
+      setError('Error al cerrar sesión: ' + error.message);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
+  // Handle delete account
+  const handleDeleteAccount = async () => {
+    try {
+      setIsDeleting(true);
+      await userService.deleteUserAccount(user.uid);
+
+      // Account deleted successfully, redirect to home
+      navigate('/', {
+        state: {
+          message: 'Tu cuenta ha sido eliminada exitosamente. Todos los datos han sido anonimizados.'
+        }
+      });
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      setError('Error al eliminar la cuenta: ' + error.message);
+      setShowDeleteConfirmation(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Confirmation modal component
+  const DeleteConfirmationModal = () => {
+    if (!showDeleteConfirmation) return null;
+
+    return (
+      <div className="modal-overlay" onClick={() => setShowDeleteConfirmation(false)}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <AlertTriangle size={24} color="#ef4444" />
+            <h3>Confirmar Eliminación de Cuenta</h3>
+          </div>
+
+          <div className="modal-body">
+            <p>
+              <strong>¿Estás seguro de que quieres eliminar tu cuenta?</strong>
+            </p>
+            <p>
+              Esta acción:
+            </p>
+            <ul>
+              <li>• Cerrará tu sesión inmediatamente</li>
+              <li>• Anonimizará todos tus datos personales</li>
+              <li>• Mantendrá tus estadísticas de juego para análisis (sin datos personales)</li>
+              <li>• <strong>No se puede deshacer</strong></li>
+            </ul>
+          </div>
+
+          <div className="modal-actions">
+            <button
+              className="btn cancel-btn"
+              onClick={() => setShowDeleteConfirmation(false)}
+              disabled={isDeleting}
+            >
+              Cancelar
+            </button>
+            <button
+              className="btn delete-btn"
+              onClick={handleDeleteAccount}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>Eliminando...</>
+              ) : (
+                <>
+                  <Trash2 size={16} />
+                  Eliminar Cuenta
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const initials = useMemo(() => {
     const name = (profile?.displayName || 'U').trim();
     return name.split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
@@ -439,6 +537,28 @@ const UserProfile = () => {
           <Link className="btn ghost" to="/reports">
             Ver Reportes <ExternalLink size={16} />
           </Link>
+          <button
+            className="btn logout-btn"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+          >
+            {isLoggingOut ? (
+              <>Cerrando...</>
+            ) : (
+              <>
+                <LogOut size={16} />
+                Cerrar Sesión
+              </>
+            )}
+          </button>
+          <button
+            className="btn danger-btn"
+            onClick={() => setShowDeleteConfirmation(true)}
+            disabled={isDeleting}
+          >
+            <Trash2 size={16} />
+            Eliminar Cuenta
+          </button>
         </div>
       </div>
 
@@ -540,6 +660,9 @@ const UserProfile = () => {
           </div>
         </aside>
       </div>
+
+      {/* Modal de confirmación para eliminar cuenta */}
+      <DeleteConfirmationModal />
     </div>
   );
 };
