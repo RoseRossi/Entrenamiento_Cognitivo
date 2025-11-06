@@ -260,14 +260,14 @@ const Juego8 = () => {
     };
   }, [ejercicioActual, gameState.indiceActual, gameState.respuestaUsuario]);
 
-  const verificarYProcesar = useCallback(() => {
+  const verificarYProcesarAutomatico = useCallback((respuestaCompleta) => {
     if (!ejercicioActual) {
       console.error('No hay ejercicio actual');
       return;
     }
 
     try {
-      const esCorrecta = verificarRespuesta(gameState.respuestaUsuario, ejercicioActual.secuencia);
+      const esCorrecta = verificarRespuesta(respuestaCompleta, ejercicioActual.secuencia);
       const tiempoTotal = Date.now() - gameState.tiempoInicioEjercicio;
       const intentoActual = calcularIntentoActual(gameState.intentosRestantes);
 
@@ -311,14 +311,25 @@ const Juego8 = () => {
       console.error('Error verificando respuesta:', error);
       dispatch({ type: 'ESTABLECER_MENSAJE', mensaje: 'Error procesando respuesta' });
     }
-  }, [gameState.respuestaUsuario, gameState.indiceActual, gameState.intentosRestantes, 
+  }, [gameState.indiceActual, gameState.intentosRestantes, 
       gameState.tiempoInicioEjercicio, gameState.ejercicios, ejercicioActual, 
       mostrarSecuenciaEjercicio, crearEjercicioDetallado]);
 
   const manejarSeleccion = useCallback((posicion) => {
     if (gameState.mostrarSecuencia || gameState.juegoTerminado) return;
+    
+    // Agregar la nueva selección
+    const nuevaRespuesta = [...gameState.respuestaUsuario, posicion];
     dispatch({ type: 'SELECCIONAR_CELDA', posicion });
-  }, [gameState.mostrarSecuencia, gameState.juegoTerminado]);
+    
+    // Verificar automáticamente si ya se completó la secuencia
+    if (ejercicioActual && nuevaRespuesta.length === ejercicioActual.secuencia.length) {
+      // Dar un pequeño delay para que se vea la última selección
+      setTimeout(() => {
+        verificarYProcesarAutomatico(nuevaRespuesta);
+      }, 300);
+    }
+  }, [gameState.mostrarSecuencia, gameState.juegoTerminado, gameState.respuestaUsuario, ejercicioActual, verificarYProcesarAutomatico]);
 
   // =====================================
   // EFECTOS
@@ -548,26 +559,6 @@ const Juego8 = () => {
       {gameState.juegoIniciado && !gameState.juegoTerminado && ejercicioActual && (
         <div className="juego8-container">
           {renderCuadricula()}
-          {!gameState.mostrarSecuencia && (
-            <button
-              className="boton-verificar"
-              onClick={verificarYProcesar}
-              disabled={gameState.respuestaUsuario.length === 0}
-              style={{
-                padding: '12px 24px',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                backgroundColor: gameState.respuestaUsuario.length === 0 ? '#bdc3c7' : '#27ae60',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: gameState.respuestaUsuario.length === 0 ? 'not-allowed' : 'pointer',
-                marginTop: '20px'
-              }}
-            >
-              Verificar
-            </button>
-          )}
         </div>
       )}
     </GameLayout>
