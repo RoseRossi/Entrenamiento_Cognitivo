@@ -1,19 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');
+
 /* Estilos del Dashboard */
 
 .dashboard-container {
   text-align: center;
-  padding: 20px;
   font-family: Arial, sans-serif;
   min-height: 100vh;
   position: relative;
+  background-color: #f7f8fc;
+}
+
+.dashboard-header {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  color: white;
+  padding: 20px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+  margin-bottom: 40px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.header-logo {
+  height: 50px;
+  border-radius: 8px;
+}
+
+@keyframes color-rotate {
+  0% { color: #FFD3E1; }
+  12.5% { color: #D3E5FF; }
+  25% { color: #E1FFD3; }
+  37.5% { color: #FFFFD3; }
+  50% { color: #FFE1D3; }
+  62.5% { color: #E1D3FF; }
+  75% { color: #D3FFFF; }
+  87.5% { color: #FFD3F5; }
+  100% { color: #FFD3E1; }
+}
+
+.header-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+  animation: color-rotate 10s linear infinite;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
 }
 
 .dashboard-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding-top: 20px;
+  padding: 0 20px 20px;
 }
-
 
 .title {
   font-size: 2.5rem;
@@ -213,7 +264,18 @@
 
 @media (max-width: 768px) {
   .dashboard-container {
-    padding: 10px;
+    padding: 0 10px 10px;
+  }
+
+  .dashboard-header {
+    padding: 15px 20px;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .header-title {
+    font-size: 1.5rem;
   }
   
   .title {
@@ -322,7 +384,7 @@
 }
 
 
-/* Botón de usuario esquina superior izquierda */
+/* Botón de usuario esquina superior derecha */
 .user-button-corner {
   position: absolute;
   top: 16px;
@@ -338,6 +400,8 @@
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0,0,0,0.08);
   transition: transform .15s ease, box-shadow .15s ease;
+  position: absolute;
+  right: 40px;
 }
 .user-button-corner:hover {
   transform: translateY(-2px);

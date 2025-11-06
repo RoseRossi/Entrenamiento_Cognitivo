@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { auth } from "../../services/firebase/firebaseConfig";
-import Loading from "../../components/common/Loading/Loading";
 import { useNavigate } from 'react-router-dom';
+import Logo from '../../assets/images/Logo/Logo.png';
 import './styles.css';
 
 const Dashboard = () => {
@@ -22,23 +21,26 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      {/* Botón perfil usuario en esquina superior izquierda */}
-      <button onClick={() => navigate('/user')} className="user-button-corner" title="Mi perfil">
-        <span className="user-icon">👤</span>
-      </button>
+      <header className="dashboard-header">
+        <div className="header-content">
+          <img src={Logo} alt="Train Your Brain Logo" className="header-logo" />
+          <h1 className="header-title">Train Your Brain</h1>
+        </div>
+        <button onClick={() => navigate('/user')} className="user-button-corner" title="Mi perfil">
+          <span className="user-icon">👤</span>
+        </button>
+      </header>
 
       <div className="dashboard-content">
-        <h1 className="title">Entrenamiento Cognitivo</h1>
-        
         <div className="main-layout">
           {/* Sección de juegos a la izquierda */}
           <div className="games-section">
             <h2 className="section-title">Juegos Cognitivos</h2>
             <div className="games-grid">
               {games.map((game) => (
-                <Link 
-                  key={game.id} 
-                  to={`/juego/${game.id}`} 
+                <Link
+                  key={game.id}
+                  to={`/juego/${game.id}`}
                   className="game-card"
                   style={{ backgroundColor: game.color }}
                 >
@@ -57,7 +59,7 @@ const Dashboard = () => {
               <p className="reports-description">
                 Visualiza tu progreso y estadísticas de entrenamiento
               </p>
-              <button 
+              <button
                 className="reports-button"
                 onClick={() => navigate('/reports')}
               >
