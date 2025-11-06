@@ -35,6 +35,11 @@
   height: 80px;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
 @keyframes color-rotate {
   0% { color: #79cfed; }
   12.5% { color: #4f9cb8; }
@@ -51,9 +56,8 @@
 .header-title {
   font-size: 3rem;
   font-weight: 700;
-  margin: 0;
+  margin: 0 auto;
   animation: color-rotate 15s linear infinite;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
 }
 
 .dashboard-content {
@@ -382,9 +386,6 @@
 
 /* Botón de usuario esquina superior derecha */
 .user-button-corner {
-  position: absolute;
-  top: 16px;
-  left: 16px;
   background: #ffffff;
   border: 1px solid rgba(0,0,0,0.1);
   border-radius: 9999px;
