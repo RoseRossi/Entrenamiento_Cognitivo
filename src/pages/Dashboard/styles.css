@@ -326,12 +326,12 @@
 .user-button-corner {
   position: absolute;
   top: 16px;
-  right: 30px;
+  left: 16px;
   background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0,0,0,0.1);
   border-radius: 9999px;
-  width: 64px;
-  height: 64px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -343,4 +343,4 @@
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(0,0,0,0.12);
 }
-.user-icon { font-size: 1.8rem;align-self: center; }
+.user-icon { font-size: 1.2rem; }
