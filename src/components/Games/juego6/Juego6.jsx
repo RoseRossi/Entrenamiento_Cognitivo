@@ -83,6 +83,7 @@ const initialGameState = {
   puntuacion: 0,
   respuestasCorrectas: 0,
   respuestasIncorrectas: 0,
+  fallosConsecutivos: 0, 
   juegoTerminado: false,
   mostrarEstimulo: false,
   puedeResponder: false,
@@ -124,11 +125,13 @@ const gameReducer = (state, action) => {
     case 'MOSTRAR_ESTIMULO':
       return { ...state, mostrarEstimulo: true, puedeResponder: true };
     case 'PROCESAR_RESPUESTA':
+      const nuevosFallosConsecutivos = action.esCorrecta ? 0 : state.fallosConsecutivos + 1;
       return {
         ...state,
         puntuacion: state.puntuacion + (action.esCorrecta ? 1 : 0),
         respuestasCorrectas: state.respuestasCorrectas + (action.esCorrecta ? 1 : 0),
         respuestasIncorrectas: state.respuestasIncorrectas + (action.esCorrecta ? 0 : 1),
+        fallosConsecutivos: nuevosFallosConsecutivos,
         mostrarEstimulo: false,
         puedeResponder: false
       };
@@ -136,6 +139,7 @@ const gameReducer = (state, action) => {
       return {
         ...state,
         respuestasIncorrectas: state.respuestasIncorrectas + 1,
+        fallosConsecutivos: state.fallosConsecutivos + 1,
         mostrarEstimulo: false,
         puedeResponder: false
       };
@@ -236,6 +240,9 @@ const Juego6 = () => {
 
   //Modal de pausa 
   const [pausaModalAbierto, setPausaModalAbierto] = useState(false);
+
+  // Constante para límite de fallos consecutivos
+  const MAX_FALLOS_CONSECUTIVOS = 3;
 
   // Actualizar nivel cuando cambie el ensayo
   useEffect(() => {
@@ -357,7 +364,7 @@ const Juego6 = () => {
     return Math.sqrt(varianza);
   }, []);
 
-  // Función para guardar progreso parcial (CORREGIDA)
+  // Función para guardar progreso parcial
   const guardarProgresoYSalir = useCallback(async () => {
     if (!user || resultadoGuardado) return;
     
@@ -383,7 +390,7 @@ const Juego6 = () => {
         timeSpent: tiempoTranscurrido,
         correctAnswers: gameState.respuestasCorrectas,
         totalQuestions: ensayosCompletados,
-        completed: gameState.ensayoActual > TOTAL_ENSAYOS, // true solo si completó todos
+        completed: gameState.ensayoActual > TOTAL_ENSAYOS,
         exitReason: gameState.ensayoActual > TOTAL_ENSAYOS ? 'completed' : 'user_paused_and_saved',
         details: {
           modalidadJuego: gameState.ensayoActual > TOTAL_ENSAYOS ? 'progresivo_completado' : 'progresivo_pausado',
@@ -392,6 +399,7 @@ const Juego6 = () => {
           porcentajeCompletado,
           porcentajePrecision: estadisticas.precision,
           fallosTotales: gameState.respuestasIncorrectas,
+          fallosConsecutivosMax: gameState.fallosConsecutivos,
           razonTermino: gameState.ensayoActual > TOTAL_ENSAYOS ? 'completado' : 'usuario_pausó_y_guardó',
           aciertosCongruentes,
           aciertosIncongruentes,
@@ -421,7 +429,6 @@ const Juego6 = () => {
       setResultadoGuardado(true);
       console.log('✅ Progreso guardado, redirigiendo al dashboard...');
       
-      // Redirigir al dashboard
       window.location.href = '/dashboard';
       
     } catch (error) {
@@ -467,54 +474,59 @@ const Juego6 = () => {
       
       const tiempoTranscurrido = gameState.tiempoJugando;
       const ensayosCompletados = gameState.ensayoActual - 1;
-      const porcentajeCompletado = Math.round((ensayosCompletados / TOTAL_ENSAYOS) * 100); // ← DEFINIR AQUÍ
+      const porcentajeCompletado = Math.round((ensayosCompletados / TOTAL_ENSAYOS) * 100);
       
-      // CALCULAR score final
       const scoreBase = ensayosCompletados > 0 ? 
         Math.round((gameState.respuestasCorrectas / ensayosCompletados) * 100) : 0;
       
-      // Bonus por eficiencia (opcional)
       const bonusEficiencia = estadisticas.efectoValidez < 50 ? 10 : 
         (estadisticas.efectoValidez < 100 ? 5 : 0);
       
-      const scoreFinal = Math.min(100, scoreBase + bonusEficiencia); // ← DEFINIR AQUÍ
+      const scoreFinal = Math.min(100, scoreBase + bonusEficiencia);
 
-      // CALCULAR ensayos congruentes e incongruentes
-      const ensayosCongruentes = respuestasDetalladas.filter(r => r.congruente); // ← DEFINIR AQUÍ
-      const ensayosIncongruentes = respuestasDetalladas.filter(r => !r.congruente); // ← DEFINIR AQUÍ
+      const ensayosCongruentes = respuestasDetalladas.filter(r => r.congruente);
+      const ensayosIncongruentes = respuestasDetalladas.filter(r => !r.congruente);
+
+      // Determinar razón de terminación
+      const razonTermino = gameState.fallosConsecutivos >= MAX_FALLOS_CONSECUTIVOS 
+        ? 'Máximo de fallos consecutivos alcanzado'
+        : gameState.ensayoActual > TOTAL_ENSAYOS 
+          ? 'completado' 
+          : 'usuario_salio';
 
       const resultData = {
         userId: user.uid,
         gameId: 'posner_haciendo_cola',
         cognitiveDomain: 'atencion',
         level: configNivel.nombre,
-        score: scoreFinal, // ← Ya definido arriba
+        score: scoreFinal,
         timeSpent: tiempoTranscurrido,
         correctAnswers: gameState.respuestasCorrectas,
         totalQuestions: ensayosCompletados,
-        completed: gameState.ensayoActual > TOTAL_ENSAYOS, // ← Marcar si se completó
+        completed: gameState.ensayoActual > TOTAL_ENSAYOS && gameState.fallosConsecutivos < MAX_FALLOS_CONSECUTIVOS,
         details: {
           modalidadJuego: 'progresivo',
           nivelAlcanzado: nivelActual,
           totalEnsayosPosibles: TOTAL_ENSAYOS,
-          porcentajeCompletado, // ← Ya definido arriba
+          porcentajeCompletado,
           porcentajePrecision: estadisticas.precision,
           fallosTotales: gameState.respuestasIncorrectas,
-          razonTermino: gameState.ensayoActual > TOTAL_ENSAYOS ? 'completado' : 'usuario_salio',
+          fallosConsecutivosMax: gameState.fallosConsecutivos,
+          razonTermino,
           scoreBase,
           bonusEficiencia,
           scoreFinal,
           aciertosCongruentes,
           aciertosIncongruentes,
-          totalEnsayosCongruentes: ensayosCongruentes.length, // ← Ya definido arriba
-          totalEnsayosIncongruentes: ensayosIncongruentes.length, // ← Ya definido arriba
+          totalEnsayosCongruentes: ensayosCongruentes.length,
+          totalEnsayosIncongruentes: ensayosIncongruentes.length,
           tiempoReaccionCongruente: estadisticas.tiempoCongruente,
           tiempoReaccionIncongruente: estadisticas.tiempoIncongruente,
           efectoValidez: estadisticas.efectoValidez,
           tiempoReaccionPromedio: estadisticas.tiempoPromedio,
           tiempoReaccionMinimo: tiemposReaccion.length > 0 ? Math.min(...tiemposReaccion) : 0,
           tiempoReaccionMaximo: tiemposReaccion.length > 0 ? Math.max(...tiemposReaccion) : 0,
-          variabilidadTiempoReaccion: calcularVariabilidad(tiemposReaccion), // ← PASAR tiemposReaccion como parámetro
+          variabilidadTiempoReaccion: calcularVariabilidad(tiemposReaccion),
           respuestasDetalladas,
           tiemposReaccionCompletos: tiemposReaccion,
           configuracionNiveles: CONFIGURACION_NIVELES
@@ -537,10 +549,7 @@ const Juego6 = () => {
     }
   }, [
     user, 
-    gameState.tiempoJugando,
-    gameState.ensayoActual, 
-    gameState.respuestasCorrectas,
-    gameState.respuestasIncorrectas,
+    gameState,
     estadisticas, 
     aciertosCongruentes, 
     aciertosIncongruentes,
@@ -551,6 +560,7 @@ const Juego6 = () => {
     configNivel,
     calcularVariabilidad
   ]);
+
 
   useEffect(() => {
     if (gameState.juegoTerminado && !resultadoGuardado && user && tiempoInicio) {
@@ -652,20 +662,26 @@ const Juego6 = () => {
 
   // Función para iniciar ensayo adaptada al nivel progresivo
   const iniciarEnsayo = useCallback(() => {
-    console.log('=== INICIANDO ENSAYO ===', gameState.ensayoActual, 'Nivel:', nivelActual, configNivel.nombre);
+    console.log('=== INICIANDO ENSAYO ===', gameState.ensayoActual, 'Nivel:', nivelActual, configNivel.nombre, 'Fallos consecutivos:', gameState.fallosConsecutivos);
     
     if (gameState.juegoTerminado || gameState.ensayoActual > TOTAL_ENSAYOS) {
       console.log('Juego terminado o ensayos completados');
       return;
     }
 
+    // Verificar fallos consecutivos antes de iniciar ensayo
+    if (gameState.fallosConsecutivos >= MAX_FALLOS_CONSECUTIVOS) {
+      console.log('🚫 Máximo de fallos consecutivos alcanzado. Terminando juego...');
+      terminarJuego();
+      return;
+    }
+
     clearAll();
 
-    const indiceEnsayo = gameState.ensayoActual - 1; // Convertir a índice 0-based
+    const indiceEnsayo = gameState.ensayoActual - 1;
     const tipoEnsayo = ensayos[indiceEnsayo];
     const { direccionFlecha, ubicacionEstimulo, congruente } = generarEnsayo(tipoEnsayo);
     
-    // Seleccionar tipo de flecha según nivel actual
     const tipoFlecha = tiposFlechas[Math.floor(Math.random() * tiposFlechas.length)];
     
     ensayoActualRef.current = { congruente, tipoFlecha };
@@ -675,32 +691,37 @@ const Juego6 = () => {
 
     dispatch({ type: 'INICIAR_ENSAYO' });
 
-    // Usar SOA del nivel actual
     const soa = calcularSOA();
     console.log('Configuración ensayo:', { direccionFlecha, ubicacionEstimulo, congruente, soa, nivel: configNivel.nombre });
     
-    // 1. Mostrar flecha después del SOA
     setManagedTimeout('mostrar-flecha', () => {
       console.log('>>> Mostrando flecha');
       dispatch({ type: 'MOSTRAR_FLECHA' });
       
-      // 2. Ocultar flecha después de 1 segundo
       setManagedTimeout('ocultar-flecha', () => {
         console.log('>>> Ocultando flecha');
         dispatch({ type: 'OCULTAR_FLECHA' });
         
-        // 3. Mostrar estímulo después del ITI
         setManagedTimeout('mostrar-estimulo', () => {
           console.log('>>> Mostrando estímulo');
           tiempoInicioRef.current = Date.now();
           dispatch({ type: 'MOSTRAR_ESTIMULO' });
 
-          // 4. Timeout para respuesta según nivel actual
           setManagedTimeout('timeout-respuesta', () => {
             console.log('>>> Timeout de respuesta alcanzado');
             dispatch({ type: 'TIMEOUT_ENSAYO' });
             
-            // Continuar al siguiente ensayo después del timeout
+            // Verificar fallos consecutivos después del timeout
+            const nuevosFallosConsecutivos = gameState.fallosConsecutivos + 1;
+            
+            if (nuevosFallosConsecutivos >= MAX_FALLOS_CONSECUTIVOS) {
+              console.log('🚫 Máximo de fallos consecutivos alcanzado por timeout. Terminando juego...');
+              setManagedTimeout('terminar-por-fallos-timeout', () => {
+                terminarJuego();
+              }, 500);
+              return;
+            }
+            
             setManagedTimeout('siguiente-ensayo-timeout', () => {
               if (gameState.ensayoActual < TOTAL_ENSAYOS) {
                 dispatch({ type: 'SIGUIENTE_ENSAYO' });
@@ -713,7 +734,7 @@ const Juego6 = () => {
         }, configNivel.iti);
       }, 1000);
     }, soa);
-  }, [gameState.ensayoActual, gameState.juegoTerminado, ensayos, clearAll, calcularSOA, terminarJuego, setManagedTimeout, tiposFlechas, configNivel, nivelActual]);
+  }, [gameState.ensayoActual, gameState.juegoTerminado, gameState.fallosConsecutivos, ensayos, clearAll, calcularSOA, terminarJuego, setManagedTimeout, tiposFlechas, configNivel, nivelActual]);
 
   // Función para manejar respuestas
   const manejarRespuesta = useCallback((respuesta) => {
@@ -733,7 +754,6 @@ const Juego6 = () => {
     const esCorrecta = verificarRespuesta(respuesta, estimulo);
     setRespuestaCorrecta(esCorrecta ? estimulo : null);
 
-    // Registrar respuesta detallada
     const respuestaDetallada = {
       ensayoNumero: gameState.ensayoActual,
       nivel: nivelActual,
@@ -750,7 +770,6 @@ const Juego6 = () => {
     };
     setRespuestasDetalladas(prev => [...prev, respuestaDetallada]);
 
-    // Actualizar contadores por tipo
     if (ensayoActualRef.current && esCorrecta) {
       const { congruente } = ensayoActualRef.current;
       if (congruente) {
@@ -763,7 +782,18 @@ const Juego6 = () => {
     dispatch({ type: 'PROCESAR_RESPUESTA', esCorrecta });
     clearAll();
 
-    console.log('Respuesta procesada:', { esCorrecta, tiempoReaccion });
+    console.log('Respuesta procesada:', { esCorrecta, tiempoReaccion, fallosConsecutivos: gameState.fallosConsecutivos + (esCorrecta ? 0 : 1) });
+
+    // Verificar si se alcanzó el máximo de fallos consecutivos
+    const nuevosFallosConsecutivos = esCorrecta ? 0 : gameState.fallosConsecutivos + 1;
+    
+    if (nuevosFallosConsecutivos >= MAX_FALLOS_CONSECUTIVOS) {
+      console.log('🚫 Máximo de fallos consecutivos alcanzado. Terminando juego...');
+      setManagedTimeout('terminar-por-fallos', () => {
+        terminarJuego();
+      }, 1000);
+      return;
+    }
 
     // Continuar al siguiente ensayo
     if (gameState.ensayoActual < TOTAL_ENSAYOS) {
@@ -773,7 +803,7 @@ const Juego6 = () => {
     } else {
       terminarJuego();
     }
-}, [gameState.puedeResponder, gameState.mostrarEstimulo, gameState.ensayoActual, gameState.tiempoJugando, estimulo, flecha, clearAll, terminarJuego, setManagedTimeout, nivelActual, configNivel]);
+  }, [gameState.puedeResponder, gameState.mostrarEstimulo, gameState.ensayoActual, gameState.tiempoJugando, gameState.fallosConsecutivos, estimulo, flecha, clearAll, terminarJuego, setManagedTimeout, nivelActual, configNivel]);
 
   // Función para iniciar el juego
   const iniciarJuego = useCallback(() => {
@@ -884,12 +914,16 @@ const Juego6 = () => {
   const generarAnalisis = useCallback(() => {
     const porcentajeCompletado = Math.round(((gameState.ensayoActual - 1) / TOTAL_ENSAYOS) * 100);
     
+    if (gameState.fallosConsecutivos >= MAX_FALLOS_CONSECUTIVOS) {
+      return `El juego terminó después de ${MAX_FALLOS_CONSECUTIVOS} fallos consecutivos en el nivel ${configNivel.nombre}. Completaste ${gameState.ensayoActual - 1} ensayos (${porcentajeCompletado}%) con una precisión del ${estadisticas.precision}%. Tiempo de reacción promedio: ${estadisticas.tiempoPromedio}ms. ¡Sigue practicando para mejorar tu atención sostenida!`;
+    }
+    
     if (gameState.ensayoActual > TOTAL_ENSAYOS) {
       return `¡Completaste todos los niveles! Progresión: Tutorial → Básico → Intermedio → Avanzado → Experto. Precisión: ${estadisticas.precision}%, tiempo de reacción promedio: ${estadisticas.tiempoPromedio}ms. Efecto de validez: ${estadisticas.efectoValidez}ms. ${estadisticas.efectoValidez < 50 ? 'Excelente eficiencia atencional!' : estadisticas.efectoValidez < 100 ? 'Buena eficiencia atencional.' : 'Tu atención se beneficia moderadamente de las señales.'}`;
     }
 
     return `Progreso: ${porcentajeCompletado}% completado. Nivel actual: ${configNivel.nombre}. Tu atención visual ${aciertosCongruentes > aciertosIncongruentes ? 'responde mejor cuando las señales anticipan correctamente la ubicación del estímulo' : aciertosIncongruentes > aciertosCongruentes ? 'es más flexible y menos dependiente de señales externas' : 'es equilibrada entre ensayos con señales correctas e incorrectas'}.`;
-  }, [gameState.ensayoActual, estadisticas, aciertosCongruentes, aciertosIncongruentes, configNivel]);
+  }, [gameState.ensayoActual, gameState.fallosConsecutivos, estadisticas, aciertosCongruentes, aciertosIncongruentes, configNivel]);
 
   // Componente de instrucciones
   const InstruccionesJuego6 = () => (
@@ -943,6 +977,30 @@ const Juego6 = () => {
           
           <p>Responde indicando en qué lado aparece el estímulo. Usa clics o flechas del teclado.</p>
           <p><em>El juego progresa automáticamente a través de 5 niveles de dificultad.</em></p>
+          
+          {/* Mostrar contador de fallos consecutivos */}
+          {gameState.fallosConsecutivos > 0 && (
+            <div style={{
+              width: '100%',
+              backgroundColor: gameState.fallosConsecutivos >= 2 ? '#fee2e2' : '#fef3c7',
+              border: `2px solid ${gameState.fallosConsecutivos >= 2 ? '#ef4444' : '#f59e0b'}`,
+              borderRadius: '8px',
+              padding: '10px',
+              marginTop: '10px',
+              textAlign: 'center'
+            }}>
+              <p style={{ 
+                margin: 0, 
+                color: gameState.fallosConsecutivos >= 2 ? '#dc2626' : '#d97706',
+                fontWeight: 'bold',
+                fontSize: '14px'
+              }}>
+                ⚠️ Fallos consecutivos: {gameState.fallosConsecutivos}/{MAX_FALLOS_CONSECUTIVOS}
+                {gameState.fallosConsecutivos >= 2 && ' - ¡Cuidado!'}
+              </p>
+            </div>
+          )}
+          
           <div style={{ 
             display: 'flex', 
             justifyContent: 'center', 
@@ -982,14 +1040,18 @@ const Juego6 = () => {
       } : {}}
       gameOver={gameState.juegoTerminado}
       finalStats={{ 
-        completado: gameState.ensayoActual > TOTAL_ENSAYOS, 
+        completado: gameState.ensayoActual > TOTAL_ENSAYOS && gameState.fallosConsecutivos < MAX_FALLOS_CONSECUTIVOS, 
         ensayos: `${gameState.ensayoActual - 1}/${TOTAL_ENSAYOS}`, 
         aciertos: gameState.respuestasCorrectas, 
         errores: gameState.respuestasIncorrectas, 
         puntuacionFinal: gameState.puntuacion,
         tiempo: gameState.tiempoJugando,
         level: `${configNivel.nombre} (Nivel ${nivelActual})`,
-        motivoFin: gameState.ensayoActual > TOTAL_ENSAYOS ? "Juego completado" : "Juego interrumpido"
+        motivoFin: gameState.fallosConsecutivos >= MAX_FALLOS_CONSECUTIVOS 
+          ? `Máximo de ${MAX_FALLOS_CONSECUTIVOS} fallos consecutivos alcanzado` 
+          : gameState.ensayoActual > TOTAL_ENSAYOS 
+            ? "Juego completado" 
+            : "Juego interrumpido"
       }}
       onRestart={reiniciarJuego}
       analysis={generarAnalisis()}
