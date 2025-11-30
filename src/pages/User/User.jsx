@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { auth } from '../../services/firebase/firebaseConfig';
 import { userService } from '../../services/firebase/userService';
 import { gameService } from '../../services/firebase/gameService';
-import { signOut } from 'firebase/auth'; 
 import {
   User as UserIcon,
   Mail,
@@ -14,8 +13,7 @@ import {
   Clock,
   TrendingUp,
   Calendar,
-  ExternalLink,
-  LogOut
+  ExternalLink
 } from 'lucide-react';
 import './user.css';
 
@@ -44,16 +42,6 @@ const UserProfile = () => {
   const [error, setError] = useState(null);
   const user = auth.currentUser;
   const navigate = useNavigate();
-
-  //Función de logout 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      console.log("Usuario desconectado desde perfil");
-    } catch (error) {
-      console.error("Error al cerrar sesión:", error);
-    }
-  };
 
   useEffect(() => {
     const load = async () => {
@@ -451,13 +439,6 @@ const UserProfile = () => {
           <Link className="btn ghost" to="/reports">
             Ver Reportes <ExternalLink size={16} />
           </Link>
-          <button 
-            className="btn danger" 
-            onClick={handleLogout}
-          >
-            <LogOut size={16} />
-            Cerrar Sesión
-          </button>
         </div>
       </div>
 
